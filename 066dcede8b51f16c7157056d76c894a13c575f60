@@ -1,0 +1,25 @@
+apps/web/src/components/ChatView.tsx
+  b2d3b808394f5686 5051-5052,5095-5097
+apps/web/src/components/timelineHeight.ts
+  b2d3b808394f5686 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "066dcede8b51f16c7157056d76c894a13c575f60",
+  "prompts": {
+    "b2d3b808394f5686": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ccadb-248d-7790-8d8e-fa991afe1c9e",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 48,
+      "total_deletions": 46,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    }
+  }
+}
