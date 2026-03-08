@@ -1,0 +1,23 @@
+apps/web/src/components/ChatView.tsx
+  9290a7ac77caf271 5220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "87660381a6cc165160a861c5d32d2a17eab7d92d",
+  "prompts": {
+    "9290a7ac77caf271": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ccada-f559-7f83-9c85-dff3114820dc",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 2,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
