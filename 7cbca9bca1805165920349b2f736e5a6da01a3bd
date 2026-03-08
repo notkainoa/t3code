@@ -1,0 +1,27 @@
+apps/web/src/components/GitActionsControl.tsx
+  a47c7960afb874c1 101,379
+apps/web/src/components/GitActionsControl.logic.test.ts
+  a47c7960afb874c1 45,81,202,550
+apps/web/src/components/GitActionsControl.logic.ts
+  a47c7960afb874c1 154,219,269
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "7cbca9bca1805165920349b2f736e5a6da01a3bd",
+  "prompts": {
+    "a47c7960afb874c1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ccad6-a53a-74e1-b566-5e8f71dcd507",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 14,
+      "total_deletions": 14,
+      "accepted_lines": 9,
+      "overriden_lines": 0
+    }
+  }
+}
