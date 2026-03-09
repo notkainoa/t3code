@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { hasUnseenCompletion, resolveThreadStatusPill } from "./Sidebar.logic";
+import {
+  hasUnseenCompletion,
+  resolveReusedDraftContextForNewThread,
+  resolveThreadStatusPill,
+} from "./Sidebar.logic";
 
 function makeLatestTurn(overrides?: {
   completedAt?: string | null;
@@ -120,5 +124,47 @@ describe("resolveThreadStatusPill", () => {
         hasPendingUserInput: false,
       }),
     ).toMatchObject({ label: "Completed", pulse: false });
+  });
+});
+
+describe("resolveReusedDraftContextForNewThread", () => {
+  it("resets an empty reused draft to the current default env mode", () => {
+    expect(
+      resolveReusedDraftContextForNewThread({
+        defaultNewThreadEnvMode: "worktree",
+        isComposerDraftEmpty: true,
+      }),
+    ).toEqual({
+      branch: null,
+      worktreePath: null,
+      envMode: "worktree",
+    });
+  });
+
+  it("preserves a non-empty reused draft when no explicit override is requested", () => {
+    expect(
+      resolveReusedDraftContextForNewThread({
+        defaultNewThreadEnvMode: "worktree",
+        isComposerDraftEmpty: false,
+      }),
+    ).toBeNull();
+  });
+
+  it("keeps explicit new-thread overrides instead of replacing them with defaults", () => {
+    expect(
+      resolveReusedDraftContextForNewThread({
+        options: {
+          branch: "feature/test",
+          worktreePath: null,
+          envMode: "local",
+        },
+        defaultNewThreadEnvMode: "worktree",
+        isComposerDraftEmpty: true,
+      }),
+    ).toEqual({
+      branch: "feature/test",
+      worktreePath: null,
+      envMode: "local",
+    });
   });
 });

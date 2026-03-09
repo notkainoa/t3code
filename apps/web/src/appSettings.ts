@@ -3,7 +3,7 @@ import { Option, Schema } from "effect";
 import { type ProviderKind, type ProviderServiceTier } from "@t3tools/contracts";
 import { getDefaultModel, getModelOptions, normalizeModelSlug } from "@t3tools/shared/model";
 
-const APP_SETTINGS_STORAGE_KEY = "t3code:app-settings:v1";
+export const APP_SETTINGS_STORAGE_KEY = "t3code:app-settings:v1";
 const MAX_CUSTOM_MODEL_COUNT = 32;
 export const MAX_CUSTOM_MODEL_LENGTH = 256;
 export const APP_SERVICE_TIER_OPTIONS = [
@@ -24,7 +24,21 @@ export const APP_SERVICE_TIER_OPTIONS = [
   },
 ] as const;
 export type AppServiceTier = (typeof APP_SERVICE_TIER_OPTIONS)[number]["value"];
+export const NEW_THREAD_ENV_MODE_OPTIONS = [
+  {
+    value: "local",
+    label: "Local",
+    description: "Start new threads in the main project working tree.",
+  },
+  {
+    value: "worktree",
+    label: "New worktree",
+    description: "Start new threads in worktree mode so the first send creates a new worktree.",
+  },
+] as const;
+export type NewThreadDefaultEnvMode = (typeof NEW_THREAD_ENV_MODE_OPTIONS)[number]["value"];
 const AppServiceTierSchema = Schema.Literals(["auto", "fast", "flex"]);
+const NewThreadDefaultEnvModeSchema = Schema.Literals(["local", "worktree"]);
 const MODELS_WITH_FAST_SUPPORT = new Set(["gpt-5.4"]);
 const BUILT_IN_MODEL_SLUGS_BY_PROVIDER: Record<ProviderKind, ReadonlySet<string>> = {
   codex: new Set(getModelOptions("codex").map((option) => option.slug)),
@@ -40,6 +54,9 @@ const AppSettingsSchema = Schema.Struct({
   confirmThreadDelete: Schema.Boolean.pipe(Schema.withConstructorDefault(() => Option.some(true))),
   enableAssistantStreaming: Schema.Boolean.pipe(
     Schema.withConstructorDefault(() => Option.some(false)),
+  ),
+  newThreadDefaultEnvMode: NewThreadDefaultEnvModeSchema.pipe(
+    Schema.withConstructorDefault(() => Option.some("local")),
   ),
   codexServiceTier: AppServiceTierSchema.pipe(Schema.withConstructorDefault(() => Option.some("auto"))),
   customCodexModels: Schema.Array(Schema.String).pipe(
@@ -230,6 +247,10 @@ export function getAppSettingsSnapshot(): AppSettings {
   cachedRawSettings = raw;
   cachedSnapshot = parsePersistedSettings(raw);
   return cachedSnapshot;
+}
+
+export function getDefaultNewThreadEnvMode(): NewThreadDefaultEnvMode {
+  return getAppSettingsSnapshot().newThreadDefaultEnvMode;
 }
 
 function persistSettings(next: AppSettings): void {

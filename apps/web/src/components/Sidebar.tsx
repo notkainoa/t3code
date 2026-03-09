@@ -32,7 +32,11 @@ import { derivePendingApprovals, derivePendingUserInputs } from "../session-logi
 import { gitRemoveWorktreeMutationOptions, gitStatusQueryOptions } from "../lib/gitReactQuery";
 import { serverConfigQueryOptions } from "../lib/serverReactQuery";
 import { readNativeApi } from "../nativeApi";
-import { type DraftThreadEnvMode, useComposerDraftStore } from "../composerDraftStore";
+import {
+  isComposerThreadDraftEmpty,
+  type DraftThreadEnvMode,
+  useComposerDraftStore,
+} from "../composerDraftStore";
 import { selectThreadTerminalState, useTerminalStateStore } from "../terminalStateStore";
 import { toastManager } from "./ui/toast";
 import {
@@ -67,7 +71,7 @@ import {
 } from "./ui/sidebar";
 import { formatWorktreePathForDisplay, getOrphanedWorktreePathForThread } from "../worktreeCleanup";
 import { isNonEmpty as isNonEmptyString } from "effect/String";
-import { resolveThreadStatusPill } from "./Sidebar.logic";
+import { resolveReusedDraftContextForNewThread, resolveThreadStatusPill } from "./Sidebar.logic";
 
 const EMPTY_KEYBINDINGS: ResolvedKeybindingsConfig = [];
 const THREAD_PREVIEW_LIMIT = 6;
@@ -254,6 +258,7 @@ export default function Sidebar() {
   const renamingCommittedRef = useRef(false);
   const renamingInputRef = useRef<HTMLInputElement | null>(null);
   const [desktopUpdateState, setDesktopUpdateState] = useState<DesktopUpdateState | null>(null);
+  const defaultNewThreadEnvMode = appSettings.newThreadDefaultEnvMode;
   const shouldBrowseForProjectImmediately = isElectron;
   const shouldShowProjectPathEntry = addingProject && !shouldBrowseForProjectImmediately;
   const pendingApprovalByThreadId = useMemo(() => {
@@ -353,18 +358,18 @@ export default function Sidebar() {
         envMode?: DraftThreadEnvMode;
       },
     ): Promise<void> => {
-      const hasBranchOption = options?.branch !== undefined;
-      const hasWorktreePathOption = options?.worktreePath !== undefined;
-      const hasEnvModeOption = options?.envMode !== undefined;
       const storedDraftThread = getDraftThreadByProjectId(projectId);
       if (storedDraftThread) {
         return (async () => {
-          if (hasBranchOption || hasWorktreePathOption || hasEnvModeOption) {
-            setDraftThreadContext(storedDraftThread.threadId, {
-              ...(hasBranchOption ? { branch: options?.branch ?? null } : {}),
-              ...(hasWorktreePathOption ? { worktreePath: options?.worktreePath ?? null } : {}),
-              ...(hasEnvModeOption ? { envMode: options?.envMode } : {}),
-            });
+          const draftContextPatch = resolveReusedDraftContextForNewThread({
+            options,
+            defaultNewThreadEnvMode,
+            isComposerDraftEmpty: isComposerThreadDraftEmpty(
+              useComposerDraftStore.getState().draftsByThreadId[storedDraftThread.threadId] ?? null,
+            ),
+          });
+          if (draftContextPatch) {
+            setDraftThreadContext(storedDraftThread.threadId, draftContextPatch);
           }
           setProjectDraftThreadId(projectId, storedDraftThread.threadId);
           if (routeThreadId === storedDraftThread.threadId) {
@@ -380,12 +385,15 @@ export default function Sidebar() {
 
       const activeDraftThread = routeThreadId ? getDraftThread(routeThreadId) : null;
       if (activeDraftThread && routeThreadId && activeDraftThread.projectId === projectId) {
-        if (hasBranchOption || hasWorktreePathOption || hasEnvModeOption) {
-          setDraftThreadContext(routeThreadId, {
-            ...(hasBranchOption ? { branch: options?.branch ?? null } : {}),
-            ...(hasWorktreePathOption ? { worktreePath: options?.worktreePath ?? null } : {}),
-            ...(hasEnvModeOption ? { envMode: options?.envMode } : {}),
-          });
+        const draftContextPatch = resolveReusedDraftContextForNewThread({
+          options,
+          defaultNewThreadEnvMode,
+          isComposerDraftEmpty: isComposerThreadDraftEmpty(
+            useComposerDraftStore.getState().draftsByThreadId[routeThreadId] ?? null,
+          ),
+        });
+        if (draftContextPatch) {
+          setDraftThreadContext(routeThreadId, draftContextPatch);
         }
         setProjectDraftThreadId(projectId, routeThreadId);
         return Promise.resolve();
@@ -397,7 +405,7 @@ export default function Sidebar() {
           createdAt,
           branch: options?.branch ?? null,
           worktreePath: options?.worktreePath ?? null,
-          envMode: options?.envMode ?? "local",
+          envMode: options?.envMode ?? defaultNewThreadEnvMode,
           runtimeMode: DEFAULT_RUNTIME_MODE,
         });
 
@@ -415,6 +423,7 @@ export default function Sidebar() {
       routeThreadId,
       setDraftThreadContext,
       setProjectDraftThreadId,
+      defaultNewThreadEnvMode,
     ],
   );
 
@@ -802,18 +811,26 @@ export default function Sidebar() {
           activeThread?.projectId ?? activeDraftThread?.projectId ?? projects[0]?.id;
         if (!projectId) return;
         event.preventDefault();
-        void handleNewThread(projectId);
+        void handleNewThread(projectId, {
+          worktreePath: null,
+          envMode: "local",
+        });
         return;
       }
 
       if (!isChatNewShortcut(event, keybindings)) return;
       const projectId = activeThread?.projectId ?? activeDraftThread?.projectId ?? projects[0]?.id;
       if (!projectId) return;
+      const activeWorktreePath =
+        activeThread?.worktreePath ?? activeDraftThread?.worktreePath ?? null;
       event.preventDefault();
       void handleNewThread(projectId, {
         branch: activeThread?.branch ?? activeDraftThread?.branch ?? null,
-        worktreePath: activeThread?.worktreePath ?? activeDraftThread?.worktreePath ?? null,
-        envMode: activeDraftThread?.envMode ?? (activeThread?.worktreePath ? "worktree" : "local"),
+        worktreePath: activeWorktreePath,
+        envMode:
+          activeWorktreePath || activeDraftThread?.envMode === "worktree"
+            ? "worktree"
+            : defaultNewThreadEnvMode,
       });
     };
 
@@ -821,7 +838,15 @@ export default function Sidebar() {
     return () => {
       window.removeEventListener("keydown", onWindowKeyDown);
     };
-  }, [getDraftThread, handleNewThread, keybindings, projects, routeThreadId, threads]);
+  }, [
+    defaultNewThreadEnvMode,
+    getDraftThread,
+    handleNewThread,
+    keybindings,
+    projects,
+    routeThreadId,
+    threads,
+  ]);
 
   useEffect(() => {
     if (!isElectron) return;

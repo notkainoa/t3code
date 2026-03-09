@@ -1,4 +1,5 @@
 import type { Thread } from "../types";
+import type { DraftThreadEnvMode } from "../composerDraftStore";
 import { findLatestProposedPlan, isLatestTurnSettled } from "../session-logic";
 
 export interface ThreadStatusPill {
@@ -12,6 +13,48 @@ export interface ThreadStatusPill {
   colorClass: string;
   dotClass: string;
   pulse: boolean;
+}
+
+export function resolveReusedDraftContextForNewThread(input: {
+  options?:
+    | {
+        branch?: string | null;
+        worktreePath?: string | null;
+        envMode?: DraftThreadEnvMode;
+      }
+    | undefined;
+  defaultNewThreadEnvMode: DraftThreadEnvMode;
+  isComposerDraftEmpty: boolean;
+}):
+  | {
+      branch?: string | null;
+      worktreePath?: string | null;
+      envMode?: DraftThreadEnvMode;
+    }
+  | null {
+  const hasBranchOption = input.options?.branch !== undefined;
+  const hasWorktreePathOption = input.options?.worktreePath !== undefined;
+  const hasEnvModeOption = input.options?.envMode !== undefined;
+
+  if (hasBranchOption || hasWorktreePathOption || hasEnvModeOption) {
+    return {
+      ...(hasBranchOption ? { branch: input.options?.branch ?? null } : {}),
+      ...(hasWorktreePathOption ? { worktreePath: input.options?.worktreePath ?? null } : {}),
+      ...(hasEnvModeOption && input.options?.envMode !== undefined
+        ? { envMode: input.options.envMode }
+        : {}),
+    };
+  }
+
+  if (!input.isComposerDraftEmpty) {
+    return null;
+  }
+
+  return {
+    branch: null,
+    worktreePath: null,
+    envMode: input.defaultNewThreadEnvMode,
+  };
 }
 
 type ThreadStatusInput = Pick<

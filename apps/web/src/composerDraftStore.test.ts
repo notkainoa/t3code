@@ -1,6 +1,8 @@
+import { testLocalStorage } from "./testBrowserStorage";
 import { ProjectId, ThreadId } from "@t3tools/contracts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { APP_SETTINGS_STORAGE_KEY } from "./appSettings";
 import { type ComposerImageAttachment, useComposerDraftStore } from "./composerDraftStore";
 
 function makeImage(input: {
@@ -29,6 +31,10 @@ function makeImage(input: {
     file,
   };
 }
+
+beforeEach(() => {
+  testLocalStorage.clear();
+});
 
 describe("composerDraftStore addImages", () => {
   const threadId = ThreadId.makeUnsafe("thread-dedupe");
@@ -327,6 +333,34 @@ describe("composerDraftStore project draft thread mapping", () => {
     expect(useComposerDraftStore.getState().getDraftThread(threadId)).toMatchObject({
       projectId,
       branch: "feature/base",
+      worktreePath: null,
+      envMode: "worktree",
+    });
+  });
+
+  it("uses the app default env mode for new draft threads", () => {
+    testLocalStorage.setItem(
+      APP_SETTINGS_STORAGE_KEY,
+      JSON.stringify({
+        codexBinaryPath: "",
+        codexHomePath: "",
+        confirmThreadDelete: true,
+        enableAssistantStreaming: false,
+        newThreadDefaultEnvMode: "worktree",
+        codexServiceTier: "auto",
+        customCodexModels: [],
+      }),
+    );
+
+    const store = useComposerDraftStore.getState();
+    store.setProjectDraftThreadId(projectId, threadId, {
+      branch: "main",
+      worktreePath: null,
+    });
+
+    expect(useComposerDraftStore.getState().getDraftThread(threadId)).toMatchObject({
+      projectId,
+      branch: "main",
       worktreePath: null,
       envMode: "worktree",
     });

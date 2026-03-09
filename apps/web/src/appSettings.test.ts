@@ -1,13 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { testLocalStorage } from "./testBrowserStorage";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import {
+  APP_SETTINGS_STORAGE_KEY,
+  getAppSettingsSnapshot,
   getAppModelOptions,
   getSlashModelOptions,
   normalizeCustomModelSlugs,
+  NEW_THREAD_ENV_MODE_OPTIONS,
   resolveAppServiceTier,
   shouldShowFastTierIcon,
   resolveAppModelSelection,
 } from "./appSettings";
+
+beforeEach(() => {
+  testLocalStorage.clear();
+});
 
 describe("normalizeCustomModelSlugs", () => {
   it("normalizes aliases, removes built-ins, and deduplicates values", () => {
@@ -82,6 +90,31 @@ describe("getSlashModelOptions", () => {
     );
 
     expect(options.map((option) => option.slug)).toEqual(["openai/gpt-oss-120b"]);
+  });
+});
+
+describe("new thread default env mode", () => {
+  it("defaults new threads to local mode", () => {
+    expect(getAppSettingsSnapshot().newThreadDefaultEnvMode).toBe("local");
+  });
+
+  it("hydrates a persisted worktree default", () => {
+    testLocalStorage.setItem(
+      APP_SETTINGS_STORAGE_KEY,
+      JSON.stringify({
+        ...getAppSettingsSnapshot(),
+        newThreadDefaultEnvMode: "worktree",
+      }),
+    );
+
+    expect(getAppSettingsSnapshot().newThreadDefaultEnvMode).toBe("worktree");
+  });
+
+  it("exposes local and worktree thread default options", () => {
+    expect(NEW_THREAD_ENV_MODE_OPTIONS.map((option) => option.value)).toEqual([
+      "local",
+      "worktree",
+    ]);
   });
 });
 

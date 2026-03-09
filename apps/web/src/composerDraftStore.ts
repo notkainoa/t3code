@@ -14,6 +14,7 @@ import {
   DEFAULT_RUNTIME_MODE,
   type ChatImageAttachment,
 } from "./types";
+import { getDefaultNewThreadEnvMode } from "./appSettings";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -205,6 +206,12 @@ function shouldRemoveDraft(draft: ComposerThreadDraftState): boolean {
     draft.effort === null &&
     draft.codexFastMode === false
   );
+}
+
+export function isComposerThreadDraftEmpty(
+  draft: ComposerThreadDraftState | null | undefined,
+): boolean {
+  return !draft || shouldRemoveDraft(draft);
 }
 
 function normalizeProviderKind(value: unknown): ProviderKind | null {
@@ -554,6 +561,7 @@ export const useComposerDraftStore = create<ComposerDraftStoreState>()(
           return;
         }
         set((state) => {
+          const defaultNewThreadEnvMode = getDefaultNewThreadEnvMode();
           const existingThread = state.draftThreadsByThreadId[threadId];
           const previousThreadIdForProject = state.projectDraftThreadIdByProjectId[projectId];
           const nextWorktreePath =
@@ -575,7 +583,9 @@ export const useComposerDraftStore = create<ComposerDraftStoreState>()(
             worktreePath: nextWorktreePath,
             envMode:
               options?.envMode ??
-              (nextWorktreePath ? "worktree" : (existingThread?.envMode ?? "local")),
+              (nextWorktreePath
+                ? "worktree"
+                : (existingThread?.envMode ?? defaultNewThreadEnvMode)),
           };
           const hasSameProjectMapping = previousThreadIdForProject === threadId;
           const hasSameDraftThread =
