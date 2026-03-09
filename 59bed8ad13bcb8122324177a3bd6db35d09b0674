@@ -1,0 +1,57 @@
+apps/server/src/wsServer.ts
+  026df966453c8628 205-223,951
+apps/web/src/wsTransport.ts
+  026df966453c8628 6-18,183-187
+apps/server/src/git/compareLink.ts
+  026df966453c8628 1-166
+apps/server/src/git/Services/GitCore.ts
+  026df966453c8628 114-120
+apps/server/src/git/Layers/GitManager.ts
+  026df966453c8628 3,7-9,15,352-393,443,445-455,460-470,472-474
+apps/web/src/components/GitActionsControl.logic.test.ts
+  026df966453c8628 2-5,10,16,297-331,333-375
+packages/contracts/src/git.ts
+  026df966453c8628 24-36
+apps/server/src/git/Layers/GitManager.test.ts
+  026df966453c8628 8,13-14,33,201-203,867-940
+apps/server/src/wsServer.test.ts
+  026df966453c8628 18,54-55,1700-1745
+apps/server/src/git/Layers/GitCore.ts
+  026df966453c8628 829-842,1212
+apps/server/src/git/Layers/GitCore.test.ts
+  026df966453c8628 106
+apps/web/src/components/GitActionsControl.tsx
+  026df966453c8628 15,408-421,424-425,427-434
+packages/contracts/src/ws.ts
+  026df966453c8628 146-147
+apps/web/src/components/GitActionsControl.logic.ts
+  026df966453c8628 2,7-11,40-42,45-50,55-58,134-175
+packages/contracts/src/ws.test.ts
+  026df966453c8628 4,6,9,61-87
+apps/server/src/git/compareLink.test.ts
+  026df966453c8628 1-103
+apps/server/src/git/Errors.ts
+  026df966453c8628 1-2,62-82,90
+apps/web/src/wsTransport.test.ts
+  026df966453c8628 3,5,135-177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "59bed8ad13bcb8122324177a3bd6db35d09b0674",
+  "prompts": {
+    "026df966453c8628": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ccb2b-5397-7d73-a2d6-341eb46d80ab",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 862,
+      "total_deletions": 21,
+      "accepted_lines": 840,
+      "overriden_lines": 0
+    }
+  }
+}
