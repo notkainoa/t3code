@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { WsTransport } from "./wsTransport";
+import { GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE } from "@t3tools/contracts";
+
+import { WsRequestError, WsTransport } from "./wsTransport";
 
 type WsEventType = "open" | "message" | "close" | "error";
 type WsListener = (event?: { data?: unknown }) => void;
@@ -126,6 +128,53 @@ describe("WsTransport", () => {
     );
 
     await expect(requestPromise).resolves.toEqual({ projects: [] });
+
+    transport.dispose();
+  });
+
+  it("rejects requests with structured websocket error metadata", async () => {
+    const transport = new WsTransport("ws://localhost:3020");
+    const socket = getSocket();
+    socket.open();
+
+    const requestPromise = transport.request("git.runStackedAction");
+    const sent = socket.sent.at(-1);
+    if (!sent) {
+      throw new Error("Expected request envelope to be sent");
+    }
+
+    const requestEnvelope = JSON.parse(sent) as { id: string };
+    socket.serverMessage(
+      JSON.stringify({
+        id: requestEnvelope.id,
+        error: {
+          message: "GitHub CLI failed in execute: GraphQL: Head sha can't be blank",
+          code: GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+          data: {
+            compareUrl:
+              "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature%2Frename-open-pr-label?quick_pull=1",
+            baseBranch: "main",
+            headBranch: "feature/rename-open-pr-label",
+            baseRepo: "pingdotgg/t3code",
+            headRepoOwner: "notkainoa",
+          },
+        },
+      }),
+    );
+
+    await expect(requestPromise).rejects.toBeInstanceOf(WsRequestError);
+    await expect(requestPromise).rejects.toMatchObject({
+      message: "GitHub CLI failed in execute: GraphQL: Head sha can't be blank",
+      code: GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+      data: {
+        compareUrl:
+          "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature%2Frename-open-pr-label?quick_pull=1",
+        baseBranch: "main",
+        headBranch: "feature/rename-open-pr-label",
+        baseRepo: "pingdotgg/t3code",
+        headRepoOwner: "notkainoa",
+      },
+    });
 
     transport.dispose();
   });

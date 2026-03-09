@@ -1,13 +1,18 @@
 import { randomUUID } from "node:crypto";
 
-import { Effect, FileSystem, Layer, Path } from "effect";
+import { Cause, Effect, FileSystem, Layer, Path } from "effect";
 import { resolveAutoFeatureBranchName, sanitizeFeatureBranchName } from "@t3tools/shared/git";
 
-import { GitManagerError } from "../Errors.ts";
+import {
+  GitHubCliError,
+  GitManagerError,
+  GitPullRequestCreateCompareFallbackError,
+} from "../Errors.ts";
 import { GitManager, type GitManagerShape } from "../Services/GitManager.ts";
 import { GitCore } from "../Services/GitCore.ts";
 import { GitHubCli } from "../Services/GitHubCli.ts";
 import { TextGeneration } from "../Services/TextGeneration.ts";
+import { resolvePullRequestCompareFallback } from "../compareLink.ts";
 
 interface OpenPrInfo {
   number: number;
@@ -344,6 +349,48 @@ export const makeGitManager = Effect.gen(function* () {
       };
     });
 
+  const resolvePrCreateCompareFallback = (input: {
+    cwd: string;
+    baseBranch: string;
+    headBranch: string;
+    title: string;
+    body: string;
+  }): Effect.Effect<
+    ReturnType<typeof resolvePullRequestCompareFallback>,
+    never
+  > =>
+    Effect.gen(function* () {
+      const headRemoteName = yield* gitCore
+        .readConfigValue(input.cwd, `branch.${input.headBranch}.remote`)
+        .pipe(Effect.catch(() => Effect.succeed(null)));
+      if (!headRemoteName) {
+        return null;
+      }
+
+      const [originUrl, upstreamUrl, headRemoteUrl] = yield* Effect.all(
+        [
+          gitCore.readRemoteUrl(input.cwd, "origin").pipe(Effect.catch(() => Effect.succeed(null))),
+          gitCore
+            .readRemoteUrl(input.cwd, "upstream")
+            .pipe(Effect.catch(() => Effect.succeed(null))),
+          gitCore
+            .readRemoteUrl(input.cwd, headRemoteName)
+            .pipe(Effect.catch(() => Effect.succeed(null))),
+        ],
+        { concurrency: "unbounded" },
+      );
+
+      return resolvePullRequestCompareFallback({
+        originUrl,
+        upstreamUrl,
+        headRemoteUrl,
+        baseBranch: input.baseBranch,
+        headBranch: input.headBranch,
+        title: input.title,
+        body: input.body,
+      });
+    });
+
   const runPrStep = (cwd: string, fallbackBranch: string | null) =>
     Effect.gen(function* () {
       const details = yield* gitCore.statusDetails(cwd);
@@ -393,15 +440,38 @@ export const makeGitManager = Effect.gen(function* () {
             gitManagerError("runPrStep", "Failed to write pull request body temp file.", cause),
           ),
         );
-      yield* gitHubCli
-        .createPullRequest({
+      const createPullRequestExit = yield* Effect.exit(
+        gitHubCli
+          .createPullRequest({
+            cwd,
+            baseBranch,
+            headBranch: branch,
+            title: generated.title,
+            bodyFile,
+          })
+          .pipe(Effect.ensuring(fileSystem.remove(bodyFile).pipe(Effect.catch(() => Effect.void)))),
+      );
+      if (createPullRequestExit._tag === "Failure") {
+        const fallback = yield* resolvePrCreateCompareFallback({
           cwd,
           baseBranch,
           headBranch: branch,
           title: generated.title,
-          bodyFile,
-        })
-        .pipe(Effect.ensuring(fileSystem.remove(bodyFile).pipe(Effect.catch(() => Effect.void))));
+          body: generated.body,
+        });
+        const createError = Cause.squash(createPullRequestExit.cause) as GitHubCliError;
+        if (fallback) {
+          return yield* Effect.fail(
+            new GitPullRequestCreateCompareFallbackError({
+              operation: "runPrStep",
+              message: createError.message,
+              data: fallback,
+              cause: createError,
+            }),
+          );
+        }
+        return yield* createError;
+      }
 
       const created = yield* findOpenPr(cwd, branch);
       if (!created) {

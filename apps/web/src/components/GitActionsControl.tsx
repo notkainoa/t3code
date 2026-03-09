@@ -12,6 +12,7 @@ import {
   type DefaultBranchConfirmableAction,
   requiresDefaultBranchConfirmation,
   resolveDefaultBranchActionDialogCopy,
+  resolveGitActionFailureToast,
   resolveQuickAction,
   summarizeGitResult,
 } from "./GitActionsControl.logic";
@@ -404,11 +405,33 @@ export default function GitActionsControl({ gitCwd, activeThreadId }: GitActions
         });
       } catch (err) {
         stopProgressUpdates();
+        const api = readNativeApi();
+        const failureToast = resolveGitActionFailureToast({
+          error: err,
+          onOpenCompare: api ? (compareUrl) => api.shell.openExternal(compareUrl) : undefined,
+          onOpenCompareError: (openError) => {
+            toastManager.add({
+              type: "error",
+              title: "Unable to open compare link",
+              description:
+                openError instanceof Error ? openError.message : "An error occurred.",
+              data: threadToastData,
+            });
+          },
+        });
         toastManager.update(resolvedProgressToastId, {
           type: "error",
-          title: "Action failed",
-          description: err instanceof Error ? err.message : "An error occurred.",
+          title: failureToast.title,
+          description: failureToast.description,
           data: threadToastData,
+          ...(failureToast.action
+            ? {
+                actionProps: {
+                  children: failureToast.action.label,
+                  onClick: failureToast.action.onClick,
+                },
+              }
+            : {}),
         });
       }
     },

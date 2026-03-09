@@ -1,14 +1,19 @@
-import type { GitStatusResult } from "@t3tools/contracts";
-import { assert, describe, it } from "vitest";
+import {
+  GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+  type GitStatusResult,
+} from "@t3tools/contracts";
+import { assert, describe, it, vi } from "vitest";
 import {
   buildGitActionProgressStages,
   buildMenuItems,
   requiresDefaultBranchConfirmation,
+  resolveGitActionFailureToast,
   resolveAutoFeatureBranchName,
   resolveDefaultBranchActionDialogCopy,
   resolveQuickAction,
   summarizeGitResult,
 } from "./GitActionsControl.logic";
+import { WsRequestError } from "../wsTransport";
 
 function status(overrides: Partial<GitStatusResult> = {}): GitStatusResult {
   return {
@@ -286,6 +291,88 @@ describe("when: branch is clean, up to date, and has no open PR", () => {
         dialogAction: "create_pr",
       },
     ]);
+  });
+});
+
+describe("resolveGitActionFailureToast", () => {
+  it("adds an Open Compare action for PR compare fallback errors", async () => {
+    const onOpenCompare = vi.fn(async (_url: string) => undefined);
+    const onOpenCompareError = vi.fn();
+    const toast = resolveGitActionFailureToast({
+      error: new WsRequestError({
+        message: "GitHub CLI failed in execute: GraphQL: Head sha can't be blank",
+        code: GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+        data: {
+          compareUrl:
+            "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature%2Frename-open-pr-label?quick_pull=1",
+          baseBranch: "main",
+          headBranch: "feature/rename-open-pr-label",
+          baseRepo: "pingdotgg/t3code",
+          headRepoOwner: "notkainoa",
+        },
+      }),
+      onOpenCompare,
+      onOpenCompareError,
+    });
+
+    assert.strictEqual(toast.title, "Action failed");
+    assert.strictEqual(
+      toast.description,
+      "GitHub CLI failed in execute: GraphQL: Head sha can't be blank",
+    );
+    assert.strictEqual(toast.action?.label, "Open Compare");
+
+    toast.action?.onClick();
+    await Promise.resolve();
+
+    assert.deepEqual(onOpenCompare.mock.calls, [
+      [
+        "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature%2Frename-open-pr-label?quick_pull=1",
+      ],
+    ]);
+    assert.strictEqual(onOpenCompareError.mock.calls.length, 0);
+  });
+
+  it("keeps plain errors without a CTA", () => {
+    const toast = resolveGitActionFailureToast({
+      error: new Error("Detached HEAD"),
+      onOpenCompare: async () => undefined,
+      onOpenCompareError: () => undefined,
+    });
+
+    assert.deepEqual(toast, {
+      title: "Action failed",
+      description: "Detached HEAD",
+    });
+  });
+
+  it("reports compare-link opening failures through the supplied handler", async () => {
+    const onOpenCompareError = vi.fn();
+    const toast = resolveGitActionFailureToast({
+      error: new WsRequestError({
+        message: "GitHub CLI failed in execute: GraphQL: Head sha can't be blank",
+        code: GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+        data: {
+          compareUrl:
+            "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature%2Frename-open-pr-label?quick_pull=1",
+          baseBranch: "main",
+          headBranch: "feature/rename-open-pr-label",
+          baseRepo: "pingdotgg/t3code",
+          headRepoOwner: "notkainoa",
+        },
+      }),
+      onOpenCompare: async () => {
+        throw new Error("Unable to open link.");
+      },
+      onOpenCompareError,
+    });
+
+    toast.action?.onClick();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.strictEqual(onOpenCompareError.mock.calls.length, 1);
+    assert.strictEqual((onOpenCompareError.mock.calls[0]![0] as Error).message, "Unable to open link.");
   });
 });
 

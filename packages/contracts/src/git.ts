@@ -21,6 +21,19 @@ const GitPrStepStatus = Schema.Literals([
 ]);
 const GitStatusPrState = Schema.Literals(["open", "closed", "merged"]);
 
+export const GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE =
+  "git.pr_create_compare_fallback" as const;
+
+export const GitPullRequestCreateCompareFallbackErrorData = Schema.Struct({
+  compareUrl: Schema.String,
+  baseBranch: TrimmedNonEmptyStringSchema,
+  headBranch: TrimmedNonEmptyStringSchema,
+  baseRepo: TrimmedNonEmptyStringSchema,
+  headRepoOwner: TrimmedNonEmptyStringSchema,
+});
+export type GitPullRequestCreateCompareFallbackErrorData =
+  typeof GitPullRequestCreateCompareFallbackErrorData.Type;
+
 export const GitBranch = Schema.Struct({
   name: TrimmedNonEmptyStringSchema,
   isRemote: Schema.optional(Schema.Boolean),

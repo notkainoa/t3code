@@ -5,8 +5,14 @@ import * as NodeServices from "@effect/platform-node/NodeServices";
 import { it } from "@effect/vitest";
 import { Effect, FileSystem, Layer, PlatformError, Scope } from "effect";
 import { expect } from "vitest";
+import { GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE } from "@t3tools/contracts";
 
-import { GitCommandError, GitHubCliError, TextGenerationError } from "../Errors.ts";
+import {
+  GitCommandError,
+  GitHubCliError,
+  GitPullRequestCreateCompareFallbackError,
+  TextGenerationError,
+} from "../Errors.ts";
 import { type GitManagerShape } from "../Services/GitManager.ts";
 import {
   type GitHubCliShape,
@@ -24,6 +30,7 @@ interface FakeGhScenario {
   createdPrUrl?: string;
   defaultBranch?: string;
   failWith?: GitHubCliError;
+  failCreateWith?: GitHubCliError;
 }
 
 interface FakeGitTextGeneration {
@@ -176,11 +183,10 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
     const args = [...input.args];
     ghCalls.push(args.join(" "));
 
-    if (scenario.failWith) {
-      return Effect.fail(scenario.failWith);
-    }
-
     if (args[0] === "pr" && args[1] === "list") {
+      if (scenario.failWith) {
+        return Effect.fail(scenario.failWith);
+      }
       const stdout = (prListQueue.shift() ?? "[]") + "\n";
       return Effect.succeed({
         stdout,
@@ -192,6 +198,9 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
     }
 
     if (args[0] === "pr" && args[1] === "create") {
+      if (scenario.failCreateWith ?? scenario.failWith) {
+        return Effect.fail(scenario.failCreateWith ?? scenario.failWith!);
+      }
       return Effect.succeed({
         stdout:
           (scenario.createdPrUrl ?? "https://github.com/pingdotgg/codething-mvp/pull/101") + "\n",
@@ -203,6 +212,9 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
     }
 
     if (args[0] === "pr" && args[1] === "view") {
+      if (scenario.failWith) {
+        return Effect.fail(scenario.failWith);
+      }
       return Effect.succeed({
         stdout: "",
         stderr: "",
@@ -213,6 +225,9 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
     }
 
     if (args[0] === "repo" && args[1] === "view") {
+      if (scenario.failWith) {
+        return Effect.fail(scenario.failWith);
+      }
       return Effect.succeed({
         stdout: `${scenario.defaultBranch ?? "main"}\n`,
         stderr: "",
@@ -846,6 +861,83 @@ it.layer(GitManagerTestLayer)("GitManager", (it) => {
         ghCalls.some((call) => call.includes("pr create --base main --head feature-create-pr")),
       ).toBe(true);
       expect(ghCalls.some((call) => call.startsWith("pr view "))).toBe(false);
+    }),
+  );
+
+  it.effect("adds compare fallback metadata when gh pr create fails for a fork branch", () =>
+    Effect.gen(function* () {
+      const repoDir = yield* makeTempDir("t3code-git-manager-");
+      yield* initRepo(repoDir);
+      yield* runGit(repoDir, ["checkout", "-b", "feature-create-pr"]);
+      const remoteDir = yield* createBareRemote();
+      yield* runGit(repoDir, ["remote", "add", "origin", remoteDir]);
+      yield* runGit(repoDir, ["push", "-u", "origin", "feature-create-pr"]);
+      yield* runGit(repoDir, ["remote", "set-url", "origin", "git@github.com:notkainoa/t3code.git"]);
+      yield* runGit(repoDir, ["remote", "add", "upstream", "git@github.com:pingdotgg/t3code.git"]);
+      yield* runGit(repoDir, ["config", "branch.feature-create-pr.gh-merge-base", "main"]);
+
+      const { manager, ghCalls } = yield* makeManager({
+        ghScenario: {
+          prListSequence: ["[]"],
+          failCreateWith: new GitHubCliError({
+            operation: "execute",
+            detail: "GraphQL: Head sha can't be blank, Base sha can't be blank",
+          }),
+        },
+      });
+
+      const error = yield* runStackedAction(manager, {
+        cwd: repoDir,
+        action: "commit_push_pr",
+      }).pipe(Effect.flip);
+
+      expect(error).toBeInstanceOf(GitPullRequestCreateCompareFallbackError);
+      expect(error.message).toContain("Head sha can't be blank");
+      expect((error as GitPullRequestCreateCompareFallbackError).code).toBe(
+        GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+      );
+      expect((error as GitPullRequestCreateCompareFallbackError).data).toMatchObject({
+        baseBranch: "main",
+        headBranch: "feature-create-pr",
+        baseRepo: "pingdotgg/t3code",
+        headRepoOwner: "notkainoa",
+      });
+      expect((error as GitPullRequestCreateCompareFallbackError).data.compareUrl).toContain(
+        "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature-create-pr",
+      );
+      expect(ghCalls.some((call) => call.includes("pr create --base main --head feature-create-pr"))).toBe(
+        true,
+      );
+    }),
+  );
+
+  it.effect("keeps non-GitHub pr creation failures as plain errors", () =>
+    Effect.gen(function* () {
+      const repoDir = yield* makeTempDir("t3code-git-manager-");
+      yield* initRepo(repoDir);
+      yield* runGit(repoDir, ["checkout", "-b", "feature-create-pr"]);
+      const remoteDir = yield* createBareRemote();
+      yield* runGit(repoDir, ["remote", "add", "origin", remoteDir]);
+      yield* runGit(repoDir, ["push", "-u", "origin", "feature-create-pr"]);
+      yield* runGit(repoDir, ["config", "branch.feature-create-pr.gh-merge-base", "main"]);
+
+      const ghError = new GitHubCliError({
+        operation: "execute",
+        detail: "GraphQL: Head sha can't be blank, Base sha can't be blank",
+      });
+      const { manager } = yield* makeManager({
+        ghScenario: {
+          prListSequence: ["[]"],
+          failWith: ghError,
+        },
+      });
+
+      const error = yield* runStackedAction(manager, {
+        cwd: repoDir,
+        action: "commit_push_pr",
+      }).pipe(Effect.flip);
+
+      expect(error).toBe(ghError);
     }),
   );
 

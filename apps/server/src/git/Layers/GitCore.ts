@@ -826,6 +826,20 @@ const makeGitCore = Effect.gen(function* () {
       Effect.map((trimmed) => (trimmed.length > 0 ? trimmed : null)),
     );
 
+  const readRemoteUrl: GitCoreShape["readRemoteUrl"] = (cwd, remoteName) =>
+    executeGit("GitCore.readRemoteUrl", cwd, ["remote", "get-url", remoteName], {
+      allowNonZeroExit: true,
+      timeoutMs: 5_000,
+    }).pipe(
+      Effect.map((result) => {
+        if (result.code !== 0) {
+          return null;
+        }
+        const trimmed = result.stdout.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      }),
+    );
+
   const listBranches: GitCoreShape["listBranches"] = (input) =>
     Effect.gen(function* () {
       const branchRecencyPromise = readBranchRecency(input.cwd).pipe(
@@ -1195,6 +1209,7 @@ const makeGitCore = Effect.gen(function* () {
     pullCurrentBranch,
     readRangeContext,
     readConfigValue,
+    readRemoteUrl,
     listBranches,
     createWorktree,
     removeWorktree,

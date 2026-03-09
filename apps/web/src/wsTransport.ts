@@ -3,6 +3,19 @@ import { Cause, Schema } from "effect";
 
 type PushListener = (data: unknown) => void;
 
+export class WsRequestError<TData = unknown> extends Error {
+  override readonly name = "WsRequestError";
+  readonly code: string | undefined;
+  readonly data: TData | undefined;
+
+  constructor(input: { message: string; code?: string | undefined; data?: TData | undefined }) {
+    super(input.message);
+    Object.setPrototypeOf(this, new.target.prototype);
+    this.code = input.code;
+    this.data = input.data;
+  }
+}
+
 interface PendingRequest {
   resolve: (result: unknown) => void;
   reject: (error: Error) => void;
@@ -166,7 +179,13 @@ export class WsTransport {
     this.pending.delete(message.id);
 
     if (message.error) {
-      pending.reject(new Error(message.error.message));
+      pending.reject(
+        new WsRequestError({
+          message: message.error.message,
+          code: message.error.code,
+          data: message.error.data,
+        }),
+      );
     } else {
       pending.resolve(message.result);
     }

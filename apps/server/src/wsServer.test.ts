@@ -15,6 +15,7 @@ import {
   DEFAULT_TERMINAL_ID,
   EDITORS,
   EventId,
+  GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
   ORCHESTRATION_WS_CHANNELS,
   ORCHESTRATION_WS_METHODS,
   ProviderItemId,
@@ -48,7 +49,11 @@ import { Open, type OpenShape } from "./open";
 import { GitManager, type GitManagerShape } from "./git/Services/GitManager.ts";
 import type { GitCoreShape } from "./git/Services/GitCore.ts";
 import { GitCore } from "./git/Services/GitCore.ts";
-import { GitCommandError, GitManagerError } from "./git/Errors.ts";
+import {
+  GitCommandError,
+  GitManagerError,
+  GitPullRequestCreateCompareFallbackError,
+} from "./git/Errors.ts";
 import { MigrationError } from "@effect/sql-sqlite-bun/SqliteMigrator";
 import { AnalyticsService } from "./telemetry/Services/AnalyticsService.ts";
 
@@ -1689,6 +1694,55 @@ describe("WebSocket Server", () => {
     expect(runStackedAction).toHaveBeenCalledWith({
       cwd: "/test",
       action: "commit_push",
+    });
+  });
+
+  it("returns structured websocket error metadata for git.runStackedAction failures", async () => {
+    const runStackedAction = vi.fn(() =>
+      Effect.fail(
+        new GitPullRequestCreateCompareFallbackError({
+          operation: "GitManager.test.runStackedAction",
+          message: "GitHub CLI failed in execute: GraphQL: Head sha can't be blank",
+          data: {
+            compareUrl:
+              "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature%2Frename-open-pr-label?quick_pull=1",
+            baseBranch: "main",
+            headBranch: "feature/rename-open-pr-label",
+            baseRepo: "pingdotgg/t3code",
+            headRepoOwner: "notkainoa",
+          },
+        }),
+      ),
+    );
+    const gitManager: GitManagerShape = {
+      status: vi.fn(() => Effect.void as any),
+      runStackedAction,
+    };
+
+    server = await createTestServer({ cwd: "/test", gitManager });
+    const addr = server.address();
+    const port = typeof addr === "object" && addr !== null ? addr.port : 0;
+
+    const ws = await connectWs(port);
+    connections.push(ws);
+    await waitForMessage(ws);
+
+    const response = await sendRequest(ws, WS_METHODS.gitRunStackedAction, {
+      cwd: "/test",
+      action: "commit_push_pr",
+    });
+    expect(response.result).toBeUndefined();
+    expect(response.error).toEqual({
+      message: "GitHub CLI failed in execute: GraphQL: Head sha can't be blank",
+      code: GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+      data: {
+        compareUrl:
+          "https://github.com/pingdotgg/t3code/compare/main...notkainoa:feature%2Frename-open-pr-label?quick_pull=1",
+        baseBranch: "main",
+        headBranch: "feature/rename-open-pr-label",
+        baseRepo: "pingdotgg/t3code",
+        headRepoOwner: "notkainoa",
+      },
     });
   });
 

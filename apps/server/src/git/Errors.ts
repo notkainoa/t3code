@@ -1,3 +1,5 @@
+import type { GitPullRequestCreateCompareFallbackErrorData } from "@t3tools/contracts";
+import { GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE } from "@t3tools/contracts";
 import { Schema } from "effect";
 
 /**
@@ -57,6 +59,27 @@ export class GitManagerError extends Schema.TaggedErrorClass<GitManagerError>()(
   }
 }
 
+export class GitPullRequestCreateCompareFallbackError extends Error {
+  override readonly name = "GitPullRequestCreateCompareFallbackError";
+  readonly code = GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE;
+  readonly data: GitPullRequestCreateCompareFallbackErrorData;
+  readonly operation: string;
+  override readonly cause: unknown;
+
+  constructor(input: {
+    operation: string;
+    message: string;
+    data: GitPullRequestCreateCompareFallbackErrorData;
+    cause?: unknown;
+  }) {
+    super(input.message);
+    Object.setPrototypeOf(this, new.target.prototype);
+    this.operation = input.operation;
+    this.data = input.data;
+    this.cause = input.cause;
+  }
+}
+
 /**
  * GitManagerServiceError - Errors emitted by stacked Git workflow orchestration.
  */
@@ -64,4 +87,5 @@ export type GitManagerServiceError =
   | GitManagerError
   | GitCommandError
   | GitHubCliError
+  | GitPullRequestCreateCompareFallbackError
   | TextGenerationError;

@@ -202,6 +202,25 @@ function messageFromCause(cause: Cause.Cause<unknown>): string {
   return message.length > 0 ? message : Cause.pretty(cause);
 }
 
+function structuredErrorFromCause(
+  cause: Cause.Cause<unknown>,
+): { message: string; code?: string; data?: unknown } {
+  const squashed = Cause.squash(cause);
+  const message = messageFromCause(cause);
+
+  if (!squashed || typeof squashed !== "object") {
+    return { message };
+  }
+
+  const record = squashed as { code?: unknown; data?: unknown };
+  const code = typeof record.code === "string" && record.code.trim().length > 0 ? record.code : undefined;
+  return {
+    message,
+    ...(code ? { code } : {}),
+    ...(record.data !== undefined ? { data: record.data } : {}),
+  };
+}
+
 export type ServerCoreRuntimeServices =
   | OrchestrationEngineService
   | ProjectionSnapshotQuery
@@ -929,7 +948,7 @@ export const createServer = Effect.fn(function* (): Effect.fn.Return<
     if (result._tag === "Failure") {
       const errorResponse = yield* encodeResponse({
         id: request.value.id,
-        error: { message: messageFromCause(result.cause) },
+        error: structuredErrorFromCause(result.cause),
       });
       ws.send(errorResponse);
       return;

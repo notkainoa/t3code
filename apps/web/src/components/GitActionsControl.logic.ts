@@ -1,8 +1,14 @@
 import type {
+  GitPullRequestCreateCompareFallbackErrorData,
   GitRunStackedActionResult,
   GitStackedAction,
   GitStatusResult,
 } from "@t3tools/contracts";
+import {
+  GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE,
+  GitPullRequestCreateCompareFallbackErrorData as GitPullRequestCreateCompareFallbackErrorDataSchema,
+} from "@t3tools/contracts";
+import { Schema } from "effect";
 
 export type GitActionIconName = "commit" | "push" | "pr";
 
@@ -31,10 +37,25 @@ export interface DefaultBranchActionDialogCopy {
   continueLabel: string;
 }
 
+export interface GitActionFailureToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+export interface GitActionFailureToast {
+  title: string;
+  description: string;
+  action?: GitActionFailureToastAction;
+}
+
 export type DefaultBranchConfirmableAction = "commit_push" | "commit_push_pr";
 
 const SHORT_SHA_LENGTH = 7;
 const TOAST_DESCRIPTION_MAX = 72;
+const OPEN_COMPARE_LABEL = "Open Compare";
+const isGitPullRequestCreateCompareFallbackErrorData = Schema.is(
+  GitPullRequestCreateCompareFallbackErrorDataSchema,
+);
 
 function shortenSha(sha: string | undefined): string | null {
   if (!sha) return null;
@@ -108,6 +129,50 @@ export function summarizeGitResult(result: GitRunStackedActionResult): {
   }
 
   return { title: "Done" };
+}
+
+export function extractPullRequestCompareFallbackErrorData(
+  error: unknown,
+): GitPullRequestCreateCompareFallbackErrorData | null {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const record = error as { code?: unknown; data?: unknown };
+  if (record.code !== GIT_PR_CREATE_COMPARE_FALLBACK_ERROR_CODE) {
+    return null;
+  }
+
+  return isGitPullRequestCreateCompareFallbackErrorData(record.data) ? record.data : null;
+}
+
+export function resolveGitActionFailureToast(input: {
+  error: unknown;
+  onOpenCompare?: ((url: string) => Promise<void>) | undefined;
+  onOpenCompareError: (error: unknown) => void;
+}): GitActionFailureToast {
+  const description = input.error instanceof Error ? input.error.message : "An error occurred.";
+  const compareFallback = extractPullRequestCompareFallbackErrorData(input.error);
+  const onOpenCompare = input.onOpenCompare;
+  if (!compareFallback || !onOpenCompare) {
+    return {
+      title: "Action failed",
+      description,
+    };
+  }
+
+  return {
+    title: "Action failed",
+    description,
+    action: {
+      label: OPEN_COMPARE_LABEL,
+      onClick: () => {
+        void onOpenCompare(compareFallback.compareUrl).catch((error) => {
+          input.onOpenCompareError(error);
+        });
+      },
+    },
+  };
 }
 
 export function buildMenuItems(

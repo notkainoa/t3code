@@ -143,6 +143,8 @@ export const WebSocketResponse = Schema.Struct({
   error: Schema.optional(
     Schema.Struct({
       message: Schema.String,
+      code: Schema.optional(TrimmedNonEmptyString),
+      data: Schema.optional(Schema.Unknown),
     }),
   ),
 });
