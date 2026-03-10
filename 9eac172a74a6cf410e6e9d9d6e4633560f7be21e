@@ -1,0 +1,23 @@
+apps/web/public/mockServiceWorker.js
+  3e8b5cf69902bebb 10-13,15-17,19-21,23-24,27,30,33,37-38,41,43-45,48,50,55-56,59-60,63,70-71,74-75,78-79,83,86,89,91-92,95-96,102-103,105,112,115-117,125-126,131-132,138,141,146,163,166,178,181,184-185,189-190,195,200-201,214,219,224,226,228-229,232,234,238,243,251,255,259,267,270-271,274-275,279,290,294,297-298,302-304,317,320,325,327,348
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.9",
+  "base_commit_sha": "9eac172a74a6cf410e6e9d9d6e4633560f7be21e",
+  "prompts": {
+    "3e8b5cf69902bebb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ccad7-3d99-7c42-b036-29e4a5920c68",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 106,
+      "total_deletions": 93,
+      "accepted_lines": 97,
+      "overriden_lines": 0
+    }
+  }
+}
