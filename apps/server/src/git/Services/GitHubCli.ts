@@ -17,6 +17,8 @@ export interface GitHubPullRequestSummary {
   readonly url: string;
   readonly baseRefName: string;
   readonly headRefName: string;
+  readonly headRepositoryOwnerLogin: string | null;
+  readonly headRepositoryName: string | null;
 }
 
 /**

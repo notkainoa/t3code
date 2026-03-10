@@ -236,22 +236,22 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
       listOpenPullRequests: (input) =>
         execute({
           cwd: input.cwd,
-          args: [
-            "pr",
-            "list",
-            "--head",
-            input.headBranch,
-            "--state",
-            "open",
-            "--limit",
-            String(input.limit ?? 1),
-            "--json",
-            "number,title,url,baseRefName,headRefName",
-          ],
-        }).pipe(
-          Effect.map(
-            (result) => JSON.parse(result.stdout) as ReadonlyArray<GitHubPullRequestSummary>,
-          ),
+        args: [
+          "pr",
+          "list",
+          "--head",
+          input.headBranch,
+          "--state",
+          "open",
+          "--limit",
+          String(input.limit ?? 1),
+          "--json",
+          "number,title,url,baseRefName,headRefName,headRepositoryOwner,headRepository",
+        ],
+      }).pipe(
+        Effect.map(
+          (result) => JSON.parse(result.stdout) as ReadonlyArray<GitHubPullRequestSummary>,
+        ),
         ),
       createPullRequest: (input) =>
         execute({
@@ -359,6 +359,41 @@ it.layer(GitManagerTestLayer)("GitManager", (it) => {
         headBranch: "feature/status-open-pr",
         state: "open",
       });
+    }),
+  );
+
+  it.effect("status ignores fork PRs that only share the same head branch name", () =>
+    Effect.gen(function* () {
+      const repoDir = yield* makeTempDir("t3code-git-manager-");
+      yield* initRepo(repoDir);
+      const remoteDir = yield* createBareRemote();
+      yield* runGit(repoDir, ["remote", "add", "origin", remoteDir]);
+      yield* runGit(repoDir, ["push", "-u", "origin", "main"]);
+      yield* runGit(repoDir, ["remote", "set-url", "origin", "https://github.com/pingdotgg/t3code.git"]);
+
+      const { manager } = yield* makeManager({
+        ghScenario: {
+          prListSequence: [
+            JSON.stringify([
+              {
+                number: 720,
+                title: "Display application version in sidebar and settings",
+                url: "https://github.com/pingdotgg/t3code/pull/720",
+                baseRefName: "main",
+                headRefName: "main",
+                headRepositoryOwner: { login: "WeldFire" },
+                headRepository: { name: "t3code" },
+                state: "OPEN",
+                updatedAt: "2026-03-09T12:00:00Z",
+              },
+            ]),
+          ],
+        },
+      });
+
+      const status = yield* manager.status({ cwd: repoDir });
+      expect(status.branch).toBe("main");
+      expect(status.pr).toBeNull();
     }),
   );
 

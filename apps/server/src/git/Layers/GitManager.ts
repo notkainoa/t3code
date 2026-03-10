@@ -15,6 +15,8 @@ interface OpenPrInfo {
   url: string;
   baseRefName: string;
   headRefName: string;
+  headRepositoryOwnerLogin: string | null;
+  headRepositoryName: string | null;
 }
 
 interface PullRequestInfo extends OpenPrInfo {
@@ -34,6 +36,20 @@ function parsePullRequestList(raw: unknown): PullRequestInfo[] {
     const url = record.url;
     const baseRefName = record.baseRefName;
     const headRefName = record.headRefName;
+    const headRepositoryOwner = record.headRepositoryOwner;
+    const headRepository = record.headRepository;
+    const headRepositoryOwnerLogin =
+      headRepositoryOwner &&
+      typeof headRepositoryOwner === "object" &&
+      typeof (headRepositoryOwner as Record<string, unknown>).login === "string"
+        ? ((headRepositoryOwner as Record<string, unknown>).login as string)
+        : null;
+    const headRepositoryName =
+      headRepository &&
+      typeof headRepository === "object" &&
+      typeof (headRepository as Record<string, unknown>).name === "string"
+        ? ((headRepository as Record<string, unknown>).name as string)
+        : null;
     const state = record.state;
     const mergedAt = record.mergedAt;
     const updatedAt = record.updatedAt;
@@ -66,11 +82,53 @@ function parsePullRequestList(raw: unknown): PullRequestInfo[] {
       url,
       baseRefName,
       headRefName,
+      headRepositoryOwnerLogin,
+      headRepositoryName,
       state: normalizedState,
       updatedAt: typeof updatedAt === "string" && updatedAt.trim().length > 0 ? updatedAt : null,
     });
   }
   return parsed;
+}
+
+interface GitHubRepositoryRef {
+  owner: string;
+  name: string;
+}
+
+function extractRemoteNameFromUpstreamRef(upstreamRef: string | null): string | null {
+  if (!upstreamRef) return null;
+  const separatorIndex = upstreamRef.indexOf("/");
+  if (separatorIndex <= 0) return null;
+  const remoteName = upstreamRef.slice(0, separatorIndex).trim();
+  return remoteName.length > 0 ? remoteName : null;
+}
+
+function parseGitHubRepositoryRef(remoteUrl: string | null): GitHubRepositoryRef | null {
+  if (!remoteUrl) return null;
+
+  const trimmed = remoteUrl.trim();
+  if (trimmed.length === 0) return null;
+
+  const match =
+    trimmed.match(/^(?:https?:\/\/|ssh:\/\/git@|git:\/\/)(?:[^@/]+@)?github\.com[:/](.+)$/i) ??
+    trimmed.match(/^git@github\.com:(.+)$/i);
+  const repositoryPath = match?.[1]?.replace(/\/+$/g, "").replace(/\.git$/i, "") ?? "";
+  const [ownerRaw = "", nameRaw = ""] = repositoryPath.split("/", 2);
+  const owner = ownerRaw.trim();
+  const name = nameRaw.trim();
+  if (owner.length === 0 || name.length === 0) {
+    return null;
+  }
+  return { owner, name };
+}
+
+function matchesHeadRepository(pr: OpenPrInfo, repository: GitHubRepositoryRef | null): boolean {
+  if (!repository) return true;
+  if (!pr.headRepositoryOwnerLogin || !pr.headRepositoryName) return true;
+  return (
+    pr.headRepositoryOwnerLogin === repository.owner && pr.headRepositoryName === repository.name
+  );
 }
 
 function gitManagerError(operation: string, detail: string, cause?: unknown): GitManagerError {
@@ -184,16 +242,43 @@ export const makeGitManager = Effect.gen(function* () {
 
   const tempDir = process.env.TMPDIR ?? process.env.TEMP ?? process.env.TMP ?? "/tmp";
 
-  const findOpenPr = (cwd: string, branch: string) =>
+  const resolveCurrentHeadRepository = (
+    cwd: string,
+    branch: string,
+    upstreamRef: string | null,
+  ) =>
+    Effect.gen(function* () {
+      const remoteCandidates = [
+        yield* gitCore.readConfigValue(cwd, `branch.${branch}.pushRemote`),
+        extractRemoteNameFromUpstreamRef(upstreamRef),
+        yield* gitCore.readConfigValue(cwd, `branch.${branch}.remote`),
+        "origin",
+      ].filter((value, index, values): value is string => {
+        if (!value) return false;
+        return values.indexOf(value) === index;
+      });
+
+      for (const remoteName of remoteCandidates) {
+        const remoteUrl = yield* gitCore.readConfigValue(cwd, `remote.${remoteName}.url`);
+        const repository = parseGitHubRepositoryRef(remoteUrl);
+        if (repository) {
+          return repository;
+        }
+      }
+
+      return null;
+    });
+
+  const findOpenPr = (cwd: string, branch: string, repository: GitHubRepositoryRef | null) =>
     gitHubCli
       .listOpenPullRequests({
         cwd,
         headBranch: branch,
-        limit: 1,
+        limit: 20,
       })
       .pipe(
         Effect.map((prs) => {
-          const [first] = prs;
+          const first = prs.find((pr) => matchesHeadRepository(pr, repository));
           if (!first) {
             return null;
           }
@@ -203,13 +288,19 @@ export const makeGitManager = Effect.gen(function* () {
             url: first.url,
             baseRefName: first.baseRefName,
             headRefName: first.headRefName,
+            headRepositoryOwnerLogin: first.headRepositoryOwnerLogin,
+            headRepositoryName: first.headRepositoryName,
             state: "open",
             updatedAt: null,
           } satisfies PullRequestInfo;
         }),
       );
 
-  const findLatestPr = (cwd: string, branch: string) =>
+  const findLatestPr = (
+    cwd: string,
+    branch: string,
+    repository: GitHubRepositoryRef | null,
+  ) =>
     Effect.gen(function* () {
       const stdout = yield* gitHubCli
         .execute({
@@ -224,7 +315,7 @@ export const makeGitManager = Effect.gen(function* () {
             "--limit",
             "20",
             "--json",
-            "number,title,url,baseRefName,headRefName,state,mergedAt,updatedAt",
+            "number,title,url,baseRefName,headRefName,headRepositoryOwner,headRepository,state,mergedAt,updatedAt",
           ],
         })
         .pipe(Effect.map((result) => result.stdout));
@@ -240,11 +331,13 @@ export const makeGitManager = Effect.gen(function* () {
           gitManagerError("findLatestPr", "GitHub CLI returned invalid PR list JSON.", cause),
       });
 
-      const parsed = parsePullRequestList(parsedJson).toSorted((a, b) => {
-        const left = a.updatedAt ? Date.parse(a.updatedAt) : 0;
-        const right = b.updatedAt ? Date.parse(b.updatedAt) : 0;
-        return right - left;
-      });
+      const parsed = parsePullRequestList(parsedJson)
+        .filter((pr) => matchesHeadRepository(pr, repository))
+        .toSorted((a, b) => {
+          const left = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+          const right = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+          return right - left;
+        });
 
       const latestOpenPr = parsed.find((pr) => pr.state === "open");
       if (latestOpenPr) {
@@ -361,7 +454,8 @@ export const makeGitManager = Effect.gen(function* () {
         );
       }
 
-      const existing = yield* findOpenPr(cwd, branch);
+      const repository = yield* resolveCurrentHeadRepository(cwd, branch, details.upstreamRef);
+      const existing = yield* findOpenPr(cwd, branch, repository);
       if (existing) {
         return {
           status: "opened_existing" as const,
@@ -403,7 +497,7 @@ export const makeGitManager = Effect.gen(function* () {
         })
         .pipe(Effect.ensuring(fileSystem.remove(bodyFile).pipe(Effect.catch(() => Effect.void))));
 
-      const created = yield* findOpenPr(cwd, branch);
+      const created = yield* findOpenPr(cwd, branch, repository);
       if (!created) {
         return {
           status: "created" as const,
@@ -425,10 +519,14 @@ export const makeGitManager = Effect.gen(function* () {
 
   const status: GitManagerShape["status"] = Effect.fnUntraced(function* (input) {
     const details = yield* gitCore.statusDetails(input.cwd);
+    const repository =
+      details.branch !== null
+        ? yield* resolveCurrentHeadRepository(input.cwd, details.branch, details.upstreamRef)
+        : null;
 
     const pr =
       details.branch !== null
-        ? yield* findLatestPr(input.cwd, details.branch).pipe(
+        ? yield* findLatestPr(input.cwd, details.branch, repository).pipe(
             Effect.map((latest) => (latest ? toStatusPr(latest) : null)),
             Effect.catch(() => Effect.succeed(null)),
           )

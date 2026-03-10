@@ -4,16 +4,16 @@ import type {
   GitStatusResult,
 } from "@t3tools/contracts";
 
-export type GitActionIconName = "commit" | "push" | "pr";
+export type GitActionIconName = "pull" | "commit" | "push" | "pr";
 
 export type GitDialogAction = "commit" | "push" | "create_pr";
 
 export interface GitActionMenuItem {
-  id: "commit" | "push" | "pr";
+  id: "pull" | "commit" | "push" | "pr";
   label: string;
   disabled: boolean;
   icon: GitActionIconName;
-  kind: "open_dialog" | "open_pr";
+  kind: "open_dialog" | "run_pull" | "open_pr";
   dialogAction?: GitDialogAction;
 }
 
@@ -114,24 +114,32 @@ export function buildMenuItems(
   gitStatus: GitStatusResult | null,
   isBusy: boolean,
 ): GitActionMenuItem[] {
-  if (!gitStatus) return [];
-
-  const hasBranch = gitStatus.branch !== null;
-  const hasChanges = gitStatus.hasWorkingTreeChanges;
-  const hasOpenPr = gitStatus.pr?.state === "open";
-  const isBehind = gitStatus.behindCount > 0;
+  const hasBranch = gitStatus?.branch !== null && gitStatus?.branch !== undefined;
+  const hasChanges = gitStatus?.hasWorkingTreeChanges ?? false;
+  const hasOpenPr = gitStatus?.pr?.state === "open";
+  const isAhead = (gitStatus?.aheadCount ?? 0) > 0;
+  const isBehind = (gitStatus?.behindCount ?? 0) > 0;
+  const hasUpstream = gitStatus?.hasUpstream ?? false;
+  const canPull = !isBusy && hasBranch && hasUpstream && !hasChanges && isBehind && !isAhead;
   const canCommit = !isBusy && hasChanges;
-  const canPush = !isBusy && hasBranch && !hasChanges && !isBehind && gitStatus.aheadCount > 0;
+  const canPush = !isBusy && hasBranch && !hasChanges && !isBehind && isAhead;
   const canCreatePr =
     !isBusy &&
     hasBranch &&
     !hasChanges &&
     !hasOpenPr &&
-    gitStatus.aheadCount > 0 &&
+    isAhead &&
     !isBehind;
   const canOpenPr = !isBusy && hasOpenPr;
 
   return [
+    {
+      id: "pull",
+      label: "Pull",
+      disabled: !canPull,
+      icon: "pull",
+      kind: "run_pull",
+    },
     {
       id: "commit",
       label: "Commit",
@@ -165,6 +173,82 @@ export function buildMenuItems(
           dialogAction: "create_pr",
         },
   ];
+}
+
+export function getMenuActionDisabledReason(
+  item: GitActionMenuItem,
+  gitStatus: GitStatusResult | null,
+  isBusy: boolean,
+): string | null {
+  if (!item.disabled) return null;
+  if (isBusy) return "Git action in progress.";
+  if (!gitStatus) return "Git status is unavailable.";
+
+  const hasBranch = gitStatus.branch !== null;
+  const hasChanges = gitStatus.hasWorkingTreeChanges;
+  const hasOpenPr = gitStatus.pr?.state === "open";
+  const isAhead = gitStatus.aheadCount > 0;
+  const isBehind = gitStatus.behindCount > 0;
+  const isDiverged = isAhead && isBehind;
+
+  if (item.id === "pull") {
+    if (!hasBranch) {
+      return "Detached HEAD: checkout a branch before pulling.";
+    }
+    if (!gitStatus.hasUpstream) {
+      return "Current branch has no upstream configured.";
+    }
+    if (hasChanges) {
+      return "Commit or stash local changes before pulling.";
+    }
+    if (isDiverged) {
+      return "Branch has diverged from upstream. Rebase/merge first.";
+    }
+    if (!isBehind) {
+      return "Branch is already up to date.";
+    }
+    return "Pull is currently unavailable.";
+  }
+
+  if (item.id === "commit") {
+    if (!hasChanges) {
+      return "Worktree is clean. Make changes before committing.";
+    }
+    return "Commit is currently unavailable.";
+  }
+
+  if (item.id === "push") {
+    if (!hasBranch) {
+      return "Detached HEAD: checkout a branch before pushing.";
+    }
+    if (hasChanges) {
+      return "Commit or stash local changes before pushing.";
+    }
+    if (isBehind) {
+      return "Branch is behind upstream. Pull/rebase before pushing.";
+    }
+    if (!isAhead) {
+      return "No local commits to push.";
+    }
+    return "Push is currently unavailable.";
+  }
+
+  if (hasOpenPr) {
+    return "View PR is currently unavailable.";
+  }
+  if (!hasBranch) {
+    return "Detached HEAD: checkout a branch before creating a PR.";
+  }
+  if (hasChanges) {
+    return "Commit local changes before creating a PR.";
+  }
+  if (!isAhead) {
+    return "No local commits to include in a PR.";
+  }
+  if (isBehind) {
+    return "Branch is behind upstream. Pull/rebase before creating a PR.";
+  }
+  return "Create PR is currently unavailable.";
 }
 
 export function resolveQuickAction(

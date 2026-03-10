@@ -1,11 +1,12 @@
 import type { GitStackedAction, GitStatusResult, ThreadId } from "@t3tools/contracts";
 import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDownIcon, CloudUploadIcon, GitCommitIcon, InfoIcon } from "lucide-react";
+import { ChevronDownIcon, CloudDownloadIcon, CloudUploadIcon, GitCommitIcon, InfoIcon } from "lucide-react";
 import { GitHubIcon } from "./Icons";
 import {
   buildGitActionProgressStages,
   buildMenuItems,
+  getMenuActionDisabledReason,
   type GitActionIconName,
   type GitActionMenuItem,
   type GitQuickAction,
@@ -59,67 +60,12 @@ interface PendingDefaultBranchAction {
 
 type GitActionToastId = ReturnType<typeof toastManager.add>;
 
-function getMenuActionDisabledReason(
-  item: GitActionMenuItem,
-  gitStatus: GitStatusResult | null,
-  isBusy: boolean,
-): string | null {
-  if (!item.disabled) return null;
-  if (isBusy) return "Git action in progress.";
-  if (!gitStatus) return "Git status is unavailable.";
-
-  const hasBranch = gitStatus.branch !== null;
-  const hasChanges = gitStatus.hasWorkingTreeChanges;
-  const hasOpenPr = gitStatus.pr?.state === "open";
-  const isAhead = gitStatus.aheadCount > 0;
-  const isBehind = gitStatus.behindCount > 0;
-
-  if (item.id === "commit") {
-    if (!hasChanges) {
-      return "Worktree is clean. Make changes before committing.";
-    }
-    return "Commit is currently unavailable.";
-  }
-
-  if (item.id === "push") {
-    if (!hasBranch) {
-      return "Detached HEAD: checkout a branch before pushing.";
-    }
-    if (hasChanges) {
-      return "Commit or stash local changes before pushing.";
-    }
-    if (isBehind) {
-      return "Branch is behind upstream. Pull/rebase before pushing.";
-    }
-    if (!isAhead) {
-      return "No local commits to push.";
-    }
-    return "Push is currently unavailable.";
-  }
-
-  if (hasOpenPr) {
-    return "View PR is currently unavailable.";
-  }
-  if (!hasBranch) {
-    return "Detached HEAD: checkout a branch before creating a PR.";
-  }
-  if (hasChanges) {
-    return "Commit local changes before creating a PR.";
-  }
-  if (!isAhead) {
-    return "No local commits to include in a PR.";
-  }
-  if (isBehind) {
-    return "Branch is behind upstream. Pull/rebase before creating a PR.";
-  }
-  return "Create PR is currently unavailable.";
-}
-
 const COMMIT_DIALOG_TITLE = "Commit changes";
 const COMMIT_DIALOG_DESCRIPTION =
   "Review and confirm your commit. Leave the message blank to auto-generate one.";
 
 function GitActionItemIcon({ icon }: { icon: GitActionIconName }) {
+  if (icon === "pull") return <CloudDownloadIcon />;
   if (icon === "commit") return <GitCommitIcon />;
   if (icon === "push") return <CloudUploadIcon />;
   return <GitHubIcon />;
@@ -128,7 +74,7 @@ function GitActionItemIcon({ icon }: { icon: GitActionIconName }) {
 function GitQuickActionIcon({ quickAction }: { quickAction: GitQuickAction }) {
   const iconClassName = "size-3.5";
   if (quickAction.kind === "open_pr") return <GitHubIcon className={iconClassName} />;
-  if (quickAction.kind === "run_pull") return <InfoIcon className={iconClassName} />;
+  if (quickAction.kind === "run_pull") return <CloudDownloadIcon className={iconClassName} />;
   if (quickAction.kind === "run_action") {
     if (quickAction.action === "commit") return <GitCommitIcon className={iconClassName} />;
     if (quickAction.action === "commit_push") return <CloudUploadIcon className={iconClassName} />;
@@ -476,30 +422,34 @@ export default function GitActionsControl({ gitCwd, activeThreadId }: GitActions
     });
   }, [isCommitDialogOpen, dialogCommitMessage, checkoutNewBranchAndRunAction]);
 
+  const runPullWithToast = useCallback(() => {
+    const promise = pullMutation.mutateAsync();
+    toastManager.promise(promise, {
+      loading: { title: "Pulling...", data: threadToastData },
+      success: (result) => ({
+        title: result.status === "pulled" ? "Pulled" : "Already up to date",
+        description:
+          result.status === "pulled"
+            ? `Updated ${result.branch} from ${result.upstreamBranch ?? "upstream"}`
+            : `${result.branch} is already synchronized.`,
+        data: threadToastData,
+      }),
+      error: (err) => ({
+        title: "Pull failed",
+        description: err instanceof Error ? err.message : "An error occurred.",
+        data: threadToastData,
+      }),
+    });
+    void promise.catch(() => undefined);
+  }, [pullMutation, threadToastData]);
+
   const runQuickAction = useCallback(() => {
     if (quickAction.kind === "open_pr") {
       void openExistingPr();
       return;
     }
     if (quickAction.kind === "run_pull") {
-      const promise = pullMutation.mutateAsync();
-      toastManager.promise(promise, {
-        loading: { title: "Pulling...", data: threadToastData },
-        success: (result) => ({
-          title: result.status === "pulled" ? "Pulled" : "Already up to date",
-          description:
-            result.status === "pulled"
-              ? `Updated ${result.branch} from ${result.upstreamBranch ?? "upstream"}`
-              : `${result.branch} is already synchronized.`,
-          data: threadToastData,
-        }),
-        error: (err) => ({
-          title: "Pull failed",
-          description: err instanceof Error ? err.message : "An error occurred.",
-          data: threadToastData,
-        }),
-      });
-      void promise.catch(() => undefined);
+      runPullWithToast();
       return;
     }
     if (quickAction.kind === "show_hint") {
@@ -514,13 +464,17 @@ export default function GitActionsControl({ gitCwd, activeThreadId }: GitActions
     if (quickAction.action) {
       void runGitActionWithToast({ action: quickAction.action });
     }
-  }, [openExistingPr, pullMutation, quickAction, runGitActionWithToast, threadToastData]);
+  }, [openExistingPr, quickAction, runGitActionWithToast, runPullWithToast, threadToastData]);
 
   const openDialogForMenuItem = useCallback(
     (item: GitActionMenuItem) => {
       if (item.disabled) return;
       if (item.kind === "open_pr") {
         void openExistingPr();
+        return;
+      }
+      if (item.kind === "run_pull") {
+        runPullWithToast();
         return;
       }
       if (item.dialogAction === "push") {
@@ -533,7 +487,7 @@ export default function GitActionsControl({ gitCwd, activeThreadId }: GitActions
       }
       setIsCommitDialogOpen(true);
     },
-    [openExistingPr, runGitActionWithToast, setIsCommitDialogOpen],
+    [openExistingPr, runGitActionWithToast, runPullWithToast, setIsCommitDialogOpen],
   );
 
   const runDialogAction = useCallback(() => {
@@ -684,15 +638,6 @@ export default function GitActionsControl({ gitCwd, activeThreadId }: GitActions
                   Detached HEAD: create and checkout a branch to enable push and PR actions.
                 </p>
               )}
-              {gitStatusForActions &&
-                gitStatusForActions.branch !== null &&
-                !gitStatusForActions.hasWorkingTreeChanges &&
-                gitStatusForActions.behindCount > 0 &&
-                gitStatusForActions.aheadCount === 0 && (
-                  <p className="px-2 py-1.5 text-xs text-warning">
-                    Behind upstream. Pull/rebase first.
-                  </p>
-                )}
               {isGitStatusOutOfSync && (
                 <p className="px-2 py-1.5 text-xs text-muted-foreground">
                   Refreshing git status...

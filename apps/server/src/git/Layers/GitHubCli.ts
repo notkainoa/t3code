@@ -50,6 +50,8 @@ function parseOpenPullRequests(raw: string): ReadonlyArray<{
   url: string;
   baseRefName: string;
   headRefName: string;
+  headRepositoryOwnerLogin: string | null;
+  headRepositoryName: string | null;
 }> {
   const trimmed = raw.trim();
   if (trimmed.length === 0) return [];
@@ -65,6 +67,8 @@ function parseOpenPullRequests(raw: string): ReadonlyArray<{
     url: string;
     baseRefName: string;
     headRefName: string;
+    headRepositoryOwnerLogin: string | null;
+    headRepositoryName: string | null;
   }> = [];
   for (const entry of parsed) {
     if (!entry || typeof entry !== "object") {
@@ -76,6 +80,20 @@ function parseOpenPullRequests(raw: string): ReadonlyArray<{
     const url = record.url;
     const baseRefName = record.baseRefName;
     const headRefName = record.headRefName;
+    const headRepositoryOwner = record.headRepositoryOwner;
+    const headRepository = record.headRepository;
+    const headRepositoryOwnerLogin =
+      headRepositoryOwner &&
+      typeof headRepositoryOwner === "object" &&
+      typeof (headRepositoryOwner as Record<string, unknown>).login === "string"
+        ? ((headRepositoryOwner as Record<string, unknown>).login as string)
+        : null;
+    const headRepositoryName =
+      headRepository &&
+      typeof headRepository === "object" &&
+      typeof (headRepository as Record<string, unknown>).name === "string"
+        ? ((headRepository as Record<string, unknown>).name as string)
+        : null;
     if (
       typeof number !== "number" ||
       !Number.isInteger(number) ||
@@ -93,6 +111,8 @@ function parseOpenPullRequests(raw: string): ReadonlyArray<{
       url,
       baseRefName,
       headRefName,
+      headRepositoryOwnerLogin,
+      headRepositoryName,
     });
   }
 
@@ -125,7 +145,7 @@ const makeGitHubCli = Effect.sync(() => {
           "--limit",
           String(input.limit ?? 1),
           "--json",
-          "number,title,url,baseRefName,headRefName",
+          "number,title,url,baseRefName,headRefName,headRepositoryOwner,headRepository",
         ],
       }).pipe(
         Effect.map((result) => result.stdout),
