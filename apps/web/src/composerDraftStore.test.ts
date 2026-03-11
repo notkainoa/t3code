@@ -338,6 +338,22 @@ describe("composerDraftStore project draft thread mapping", () => {
     });
   });
 
+  it("stores branch-only setup without forcing worktree mode", () => {
+    const store = useComposerDraftStore.getState();
+    store.setProjectDraftThreadId(projectId, threadId, {
+      branch: "feature/base",
+      worktreePath: null,
+      envMode: "local",
+    });
+
+    expect(useComposerDraftStore.getState().getDraftThread(threadId)).toMatchObject({
+      projectId,
+      branch: "feature/base",
+      worktreePath: null,
+      envMode: "local",
+    });
+  });
+
   it("uses the app default env mode for new draft threads", () => {
     testLocalStorage.setItem(
       APP_SETTINGS_STORAGE_KEY,

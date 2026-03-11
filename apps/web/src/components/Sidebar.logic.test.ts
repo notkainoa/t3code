@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   hasUnseenCompletion,
+  isReusableDraftResettable,
   resolveReusedDraftContextForNewThread,
   resolveThreadStatusPill,
 } from "./Sidebar.logic";
@@ -128,11 +129,63 @@ describe("resolveThreadStatusPill", () => {
 });
 
 describe("resolveReusedDraftContextForNewThread", () => {
-  it("resets an empty reused draft to the current default env mode", () => {
+  it("treats a pristine local blank draft as resettable", () => {
+    expect(
+      isReusableDraftResettable({
+        hasComposerDraftContent: false,
+        draftThread: {
+          branch: null,
+          worktreePath: null,
+          envMode: "local",
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it("does not reset a draft with only branch setup", () => {
+    expect(
+      isReusableDraftResettable({
+        hasComposerDraftContent: false,
+        draftThread: {
+          branch: "feature/base",
+          worktreePath: null,
+          envMode: "local",
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it("does not reset a draft with explicit worktree mode before worktree creation", () => {
+    expect(
+      isReusableDraftResettable({
+        hasComposerDraftContent: false,
+        draftThread: {
+          branch: null,
+          worktreePath: null,
+          envMode: "worktree",
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it("does not reset a draft that already has composer content", () => {
+    expect(
+      isReusableDraftResettable({
+        hasComposerDraftContent: true,
+        draftThread: {
+          branch: null,
+          worktreePath: null,
+          envMode: "local",
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it("resets a reusable blank draft to the current default env mode", () => {
     expect(
       resolveReusedDraftContextForNewThread({
         defaultNewThreadEnvMode: "worktree",
-        isComposerDraftEmpty: true,
+        isReusableDraftResettable: true,
       }),
     ).toEqual({
       branch: null,
@@ -145,7 +198,7 @@ describe("resolveReusedDraftContextForNewThread", () => {
     expect(
       resolveReusedDraftContextForNewThread({
         defaultNewThreadEnvMode: "worktree",
-        isComposerDraftEmpty: false,
+        isReusableDraftResettable: false,
       }),
     ).toBeNull();
   });
@@ -159,10 +212,28 @@ describe("resolveReusedDraftContextForNewThread", () => {
           envMode: "local",
         },
         defaultNewThreadEnvMode: "worktree",
-        isComposerDraftEmpty: true,
+        isReusableDraftResettable: true,
       }),
     ).toEqual({
       branch: "feature/test",
+      worktreePath: null,
+      envMode: "local",
+    });
+  });
+
+  it("uses explicit local overrides to clear stale branch metadata", () => {
+    expect(
+      resolveReusedDraftContextForNewThread({
+        options: {
+          branch: null,
+          worktreePath: null,
+          envMode: "local",
+        },
+        defaultNewThreadEnvMode: "worktree",
+        isReusableDraftResettable: false,
+      }),
+    ).toEqual({
+      branch: null,
       worktreePath: null,
       envMode: "local",
     });

@@ -71,7 +71,11 @@ import {
 } from "./ui/sidebar";
 import { formatWorktreePathForDisplay, getOrphanedWorktreePathForThread } from "../worktreeCleanup";
 import { isNonEmpty as isNonEmptyString } from "effect/String";
-import { resolveReusedDraftContextForNewThread, resolveThreadStatusPill } from "./Sidebar.logic";
+import {
+  isReusableDraftResettable,
+  resolveReusedDraftContextForNewThread,
+  resolveThreadStatusPill,
+} from "./Sidebar.logic";
 
 const EMPTY_KEYBINDINGS: ResolvedKeybindingsConfig = [];
 const THREAD_PREVIEW_LIMIT = 6;
@@ -361,12 +365,15 @@ export default function Sidebar() {
       const storedDraftThread = getDraftThreadByProjectId(projectId);
       if (storedDraftThread) {
         return (async () => {
+          const storedComposerDraft =
+            useComposerDraftStore.getState().draftsByThreadId[storedDraftThread.threadId] ?? null;
           const draftContextPatch = resolveReusedDraftContextForNewThread({
             options,
             defaultNewThreadEnvMode,
-            isComposerDraftEmpty: isComposerThreadDraftEmpty(
-              useComposerDraftStore.getState().draftsByThreadId[storedDraftThread.threadId] ?? null,
-            ),
+            isReusableDraftResettable: isReusableDraftResettable({
+              hasComposerDraftContent: !isComposerThreadDraftEmpty(storedComposerDraft),
+              draftThread: storedDraftThread,
+            }),
           });
           if (draftContextPatch) {
             setDraftThreadContext(storedDraftThread.threadId, draftContextPatch);
@@ -385,12 +392,15 @@ export default function Sidebar() {
 
       const activeDraftThread = routeThreadId ? getDraftThread(routeThreadId) : null;
       if (activeDraftThread && routeThreadId && activeDraftThread.projectId === projectId) {
+        const activeComposerDraft =
+          useComposerDraftStore.getState().draftsByThreadId[routeThreadId] ?? null;
         const draftContextPatch = resolveReusedDraftContextForNewThread({
           options,
           defaultNewThreadEnvMode,
-          isComposerDraftEmpty: isComposerThreadDraftEmpty(
-            useComposerDraftStore.getState().draftsByThreadId[routeThreadId] ?? null,
-          ),
+          isReusableDraftResettable: isReusableDraftResettable({
+            hasComposerDraftContent: !isComposerThreadDraftEmpty(activeComposerDraft),
+            draftThread: activeDraftThread,
+          }),
         });
         if (draftContextPatch) {
           setDraftThreadContext(routeThreadId, draftContextPatch);
@@ -812,6 +822,7 @@ export default function Sidebar() {
         if (!projectId) return;
         event.preventDefault();
         void handleNewThread(projectId, {
+          branch: null,
           worktreePath: null,
           envMode: "local",
         });

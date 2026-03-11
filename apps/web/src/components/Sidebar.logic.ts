@@ -1,5 +1,5 @@
 import type { Thread } from "../types";
-import type { DraftThreadEnvMode } from "../composerDraftStore";
+import type { DraftThreadEnvMode, DraftThreadState } from "../composerDraftStore";
 import { findLatestProposedPlan, isLatestTurnSettled } from "../session-logic";
 
 export interface ThreadStatusPill {
@@ -15,22 +15,32 @@ export interface ThreadStatusPill {
   pulse: boolean;
 }
 
+interface ReusedDraftContextOptions {
+  branch?: string | null;
+  worktreePath?: string | null;
+  envMode?: DraftThreadEnvMode;
+}
+
+export function isReusableDraftResettable(input: {
+  hasComposerDraftContent: boolean;
+  draftThread: Pick<DraftThreadState, "branch" | "worktreePath" | "envMode">;
+}): boolean {
+  return (
+    !input.hasComposerDraftContent &&
+    input.draftThread.branch === null &&
+    input.draftThread.worktreePath === null &&
+    input.draftThread.envMode === "local"
+  );
+}
+
 export function resolveReusedDraftContextForNewThread(input: {
   options?:
-    | {
-        branch?: string | null;
-        worktreePath?: string | null;
-        envMode?: DraftThreadEnvMode;
-      }
+    | ReusedDraftContextOptions
     | undefined;
   defaultNewThreadEnvMode: DraftThreadEnvMode;
-  isComposerDraftEmpty: boolean;
+  isReusableDraftResettable: boolean;
 }):
-  | {
-      branch?: string | null;
-      worktreePath?: string | null;
-      envMode?: DraftThreadEnvMode;
-    }
+  | ReusedDraftContextOptions
   | null {
   const hasBranchOption = input.options?.branch !== undefined;
   const hasWorktreePathOption = input.options?.worktreePath !== undefined;
@@ -46,7 +56,7 @@ export function resolveReusedDraftContextForNewThread(input: {
     };
   }
 
-  if (!input.isComposerDraftEmpty) {
+  if (!input.isReusableDraftResettable) {
     return null;
   }
 
