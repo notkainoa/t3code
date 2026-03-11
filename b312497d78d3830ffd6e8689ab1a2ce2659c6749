@@ -1,0 +1,29 @@
+apps/web/src/components/Sidebar.logic.test.ts
+  be46e14639b77567 5,132,134-184,188,201,215,223-236
+apps/web/src/components/Sidebar.logic.ts
+  be46e14639b77567 2,18,23-35,38,41,43,59
+apps/web/src/components/Sidebar.tsx
+  be46e14639b77567 75,77,368-369,373-376,395-396,400-403,825
+apps/web/src/composerDraftStore.test.ts
+  be46e14639b77567 341-356
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.10",
+  "base_commit_sha": "b312497d78d3830ffd6e8689ab1a2ce2659c6749",
+  "prompts": {
+    "be46e14639b77567": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cddd2-9f0d-7810-871c-172da2adb2e9",
+        "model": "unknown"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 132,
+      "total_deletions": 24,
+      "accepted_lines": 125,
+      "overriden_lines": 0
+    }
+  }
+}
