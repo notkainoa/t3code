@@ -147,6 +147,7 @@ import {
   XIcon,
   CopyIcon,
   CheckIcon,
+  ShareIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -448,6 +449,143 @@ function cloneComposerImageForRetry(image: ComposerImageAttachment): ComposerIma
   } catch {
     return image;
   }
+}
+
+function sanitizeThreadFilenameSegment(input: string | null | undefined): string {
+  const sanitized = (input ?? "conversation")
+    .toLowerCase()
+    .replace(/[`'".,!?()[\]{}]+/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return sanitized.length > 0 ? sanitized : "conversation";
+}
+
+function formatBytes(size: number | undefined): string {
+  if (!Number.isFinite(size) || size === undefined) return "unknown size";
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDateTime(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString();
+}
+
+type ThreadExport = {
+  markdown: string;
+  plainText: string;
+  markdownFilename: string;
+  textFilename: string;
+  messageCount: number;
+};
+
+function markdownToPlainText(markdown: string): string {
+  return markdown
+    .replace(/```[\s\S]*?```/g, (block) => block.replace(/```/g, ""))
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+    .replace(/^[#>\-\*]+\s?/gm, "")
+    .replace(/\*\*/g, "")
+    .replace(/__|_/g, "")
+    .trim();
+}
+
+function downloadTextFile(filename: string, contents: string, mimeType: string): void {
+  const blob = new Blob([contents], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function buildThreadExport(
+  thread: Thread,
+  options?: { projectName?: string | null; workspacePath?: string | null },
+): ThreadExport {
+  const projectName = options?.projectName ?? null;
+  const workspacePath = options?.workspacePath ?? null;
+  const title = thread.title?.trim() || "Conversation";
+  const latestActivity =
+    thread.latestTurn?.completedAt ??
+    thread.latestTurn?.startedAt ??
+    thread.messages.at(-1)?.completedAt ??
+    thread.messages.at(-1)?.createdAt ??
+    thread.createdAt;
+
+  const lines: string[] = [
+    `# ${title}`,
+    "",
+    "- Thread metadata:",
+    `  - Thread ID: ${thread.id}`,
+    projectName ? `  - Project: ${projectName}` : null,
+    thread.session?.provider ? `  - Provider: ${thread.session.provider}` : null,
+    `  - Model: ${thread.model}`,
+    `  - Runtime mode: ${thread.runtimeMode}`,
+    `  - Interaction mode: ${thread.interactionMode}`,
+    formatDateTime(thread.createdAt) ? `  - Created at: ${formatDateTime(thread.createdAt)}` : null,
+    latestActivity ? `  - Last updated: ${formatDateTime(latestActivity) ?? latestActivity}` : null,
+    workspacePath ? `  - Workspace: ${workspacePath}` : null,
+    "",
+    "## Messages",
+    "",
+  ].filter((line): line is string => Boolean(line));
+
+  if (thread.messages.length === 0) {
+    lines.push("_No messages in this thread yet._", "");
+  } else {
+    thread.messages.forEach((message, index) => {
+      const label =
+        message.role === "assistant"
+          ? "Assistant"
+          : message.role === "system"
+            ? "System"
+            : "User";
+      const timestamp = formatDateTime(message.createdAt) ?? message.createdAt;
+      lines.push(`${index + 1}. **${label}**${timestamp ? ` (${timestamp})` : ""}`, "");
+      const messageText = message.text?.trim();
+      lines.push(messageText && messageText.length > 0 ? messageText : "_No message text provided._");
+
+      if (message.attachments && message.attachments.length > 0) {
+        lines.push("", "Attachments:");
+        for (const attachment of message.attachments) {
+          lines.push(
+            `- ${attachment.name ?? "Attachment"} (${attachment.mimeType ?? "unknown"}, ${formatBytes(attachment.sizeBytes)})`,
+          );
+        }
+      }
+
+      lines.push("");
+    });
+  }
+
+  if (thread.proposedPlans.length > 0) {
+    lines.push("## Proposed plans", "");
+    thread.proposedPlans.forEach((plan, index) => {
+      const planTitle = proposedPlanTitle(plan.planMarkdown) ?? `Plan ${index + 1}`;
+      const createdAt = formatDateTime(plan.createdAt);
+      lines.push(`### ${planTitle}`, createdAt ? `Created at: ${createdAt}` : null, "");
+      lines.push("```markdown", plan.planMarkdown.trimEnd(), "```", "");
+    });
+  }
+
+  const markdown = `${lines.join("\n").trimEnd()}\n`;
+  const plainText = markdownToPlainText(markdown);
+  const slug = sanitizeThreadFilenameSegment(title);
+  const idSegment = thread.id.slice(0, 8);
+  const baseFilename = `${slug}-${idSegment}`;
+
+  return {
+    markdown,
+    plainText,
+    markdownFilename: `${baseFilename}.md`,
+    textFilename: `${baseFilename}.txt`,
+    messageCount: thread.messages.length,
+  };
 }
 
 const VscodeEntryIcon = memo(function VscodeEntryIcon(props: {
@@ -1278,6 +1416,13 @@ export default function ChatView({ threadId }: ChatViewProps) {
     }),
   );
   const workspaceEntries = workspaceEntriesQuery.data?.entries ?? EMPTY_PROJECT_ENTRIES;
+  const threadExport = useMemo<ThreadExport | null>(() => {
+    if (!activeThread) return null;
+    return buildThreadExport(activeThread, {
+      projectName: activeProject?.name ?? null,
+      workspacePath: gitCwd,
+    });
+  }, [activeProject?.name, activeThread, gitCwd]);
   const composerMenuItems = useMemo<ComposerCommandItem[]>(() => {
     if (!composerTrigger) return [];
     if (composerTrigger.kind === "path") {
@@ -1404,6 +1549,42 @@ export default function ChatView({ threadId }: ChatViewProps) {
       },
     });
   }, [diffOpen, navigate, threadId]);
+  const onCopyThreadTranscript = useCallback(async () => {
+    if (!threadExport) return;
+    try {
+      await navigator.clipboard.writeText(threadExport.markdown);
+      toastManager.add({
+        type: "success",
+        title: "Conversation copied",
+        description: `Copied ${threadExport.messageCount} message${threadExport.messageCount === 1 ? "" : "s"} as Markdown.`,
+      });
+    } catch (error) {
+      toastManager.add({
+        type: "error",
+        title: "Copy failed",
+        description:
+          error instanceof Error ? error.message : "Could not copy the conversation to the clipboard.",
+      });
+    }
+  }, [threadExport]);
+  const onDownloadThreadTranscript = useCallback(
+    (format: "md" | "txt") => {
+      if (!threadExport) return;
+      const isMarkdown = format === "md";
+      const filename = isMarkdown ? threadExport.markdownFilename : threadExport.textFilename;
+      const contents = isMarkdown ? threadExport.markdown : threadExport.plainText;
+      const mimeType = isMarkdown
+        ? "text/markdown;charset=utf-8"
+        : "text/plain;charset=utf-8";
+      downloadTextFile(filename, contents, mimeType);
+      toastManager.add({
+        type: "success",
+        title: isMarkdown ? "Markdown downloaded" : "Text file downloaded",
+        description: filename,
+      });
+    },
+    [threadExport],
+  );
 
   const envLocked = Boolean(
     activeThread &&
@@ -3565,6 +3746,9 @@ export default function ChatView({ threadId }: ChatViewProps) {
           diffToggleShortcutLabel={diffPanelShortcutLabel}
           gitCwd={gitCwd}
           diffOpen={diffOpen}
+          threadExport={threadExport}
+          onCopyThreadTranscript={onCopyThreadTranscript}
+          onDownloadThreadTranscript={onDownloadThreadTranscript}
           onRunProjectScript={(script) => {
             void runProjectScript(script);
           }}
@@ -4271,6 +4455,9 @@ interface ChatHeaderProps {
   onUpdateProjectScript: (scriptId: string, input: NewProjectScriptInput) => Promise<void>;
   onDeleteProjectScript: (scriptId: string) => Promise<void>;
   onToggleDiff: () => void;
+  threadExport: ThreadExport | null;
+  onCopyThreadTranscript: () => void;
+  onDownloadThreadTranscript: (format: "md" | "txt") => void;
 }
 
 const ChatHeader = memo(function ChatHeader({
@@ -4291,6 +4478,9 @@ const ChatHeader = memo(function ChatHeader({
   onUpdateProjectScript,
   onDeleteProjectScript,
   onToggleDiff,
+  threadExport,
+  onCopyThreadTranscript,
+  onDownloadThreadTranscript,
 }: ChatHeaderProps) {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -4333,6 +4523,43 @@ const ChatHeader = memo(function ChatHeader({
           />
         )}
         {activeProjectName && <GitActionsControl gitCwd={gitCwd} activeThreadId={activeThreadId} />}
+        {threadExport && (
+          <Menu>
+            <MenuTrigger
+              render={
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="shrink-0"
+                        aria-label="Share conversation"
+                      >
+                        <ShareIcon className="size-4" />
+                      </Button>
+                    }
+                  />
+                  <TooltipPopup side="bottom">Share or export this conversation</TooltipPopup>
+                </Tooltip>
+              }
+            />
+            <MenuPopup align="end">
+              <MenuItem onSelect={onCopyThreadTranscript}>
+                Copy as Markdown
+                <MenuShortcut>Clipboard</MenuShortcut>
+              </MenuItem>
+              <MenuItem onSelect={() => onDownloadThreadTranscript("md")}>
+                Download .md
+                <MenuShortcut>.md</MenuShortcut>
+              </MenuItem>
+              <MenuItem onSelect={() => onDownloadThreadTranscript("txt")}>
+                Download .txt
+                <MenuShortcut>.txt</MenuShortcut>
+              </MenuItem>
+            </MenuPopup>
+          </Menu>
+        )}
         <Tooltip>
           <TooltipTrigger
             render={
