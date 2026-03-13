@@ -1,0 +1,207 @@
+apps/web/src/routes/_chat.settings.tsx
+  a3185b4891687d50 7,14-20,59-63,113,120-125,127,136,226,230-231,249,261,263-300,304-308,512-517,521-522,527-530,541,546
+apps/web/src/types.ts
+  a3185b4891687d50 23
+apps/web/src/components/Sidebar.logic.ts
+  a3185b4891687d50 2,6,42-77
+apps/web/src/components/chat/ProviderHealthBanner.tsx
+  a3185b4891687d50 1-33
+apps/server/src/open.test.ts
+  a3185b4891687d50 1-4,13,16-24,126,148-154,160,171-176,182,185-190,196,199-206,211-212,216-224,230
+apps/server/src/provider/Layers/CodexAdapter.ts
+  a3185b4891687d50 167
+apps/server/src/git/Services/GitCore.ts
+  a3185b4891687d50 104
+.github/workflows/ci.yml
+  a3185b4891687d50 15,23,28,38,81,89
+CONTRIBUTING.md
+  a3185b4891687d50 11
+apps/web/src/appSettings.test.ts
+  a3185b4891687d50 1,4,7,11-13,17-18,22,25-26,83-85
+apps/web/src/components/ThreadTerminalDrawer.tsx
+  a3185b4891687d50 15,25,239,608,616-617,621,628,630,633,744,755,835,845
+apps/web/src/components/chat/ChatHeader.tsx
+  a3185b4891687d50 1-124
+apps/web/src/components/chat/MessageCopyButton.tsx
+  a3185b4891687d50 1-19
+apps/server/src/workspaceEntries.ts
+  a3185b4891687d50 31,35-44,68-74,84-113,116,121,128-174,177-197,375,378,382,384-385,388,392,394,412,479,483,547-559,562-563
+apps/web/src/components/Sidebar.logic.test.ts
+  a3185b4891687d50 5-6,67-85,178-199
+apps/web/src/components/chat/CodexTraitsPicker.tsx
+  a3185b4891687d50 1-93
+apps/web/src/components/chat/VscodeEntryIcon.tsx
+  a3185b4891687d50 1-37
+apps/web/src/composer-logic.test.ts
+  a3185b4891687d50 4-5,61-100,137-191
+apps/web/src/hooks/useHandleNewThread.ts
+  a3185b4891687d50 1-103
+apps/web/src/routes/__root.tsx
+  a3185b4891687d50 16,284-290
+apps/web/src/threadDraftDefaults.ts
+  a3185b4891687d50 16,39
+apps/web/src/components/ChatView.logic.ts
+  a3185b4891687d50 1-125
+apps/server/src/git/Layers/GitCore.test.ts
+  a3185b4891687d50 100,1714-1749
+apps/web/src/timestampFormat.test.ts
+  a3185b4891687d50 1-30
+apps/web/src/diffRouteSearch.ts
+  a3185b4891687d50 4-6
+apps/web/src/components/ChatMarkdown.tsx
+  a3185b4891687d50 1,19,212-217,258
+apps/web/src/session-logic.ts
+  a3185b4891687d50 3,8,41-43,423,430-431,433-436,444-445,447-452,497-541,603-604
+apps/web/src/hooks/useLocalStorage.ts
+  a3185b4891687d50 1-143
+packages/contracts/src/editor.ts
+  a3185b4891687d50 8
+scripts/build-desktop-artifact.ts
+  a3185b4891687d50 617-619
+.github/VOUCHED.td
+  a3185b4891687d50 22,31
+apps/server/src/git/Layers/GitManager.ts
+  a3185b4891687d50 641,644,684,693,973-974,981,1030,1046
+apps/web/src/components/ChatView.tsx
+  a3185b4891687d50 31,41,43,62,81,85,89,105-106,110,121-122,134-161,189,272,277-280,642-645,647-649,652-664,667-670,673-674,679-681,1036,1046-1055,1103,1107,1109,1113,1141,1180,1240,1750,1763,1963,2037-2043,2449,2571-2572,2590,2926,2943,2945,2948,2957-2958,2966-2967,2971-2980,2983,2989,3003-3008,3011-3013,3022-3028,3030-3032,3041,3050,3094-3095,3102,3111,3298,3659,3819
+apps/web/src/wsTransport.ts
+  a3185b4891687d50 189-191
+package.json
+  a3185b4891687d50 61
+apps/web/src/components/chat/ProposedPlanCard.tsx
+  a3185b4891687d50 1-211
+apps/web/src/components/chat/ExpandedImagePreview.tsx
+  a3185b4891687d50 1-32
+apps/server/src/git/Layers/GitManager.test.ts
+  a3185b4891687d50 454,771-792
+apps/web/src/components/ui/sidebar.tsx
+  a3185b4891687d50 21-22,376,546-547
+apps/web/src/routes/_chat.$threadId.tsx
+  a3185b4891687d50 173
+apps/web/src/components/chat/MessagesTimeline.logic.ts
+  a3185b4891687d50 1-29
+apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx
+  a3185b4891687d50 1-182
+apps/web/src/components/PlanSidebar.tsx
+  a3185b4891687d50 1-2,18,57,66,72,81-84,86-89,92-99,151
+packages/contracts/package.json
+  a3185b4891687d50 3
+apps/server/integration/fixtures/providerRuntime.ts
+  a3185b4891687d50 76,88
+apps/web/src/components/Sidebar.tsx
+  a3185b4891687d50 42,44,50,87-88,90,281,445-446,471,831,844,849,864,868,968,1117,1361-1365,1389,1391,1411-1414,1552
+apps/web/src/components/DiffPanel.tsx
+  a3185b4891687d50 15,20,28-29,163,311,486
+apps/web/src/appSettings.ts
+  a3185b4891687d50 1,5,10-12,24-26,31-32,145,152-155,158,164,170,173-175,181,185-189,194-195,197,199,203-204
+apps/desktop/src/main.ts
+  a3185b4891687d50 538,541-559,643
+packages/contracts/src/providerRuntime.ts
+  a3185b4891687d50 96,104-113,118
+apps/web/src/terminalStateStore.test.ts
+  a3185b4891687d50 49-70,87-110
+apps/web/src/session-logic.test.ts
+  a3185b4891687d50 403,440,456-488,494
+apps/server/package.json
+  a3185b4891687d50 3
+apps/web/src/timestampFormat.ts
+  a3185b4891687d50 1-49
+apps/web/src/components/chat/ComposerPendingApprovalActions.tsx
+  a3185b4891687d50 1-55
+apps/web/src/components/BranchToolbar.tsx
+  a3185b4891687d50 2,15,18-22,115-126,129-138,140-157
+apps/web/src/components/ChatView.browser.tsx
+  a3185b4891687d50 14,24,157,227,359-361,364,367,381,396,399,401,405,411-421,1033-1046,1048-1049,1150-1271
+apps/web/src/components/ui/switch.tsx
+  a3185b4891687d50 11
+apps/web/src/terminalStateStore.ts
+  a3185b4891687d50 14,31,293-297
+apps/web/vite.config.ts
+  a3185b4891687d50 2-3,6,21-28,38
+apps/web/src/components/chat/ProviderModelPicker.tsx
+  a3185b4891687d50 1-206
+apps/web/src/components/chat/ChangedFilesTree.tsx
+  a3185b4891687d50 1-136
+apps/web/src/components/ComposerPromptEditor.tsx
+  a3185b4891687d50 51-54,179,200-214,259-295,417-425,461,473-474,711-712,714-717,728,736-737,741-742,746,748-752,754,756-757,765,773,778-779,787-788,793-794,798-804,809,822,825-828,839-840,844-850,855-860,866,871
+apps/web/src/composer-logic.ts
+  a3185b4891687d50 70,84-125,136
+apps/web/src/routes/_chat.tsx
+  a3185b4891687d50 1-2,8-13,15-16,18-90,113
+apps/web/src/lib/terminalFocus.ts
+  a3185b4891687d50 1-6
+apps/web/src/components/chat/DiffStatLabel.tsx
+  a3185b4891687d50 1-22
+apps/web/src/components/Icons.tsx
+  a3185b4891687d50 290-298
+packages/contracts/src/git.ts
+  a3185b4891687d50 64-66
+apps/web/package.json
+  a3185b4891687d50 3,45,48,51,58
+.github/workflows/pr-size.yml
+  a3185b4891687d50 1-202
+.github/workflows/pr-vouch.yml
+  a3185b4891687d50 28,88,114,141,148-153,168,171-174,176-188,190-191,195,197
+apps/web/src/components/chat/OpenInPicker.tsx
+  a3185b4891687d50 1-128
+apps/web/src/lib/gitReactQuery.ts
+  a3185b4891687d50 122,127,136
+apps/server/src/git/Layers/GitCore.ts
+  a3185b4891687d50 769,771-781,783
+apps/web/src/components/chat/ThreadErrorBanner.tsx
+  a3185b4891687d50 1-35
+apps/web/src/components/chat/ComposerPendingApprovalPanel.tsx
+  a3185b4891687d50 1-31
+apps/server/src/orchestration/Layers/ProviderRuntimeIngestion.ts
+  a3185b4891687d50 8,441
+apps/web/src/components/ui/select.tsx
+  a3185b4891687d50 32
+KEYBINDINGS.md
+  a3185b4891687d50 54
+apps/web/src/editorPreferences.ts
+  a3185b4891687d50 1-35
+apps/web/src/components/chat/MessagesTimeline.tsx
+  a3185b4891687d50 1-783
+apps/web/src/components/chat/MessagesTimeline.logic.test.ts
+  a3185b4891687d50 1-145
+apps/desktop/package.json
+  a3185b4891687d50 3
+apps/web/src/components/GitActionsControl.tsx
+  a3185b4891687d50 19,35,45,60,164-165,186-190,269,280,303,353,455,463,474,487,495,505-506,511,514,517-518,576-577,588-589,593,596,600,617,765-766,789-819,825-850,854,858-862,865-867,870-872,877,881,905-906,914,919
+apps/server/src/provider/Layers/ProviderService.test.ts
+  a3185b4891687d50 706,716,771
+.github/workflows/release.yml
+  a3185b4891687d50 30,64,110,121,128-130,220,232,242,250-251,265,270,275,312,323
+apps/web/src/components/chat/ComposerPlanFollowUpBanner.tsx
+  a3185b4891687d50 1-21
+apps/web/src/components/chat/ComposerCommandMenu.tsx
+  a3185b4891687d50 1-120
+apps/web/src/components/chat/CompactComposerControlsMenu.tsx
+  a3185b4891687d50 1-136
+apps/server/src/workspaceEntries.test.ts
+  a3185b4891687d50 73-98
+apps/desktop/scripts/dev-electron.mjs
+  a3185b4891687d50 83,88-89
+apps/marketing/package.json
+  a3185b4891687d50 13,16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "b75a7f12bc1edcbeb5fa6c50402525ad784885f4",
+  "prompts": {
+    "a3185b4891687d50": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cde9b-541d-7861-9803-186feb66fba2",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 5291,
+      "total_deletions": 3212,
+      "accepted_lines": 5096,
+      "overriden_lines": 0
+    }
+  }
+}
