@@ -1,0 +1,48 @@
+apps/web/src/threadDraftDefaults.ts
+  4aee8fbc9c40d607 1-43
+apps/web/src/threadDraftDefaults.test.ts
+  4aee8fbc9c40d607 1-84
+apps/web/src/appSettings.test.ts
+  4aee8fbc9c40d607 1,4-5,12-74
+apps/web/src/routes/_chat.settings.tsx
+  4aee8fbc9c40d607 309-361
+apps/web/src/components/ChatView.browser.tsx
+  4aee8fbc9c40d607 356-357,360,363,377,392,394-403,431,436,539-546,1072-1153
+apps/web/src/appSettings.ts
+  4aee8fbc9c40d607 6,24-26,180-188
+apps/web/src/components/Sidebar.tsx
+  4aee8fbc9c40d607 49,51,402-433,435,438-440,443-447,450,459,465,467,472-473,480,488,548,1075,1083,1171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "c55c17bcc83c48d1df6d81c333f9a2c657299991",
+  "prompts": {
+    "4aee8fbc9c40d607": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ce516-0888-7c93-8206-10249b40d28a",
+        "model": "unknown"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 448,
+      "total_deletions": 68,
+      "accepted_lines": 434,
+      "overriden_lines": 0
+    },
+    "8dc7d453018c7103": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cde96-6593-77e3-8775-101e09804278",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
