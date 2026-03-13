@@ -1,0 +1,25 @@
+apps/web/public/mockServiceWorker.js
+  fde9236f2104d16e 10
+apps/web/src/routes/_chat.settings.tsx
+  fde9236f2104d16e 65-77,518,520-522,524-528,532-545,548-586,588-591,593-609
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "e19e59271cbb50b191905ee00afb9e60f1af7c50",
+  "prompts": {
+    "fde9236f2104d16e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ce556-81f8-7bc1-90c1-5b4dae0c45a0",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 101,
+      "total_deletions": 37,
+      "accepted_lines": 97,
+      "overriden_lines": 0
+    }
+  }
+}
