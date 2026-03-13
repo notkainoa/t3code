@@ -1,8 +1,11 @@
 import type { ThreadId } from "@t3tools/contracts";
-import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef } from "react";
 
 import { newCommandId } from "../lib/utils";
+import { gitResolveWorktreeBaseSourceQueryOptions } from "../lib/gitReactQuery";
 import { readNativeApi } from "../nativeApi";
+import type { DraftWorktreeBaseSource } from "../composerDraftStore";
 import { useComposerDraftStore } from "../composerDraftStore";
 import { useStore } from "../store";
 import {
@@ -10,6 +13,7 @@ import {
   resolveDraftEnvModeAfterBranchChange,
   resolveEffectiveEnvMode,
 } from "./BranchToolbar.logic";
+import { BranchToolbarBaseSourcePicker } from "./BranchToolbarBaseSourcePicker";
 import { BranchToolbarBranchSelector } from "./BranchToolbarBranchSelector";
 import { Button } from "./ui/button";
 
@@ -47,6 +51,25 @@ export default function BranchToolbar({
     hasServerThread,
     draftThreadEnvMode: draftThread?.envMode,
   });
+  const selectedWorktreeBaseBranch =
+    effectiveEnvMode === "worktree" && activeWorktreePath === null ? activeThreadBranch : null;
+  const worktreeBaseSourceQuery = useQuery(
+    gitResolveWorktreeBaseSourceQueryOptions({
+      cwd: activeProject?.cwd ?? null,
+      branch: selectedWorktreeBaseBranch,
+    }),
+  );
+  const currentWorktreeBaseSource: DraftWorktreeBaseSource =
+    draftThread?.worktreeBaseSource ?? "local";
+  const showWorktreeBaseSourcePicker =
+    !hasServerThread &&
+    effectiveEnvMode === "worktree" &&
+    activeWorktreePath === null &&
+    Boolean(worktreeBaseSourceQuery.data?.showSourcePicker);
+  const previousResolvedBranchRef = useRef<string | null>(selectedWorktreeBaseBranch);
+  const previousSourcePickerVisibleRef = useRef<boolean>(
+    Boolean(worktreeBaseSourceQuery.data?.showSourcePicker),
+  );
 
   const setThreadBranch = useCallback(
     (branch: string | null, worktreePath: string | null) => {
@@ -100,6 +123,67 @@ export default function BranchToolbar({
     ],
   );
 
+  const setWorktreeBaseSource = useCallback(
+    (worktreeBaseSource: DraftWorktreeBaseSource) => {
+      if (hasServerThread) return;
+      setDraftThreadContext(threadId, { worktreeBaseSource });
+    },
+    [hasServerThread, setDraftThreadContext, threadId],
+  );
+
+  useEffect(() => {
+    if (hasServerThread || effectiveEnvMode !== "worktree" || activeWorktreePath !== null) {
+      previousResolvedBranchRef.current = null;
+      previousSourcePickerVisibleRef.current = false;
+      if (currentWorktreeBaseSource !== "local") {
+        setDraftThreadContext(threadId, { worktreeBaseSource: "local" });
+      }
+      return;
+    }
+
+    if (selectedWorktreeBaseBranch === null) {
+      previousResolvedBranchRef.current = null;
+      previousSourcePickerVisibleRef.current = false;
+      if (currentWorktreeBaseSource !== "local") {
+        setDraftThreadContext(threadId, { worktreeBaseSource: "local" });
+      }
+      return;
+    }
+
+    const resolvedBaseSource = worktreeBaseSourceQuery.data;
+    if (
+      !worktreeBaseSourceQuery.isSuccess ||
+      resolvedBaseSource?.branch !== selectedWorktreeBaseBranch
+    ) {
+      return;
+    }
+
+    const branchChanged = previousResolvedBranchRef.current !== selectedWorktreeBaseBranch;
+    const pickerBecameVisible =
+      !previousSourcePickerVisibleRef.current && resolvedBaseSource.showSourcePicker;
+
+    if (branchChanged || pickerBecameVisible) {
+      setDraftThreadContext(threadId, {
+        worktreeBaseSource: resolvedBaseSource.showSourcePicker
+          ? resolvedBaseSource.recommendedSource
+          : "local",
+      });
+    }
+
+    previousResolvedBranchRef.current = selectedWorktreeBaseBranch;
+    previousSourcePickerVisibleRef.current = resolvedBaseSource.showSourcePicker;
+  }, [
+    activeWorktreePath,
+    currentWorktreeBaseSource,
+    effectiveEnvMode,
+    hasServerThread,
+    selectedWorktreeBaseBranch,
+    setDraftThreadContext,
+    threadId,
+    worktreeBaseSourceQuery.data,
+    worktreeBaseSourceQuery.isSuccess,
+  ]);
+
   if (!activeThreadId || !activeProject) return null;
 
   return (
@@ -122,17 +206,27 @@ export default function BranchToolbar({
         )}
       </div>
 
-      <BranchToolbarBranchSelector
-        activeProjectCwd={activeProject.cwd}
-        activeThreadBranch={activeThreadBranch}
-        activeWorktreePath={activeWorktreePath}
-        branchCwd={branchCwd}
-        effectiveEnvMode={effectiveEnvMode}
-        envLocked={envLocked}
-        onSetThreadBranch={setThreadBranch}
-        {...(onCheckoutPullRequestRequest ? { onCheckoutPullRequestRequest } : {})}
-        {...(onComposerFocusRequest ? { onComposerFocusRequest } : {})}
-      />
+      <div className="flex items-center gap-2">
+        {showWorktreeBaseSourcePicker ? (
+          <BranchToolbarBaseSourcePicker
+            value={currentWorktreeBaseSource}
+            disabled={worktreeBaseSourceQuery.isFetching}
+            onChange={setWorktreeBaseSource}
+          />
+        ) : null}
+
+        <BranchToolbarBranchSelector
+          activeProjectCwd={activeProject.cwd}
+          activeThreadBranch={activeThreadBranch}
+          activeWorktreePath={activeWorktreePath}
+          branchCwd={branchCwd}
+          effectiveEnvMode={effectiveEnvMode}
+          envLocked={envLocked}
+          onSetThreadBranch={setThreadBranch}
+          {...(onCheckoutPullRequestRequest ? { onCheckoutPullRequestRequest } : {})}
+          {...(onComposerFocusRequest ? { onComposerFocusRequest } : {})}
+        />
+      </div>
     </div>
   );
 }

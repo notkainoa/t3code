@@ -18,6 +18,8 @@ import type {
   GitListBranchesResult,
   GitPullResult,
   GitRemoveWorktreeInput,
+  GitResolveWorktreeBaseSourceInput,
+  GitResolveWorktreeBaseSourceResult,
   GitStatusInput,
   GitStatusResult,
 } from "@t3tools/contracts";
@@ -155,6 +157,13 @@ export interface GitCoreShape {
   readonly createWorktree: (
     input: GitCreateWorktreeInput,
   ) => Effect.Effect<GitCreateWorktreeResult, GitCommandError>;
+
+  /**
+   * Resolve whether a new worktree should offer local vs remote base-source selection.
+   */
+  readonly resolveWorktreeBaseSource: (
+    input: GitResolveWorktreeBaseSourceInput,
+  ) => Effect.Effect<GitResolveWorktreeBaseSourceResult, GitCommandError>;
 
   /**
    * Materialize a GitHub pull request head as a local branch without switching checkout.

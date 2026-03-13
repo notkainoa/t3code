@@ -188,6 +188,7 @@ describe("composerDraftStore project draft thread mapping", () => {
       branch: "feature/test",
       worktreePath: "/tmp/worktree-test",
       envMode: "worktree",
+      worktreeBaseSource: "local",
       runtimeMode: "full-access",
       interactionMode: "default",
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -197,6 +198,7 @@ describe("composerDraftStore project draft thread mapping", () => {
       branch: "feature/test",
       worktreePath: "/tmp/worktree-test",
       envMode: "worktree",
+      worktreeBaseSource: "local",
       runtimeMode: "full-access",
       interactionMode: "default",
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -284,6 +286,7 @@ describe("composerDraftStore project draft thread mapping", () => {
       branch: "feature/next",
       worktreePath: "/tmp/feature-next",
       envMode: "worktree",
+      worktreeBaseSource: "local",
     });
   });
 
@@ -307,6 +310,7 @@ describe("composerDraftStore project draft thread mapping", () => {
       branch: "main",
       worktreePath: "/tmp/main-worktree",
       envMode: "worktree",
+      worktreeBaseSource: "local",
     });
   });
 
@@ -333,6 +337,33 @@ describe("composerDraftStore project draft thread mapping", () => {
       branch: "feature/base",
       worktreePath: null,
       envMode: "worktree",
+      worktreeBaseSource: "local",
+    });
+  });
+
+  it("stores and updates worktree base source", () => {
+    const store = useComposerDraftStore.getState();
+    store.setProjectDraftThreadId(projectId, threadId, {
+      branch: "feature/base",
+      worktreePath: null,
+      envMode: "worktree",
+      worktreeBaseSource: "remote",
+    });
+
+    expect(useComposerDraftStore.getState().getDraftThread(threadId)).toMatchObject({
+      projectId,
+      branch: "feature/base",
+      worktreePath: null,
+      envMode: "worktree",
+      worktreeBaseSource: "remote",
+    });
+
+    store.setDraftThreadContext(threadId, {
+      worktreeBaseSource: "local",
+    });
+
+    expect(useComposerDraftStore.getState().getDraftThread(threadId)).toMatchObject({
+      worktreeBaseSource: "local",
     });
   });
 });

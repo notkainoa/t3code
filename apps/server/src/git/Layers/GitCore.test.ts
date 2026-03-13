@@ -105,6 +105,7 @@ const makeIsolatedGitCore = (gitService: GitServiceShape) =>
       readConfigValue: (cwd, key) => core.readConfigValue(cwd, key),
       listBranches: (input) => core.listBranches(input),
       createWorktree: (input) => core.createWorktree(input),
+      resolveWorktreeBaseSource: (input) => core.resolveWorktreeBaseSource(input),
       fetchPullRequestBranch: (input) => core.fetchPullRequestBranch(input),
       ensureRemote: (input) => core.ensureRemote(input),
       fetchRemoteBranch: (input) => core.fetchRemoteBranch(input),
@@ -150,6 +151,15 @@ function createGitWorktree(input: Parameters<GitCoreShape["createWorktree"]>[0])
   return Effect.gen(function* () {
     const core = yield* GitCore;
     return yield* core.createWorktree(input);
+  });
+}
+
+function resolveGitWorktreeBaseSource(
+  input: Parameters<GitCoreShape["resolveWorktreeBaseSource"]>[0],
+) {
+  return Effect.gen(function* () {
+    const core = yield* GitCore;
+    return yield* core.resolveWorktreeBaseSource(input);
   });
 }
 
@@ -483,6 +493,271 @@ it.layer(TestLayer)("git integration", (it) => {
         expect(remoteBranch).toBeDefined();
         expect(remoteBranch?.isRemote).toBe(true);
         expect(remoteBranch?.remoteName).toBe(remoteName);
+      }),
+    );
+  });
+
+  describe("resolveWorktreeBaseSource", () => {
+    it.effect("shows the source picker when the tracked remote branch is ahead", () =>
+      Effect.gen(function* () {
+        const remote = yield* makeTmpDir();
+        const source = yield* makeTmpDir();
+        const clone = yield* makeTmpDir();
+        yield* git(remote, ["init", "--bare"]);
+
+        yield* initRepoWithCommit(source);
+        const defaultBranch = (yield* listGitBranches({ cwd: source })).branches.find(
+          (branch) => branch.current,
+        )!.name;
+        yield* git(source, ["remote", "add", "origin", remote]);
+        yield* git(source, ["push", "-u", "origin", defaultBranch]);
+
+        const featureBranch = "feature/remote-ahead";
+        yield* createGitBranch({ cwd: source, branch: featureBranch });
+        yield* checkoutGitBranch({ cwd: source, branch: featureBranch });
+        yield* writeTextFile(path.join(source, "feature.txt"), "feature base\n");
+        yield* git(source, ["add", "feature.txt"]);
+        yield* git(source, ["commit", "-m", "feature base"]);
+        yield* git(source, ["push", "-u", "origin", featureBranch]);
+        yield* checkoutGitBranch({ cwd: source, branch: defaultBranch });
+
+        yield* git(clone, ["clone", remote, "."]);
+        yield* git(clone, ["config", "user.email", "test@test.com"]);
+        yield* git(clone, ["config", "user.name", "Test"]);
+        yield* git(clone, ["checkout", "-b", featureBranch, "--track", `origin/${featureBranch}`]);
+        yield* writeTextFile(path.join(clone, "feature.txt"), "remote update\n");
+        yield* git(clone, ["add", "feature.txt"]);
+        yield* git(clone, ["commit", "-m", "remote update"]);
+        yield* git(clone, ["push", "origin", featureBranch]);
+
+        const result = yield* resolveGitWorktreeBaseSource({
+          cwd: source,
+          branch: featureBranch,
+        });
+
+        expect(result.localRef).toBe(featureBranch);
+        expect(result.remoteRef).toBe(`origin/${featureBranch}`);
+        expect(result.aheadCount).toBe(0);
+        expect(result.behindCount).toBe(1);
+        expect(result.showSourcePicker).toBe(true);
+        expect(result.recommendedSource).toBe("remote");
+      }),
+    );
+
+    it.effect("hides the source picker when the branch is already up to date", () =>
+      Effect.gen(function* () {
+        const remote = yield* makeTmpDir();
+        const source = yield* makeTmpDir();
+        yield* git(remote, ["init", "--bare"]);
+
+        yield* initRepoWithCommit(source);
+        const defaultBranch = (yield* listGitBranches({ cwd: source })).branches.find(
+          (branch) => branch.current,
+        )!.name;
+        yield* git(source, ["remote", "add", "origin", remote]);
+        yield* git(source, ["push", "-u", "origin", defaultBranch]);
+
+        const featureBranch = "feature/up-to-date";
+        yield* createGitBranch({ cwd: source, branch: featureBranch });
+        yield* checkoutGitBranch({ cwd: source, branch: featureBranch });
+        yield* writeTextFile(path.join(source, "feature.txt"), "feature base\n");
+        yield* git(source, ["add", "feature.txt"]);
+        yield* git(source, ["commit", "-m", "feature base"]);
+        yield* git(source, ["push", "-u", "origin", featureBranch]);
+
+        const result = yield* resolveGitWorktreeBaseSource({
+          cwd: source,
+          branch: featureBranch,
+        });
+
+        expect(result.behindCount).toBe(0);
+        expect(result.showSourcePicker).toBe(false);
+        expect(result.recommendedSource).toBe("local");
+      }),
+    );
+
+    it.effect("shows the source picker for diverged branches", () =>
+      Effect.gen(function* () {
+        const remote = yield* makeTmpDir();
+        const source = yield* makeTmpDir();
+        const clone = yield* makeTmpDir();
+        yield* git(remote, ["init", "--bare"]);
+
+        yield* initRepoWithCommit(source);
+        const defaultBranch = (yield* listGitBranches({ cwd: source })).branches.find(
+          (branch) => branch.current,
+        )!.name;
+        yield* git(source, ["remote", "add", "origin", remote]);
+        yield* git(source, ["push", "-u", "origin", defaultBranch]);
+
+        const featureBranch = "feature/diverged";
+        yield* createGitBranch({ cwd: source, branch: featureBranch });
+        yield* checkoutGitBranch({ cwd: source, branch: featureBranch });
+        yield* writeTextFile(path.join(source, "feature.txt"), "feature base\n");
+        yield* git(source, ["add", "feature.txt"]);
+        yield* git(source, ["commit", "-m", "feature base"]);
+        yield* git(source, ["push", "-u", "origin", featureBranch]);
+
+        yield* git(clone, ["clone", remote, "."]);
+        yield* git(clone, ["config", "user.email", "test@test.com"]);
+        yield* git(clone, ["config", "user.name", "Test"]);
+        yield* git(clone, ["checkout", "-b", featureBranch, "--track", `origin/${featureBranch}`]);
+        yield* writeTextFile(path.join(clone, "remote.txt"), "remote divergence\n");
+        yield* git(clone, ["add", "remote.txt"]);
+        yield* git(clone, ["commit", "-m", "remote divergence"]);
+        yield* git(clone, ["push", "origin", featureBranch]);
+
+        yield* checkoutGitBranch({ cwd: source, branch: featureBranch });
+        yield* writeTextFile(path.join(source, "local.txt"), "local divergence\n");
+        yield* git(source, ["add", "local.txt"]);
+        yield* git(source, ["commit", "-m", "local divergence"]);
+
+        const result = yield* resolveGitWorktreeBaseSource({
+          cwd: source,
+          branch: featureBranch,
+        });
+
+        expect(result.aheadCount).toBe(1);
+        expect(result.behindCount).toBe(1);
+        expect(result.showSourcePicker).toBe(true);
+        expect(result.recommendedSource).toBe("remote");
+      }),
+    );
+
+    it.effect("falls back to origin branch matching when no upstream is configured", () =>
+      Effect.gen(function* () {
+        const remote = yield* makeTmpDir();
+        const source = yield* makeTmpDir();
+        const clone = yield* makeTmpDir();
+        yield* git(remote, ["init", "--bare"]);
+
+        yield* initRepoWithCommit(source);
+        const defaultBranch = (yield* listGitBranches({ cwd: source })).branches.find(
+          (branch) => branch.current,
+        )!.name;
+        yield* git(source, ["remote", "add", "origin", remote]);
+        yield* git(source, ["push", "-u", "origin", defaultBranch]);
+
+        const featureBranch = "feature/no-upstream";
+        yield* createGitBranch({ cwd: source, branch: featureBranch });
+        yield* checkoutGitBranch({ cwd: source, branch: featureBranch });
+        yield* writeTextFile(path.join(source, "feature.txt"), "feature base\n");
+        yield* git(source, ["add", "feature.txt"]);
+        yield* git(source, ["commit", "-m", "feature base"]);
+        yield* git(source, ["push", "origin", featureBranch]);
+        yield* checkoutGitBranch({ cwd: source, branch: defaultBranch });
+
+        yield* git(clone, ["clone", remote, "."]);
+        yield* git(clone, ["config", "user.email", "test@test.com"]);
+        yield* git(clone, ["config", "user.name", "Test"]);
+        yield* git(clone, ["checkout", "-b", featureBranch, "--track", `origin/${featureBranch}`]);
+        yield* writeTextFile(path.join(clone, "feature.txt"), "remote update\n");
+        yield* git(clone, ["add", "feature.txt"]);
+        yield* git(clone, ["commit", "-m", "remote update"]);
+        yield* git(clone, ["push", "origin", featureBranch]);
+
+        const result = yield* resolveGitWorktreeBaseSource({
+          cwd: source,
+          branch: featureBranch,
+        });
+
+        expect(result.remoteName).toBe("origin");
+        expect(result.remoteRef).toBe(`origin/${featureBranch}`);
+        expect(result.behindCount).toBe(1);
+        expect(result.showSourcePicker).toBe(true);
+      }),
+    );
+
+    it.effect("hides the source picker for remote-only selected refs", () =>
+      Effect.gen(function* () {
+        const remote = yield* makeTmpDir();
+        const source = yield* makeTmpDir();
+        yield* git(remote, ["init", "--bare"]);
+
+        yield* initRepoWithCommit(source);
+        const defaultBranch = (yield* listGitBranches({ cwd: source })).branches.find(
+          (branch) => branch.current,
+        )!.name;
+        yield* git(source, ["remote", "add", "origin", remote]);
+        yield* git(source, ["push", "-u", "origin", defaultBranch]);
+
+        const featureBranch = "feature/remote-only";
+        yield* createGitBranch({ cwd: source, branch: featureBranch });
+        yield* checkoutGitBranch({ cwd: source, branch: featureBranch });
+        yield* writeTextFile(path.join(source, "feature.txt"), "feature base\n");
+        yield* git(source, ["add", "feature.txt"]);
+        yield* git(source, ["commit", "-m", "feature base"]);
+        yield* git(source, ["push", "-u", "origin", featureBranch]);
+        yield* checkoutGitBranch({ cwd: source, branch: defaultBranch });
+        yield* git(source, ["branch", "-D", featureBranch]);
+
+        const result = yield* resolveGitWorktreeBaseSource({
+          cwd: source,
+          branch: `origin/${featureBranch}`,
+        });
+
+        expect(result.localRef).toBeNull();
+        expect(result.remoteRef).toBe(`origin/${featureBranch}`);
+        expect(result.showSourcePicker).toBe(false);
+      }),
+    );
+
+    it.effect("keeps local-only UX when refreshing remote state fails", () =>
+      Effect.gen(function* () {
+        const remote = yield* makeTmpDir();
+        const source = yield* makeTmpDir();
+        const clone = yield* makeTmpDir();
+        yield* git(remote, ["init", "--bare"]);
+
+        yield* initRepoWithCommit(source);
+        const defaultBranch = (yield* listGitBranches({ cwd: source })).branches.find(
+          (branch) => branch.current,
+        )!.name;
+        yield* git(source, ["remote", "add", "origin", remote]);
+        yield* git(source, ["push", "-u", "origin", defaultBranch]);
+
+        const featureBranch = "feature/fetch-failure";
+        yield* createGitBranch({ cwd: source, branch: featureBranch });
+        yield* checkoutGitBranch({ cwd: source, branch: featureBranch });
+        yield* writeTextFile(path.join(source, "feature.txt"), "feature base\n");
+        yield* git(source, ["add", "feature.txt"]);
+        yield* git(source, ["commit", "-m", "feature base"]);
+        yield* git(source, ["push", "-u", "origin", featureBranch]);
+        yield* checkoutGitBranch({ cwd: source, branch: defaultBranch });
+
+        yield* git(clone, ["clone", remote, "."]);
+        yield* git(clone, ["config", "user.email", "test@test.com"]);
+        yield* git(clone, ["config", "user.name", "Test"]);
+        yield* git(clone, ["checkout", "-b", featureBranch, "--track", `origin/${featureBranch}`]);
+        yield* writeTextFile(path.join(clone, "feature.txt"), "remote update\n");
+        yield* git(clone, ["add", "feature.txt"]);
+        yield* git(clone, ["commit", "-m", "remote update"]);
+        yield* git(clone, ["push", "origin", featureBranch]);
+
+        const realGitService = yield* GitService;
+        const core = yield* makeIsolatedGitCore({
+          execute: (input) => {
+            if (input.args[0] === "fetch") {
+              return Effect.fail(
+                new GitCommandError({
+                  operation: "git.test.resolveWorktreeBaseSource.fetchFailure",
+                  command: `git ${input.args.join(" ")}`,
+                  cwd: input.cwd,
+                  detail: "simulated fetch failure",
+                }),
+              );
+            }
+            return realGitService.execute(input);
+          },
+        });
+
+        const result = yield* core.resolveWorktreeBaseSource({
+          cwd: source,
+          branch: featureBranch,
+        });
+
+        expect(result.showSourcePicker).toBe(false);
+        expect(result.recommendedSource).toBe("local");
       }),
     );
   });

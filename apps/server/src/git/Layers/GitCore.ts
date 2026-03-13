@@ -187,6 +187,18 @@ function deriveLocalBranchNameFromRemoteRef(branchName: string): string | null {
   return localBranch.length > 0 ? localBranch : null;
 }
 
+function parseRemoteBranchNameFromMergeRef(mergeRef: string | null): string | null {
+  const trimmed = mergeRef?.trim() ?? "";
+  if (trimmed.length === 0) {
+    return null;
+  }
+  if (trimmed.startsWith("refs/heads/")) {
+    const branch = trimmed.slice("refs/heads/".length).trim();
+    return branch.length > 0 ? branch : null;
+  }
+  return trimmed;
+}
+
 function commandLabel(args: readonly string[]): string {
   return `git ${args.join(" ")}`;
 }
@@ -651,6 +663,83 @@ const makeGitCore = Effect.gen(function* () {
 
       return branchLastCommit;
     });
+
+  const readBranchConfigValue = (
+    cwd: string,
+    branch: string,
+    key: "remote" | "merge",
+  ): Effect.Effect<string | null, GitCommandError> =>
+    runGitStdout(
+      `GitCore.readBranchConfigValue.${key}`,
+      cwd,
+      ["config", "--get", `branch.${branch}.${key}`],
+      true,
+    ).pipe(
+      Effect.map((stdout) => {
+        const trimmed = stdout.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      }),
+    );
+
+  const resolveBranchUpstream = (
+    cwd: string,
+    branch: string,
+  ): Effect.Effect<
+    { upstreamRef: string; remoteName: string; upstreamBranch: string } | null,
+    GitCommandError
+  > =>
+    Effect.gen(function* () {
+      const [configuredRemoteName, mergeRef] = yield* Effect.all(
+        [readBranchConfigValue(cwd, branch, "remote"), readBranchConfigValue(cwd, branch, "merge")],
+        { concurrency: "unbounded" },
+      );
+      const configuredUpstreamBranch = parseRemoteBranchNameFromMergeRef(mergeRef);
+      if (configuredRemoteName && configuredUpstreamBranch) {
+        return {
+          upstreamRef: `${configuredRemoteName}/${configuredUpstreamBranch}`,
+          remoteName: configuredRemoteName,
+          upstreamBranch: configuredUpstreamBranch,
+        };
+      }
+
+      const hasOriginBranch = yield* remoteBranchExists(cwd, "origin", branch).pipe(
+        Effect.catch(() => Effect.succeed(false)),
+      );
+      if (hasOriginBranch) {
+        return {
+          upstreamRef: `origin/${branch}`,
+          remoteName: "origin",
+          upstreamBranch: branch,
+        };
+      }
+
+      return null;
+    });
+
+  const readLeftRightCommitCounts = (
+    cwd: string,
+    leftRef: string,
+    rightRef: string,
+  ): Effect.Effect<{ left: number; right: number }, GitCommandError> =>
+    executeGit(
+      "GitCore.readLeftRightCommitCounts",
+      cwd,
+      ["rev-list", "--left-right", "--count", `${leftRef}...${rightRef}`],
+      { allowNonZeroExit: true, timeoutMs: 5_000 },
+    ).pipe(
+      Effect.map((result) => {
+        if (result.code !== 0) {
+          return { left: 0, right: 0 };
+        }
+        const [leftRaw = "0", rightRaw = "0"] = result.stdout.trim().split(/\s+/);
+        const left = Number.parseInt(leftRaw, 10);
+        const right = Number.parseInt(rightRaw, 10);
+        return {
+          left: Number.isFinite(left) ? Math.max(0, left) : 0,
+          right: Number.isFinite(right) ? Math.max(0, right) : 0,
+        };
+      }),
+    );
 
   const statusDetails: GitCoreShape["statusDetails"] = (cwd) =>
     Effect.gen(function* () {
@@ -1205,6 +1294,72 @@ const makeGitCore = Effect.gen(function* () {
       };
     });
 
+  const resolveWorktreeBaseSource: GitCoreShape["resolveWorktreeBaseSource"] = (input) =>
+    Effect.gen(function* () {
+      const fallbackResult = {
+        branch: input.branch,
+        localRef: null,
+        remoteRef: null,
+        remoteName: null,
+        remoteBranch: null,
+        aheadCount: 0,
+        behindCount: 0,
+        showSourcePicker: false,
+        recommendedSource: "local" as const,
+      };
+
+      const remoteNames = yield* listRemoteNames(input.cwd).pipe(
+        Effect.catch(() => Effect.succeed([])),
+      );
+      const parsedRemoteRef = parseRemoteRefWithRemoteNames(input.branch, remoteNames);
+      if (parsedRemoteRef) {
+        return {
+          ...fallbackResult,
+          remoteRef: parsedRemoteRef.remoteRef,
+          remoteName: parsedRemoteRef.remoteName,
+          remoteBranch: parsedRemoteRef.localBranch,
+        };
+      }
+
+      const localBranchExists = yield* branchExists(input.cwd, input.branch).pipe(
+        Effect.catch(() => Effect.succeed(false)),
+      );
+      if (!localBranchExists) {
+        return fallbackResult;
+      }
+
+      const upstream = yield* resolveBranchUpstream(input.cwd, input.branch).pipe(
+        Effect.catch(() => Effect.succeed(null)),
+      );
+      if (!upstream) {
+        return {
+          ...fallbackResult,
+          localRef: input.branch,
+        };
+      }
+
+      yield* fetchUpstreamRef(input.cwd, upstream).pipe(Effect.ignoreCause({ log: true }));
+
+      const counts = yield* readLeftRightCommitCounts(
+        input.cwd,
+        input.branch,
+        upstream.upstreamRef,
+      ).pipe(Effect.catch(() => Effect.succeed({ left: 0, right: 0 })));
+      const showSourcePicker = counts.right > 0;
+
+      return {
+        branch: input.branch,
+        localRef: input.branch,
+        remoteRef: upstream.upstreamRef,
+        remoteName: upstream.remoteName,
+        remoteBranch: upstream.upstreamBranch,
+        aheadCount: counts.left,
+        behindCount: counts.right,
+        showSourcePicker,
+        recommendedSource: showSourcePicker ? ("remote" as const) : ("local" as const),
+      };
+    });
+
   const fetchPullRequestBranch: GitCoreShape["fetchPullRequestBranch"] = (input) =>
     Effect.gen(function* () {
       const remoteName = yield* resolvePrimaryRemoteName(input.cwd);
@@ -1411,6 +1566,7 @@ const makeGitCore = Effect.gen(function* () {
     readRangeContext,
     readConfigValue,
     listBranches,
+    resolveWorktreeBaseSource,
     createWorktree,
     fetchPullRequestBranch,
     ensureRemote,

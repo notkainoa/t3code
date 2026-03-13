@@ -2,8 +2,10 @@ import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it } from "vitest";
 import {
   gitMutationKeys,
+  gitQueryKeys,
   gitPreparePullRequestThreadMutationOptions,
   gitPullMutationOptions,
+  gitResolveWorktreeBaseSourceQueryOptions,
   gitRunStackedActionMutationOptions,
 } from "./gitReactQuery";
 
@@ -21,6 +23,15 @@ describe("gitMutationKeys", () => {
   it("scopes pull request thread preparation keys by cwd", () => {
     expect(gitMutationKeys.preparePullRequestThread("/repo/a")).not.toEqual(
       gitMutationKeys.preparePullRequestThread("/repo/b"),
+    );
+  });
+
+  it("scopes worktree base source keys by cwd and branch", () => {
+    expect(gitQueryKeys.worktreeBaseSource("/repo/a", "main")).not.toEqual(
+      gitQueryKeys.worktreeBaseSource("/repo/b", "main"),
+    );
+    expect(gitQueryKeys.worktreeBaseSource("/repo/a", "main")).not.toEqual(
+      gitQueryKeys.worktreeBaseSource("/repo/a", "feature/demo"),
     );
   });
 });
@@ -44,5 +55,13 @@ describe("git mutation options", () => {
       queryClient,
     });
     expect(options.mutationKey).toEqual(gitMutationKeys.preparePullRequestThread("/repo/a"));
+  });
+
+  it("attaches cwd-and-branch scoped query key for resolveWorktreeBaseSource", () => {
+    const options = gitResolveWorktreeBaseSourceQueryOptions({
+      cwd: "/repo/a",
+      branch: "main",
+    });
+    expect(options.queryKey).toEqual(gitQueryKeys.worktreeBaseSource("/repo/a", "main"));
   });
 });

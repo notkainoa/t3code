@@ -6,11 +6,15 @@ const GIT_STATUS_STALE_TIME_MS = 5_000;
 const GIT_STATUS_REFETCH_INTERVAL_MS = 15_000;
 const GIT_BRANCHES_STALE_TIME_MS = 15_000;
 const GIT_BRANCHES_REFETCH_INTERVAL_MS = 60_000;
+const GIT_WORKTREE_BASE_SOURCE_STALE_TIME_MS = 15_000;
+const GIT_WORKTREE_BASE_SOURCE_REFETCH_INTERVAL_MS = 60_000;
 
 export const gitQueryKeys = {
   all: ["git"] as const,
   status: (cwd: string | null) => ["git", "status", cwd] as const,
   branches: (cwd: string | null) => ["git", "branches", cwd] as const,
+  worktreeBaseSource: (cwd: string | null, branch: string | null) =>
+    ["git", "worktree-base-source", cwd, branch] as const,
 };
 
 export const gitMutationKeys = {
@@ -55,6 +59,30 @@ export function gitBranchesQueryOptions(cwd: string | null) {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: GIT_BRANCHES_REFETCH_INTERVAL_MS,
+  });
+}
+
+export function gitResolveWorktreeBaseSourceQueryOptions(input: {
+  cwd: string | null;
+  branch: string | null;
+}) {
+  return queryOptions({
+    queryKey: gitQueryKeys.worktreeBaseSource(input.cwd, input.branch),
+    queryFn: async () => {
+      const api = ensureNativeApi();
+      if (!input.cwd || !input.branch) {
+        throw new Error("Worktree base source is unavailable.");
+      }
+      return api.git.resolveWorktreeBaseSource({
+        cwd: input.cwd,
+        branch: input.branch,
+      });
+    },
+    enabled: input.cwd !== null && input.branch !== null,
+    staleTime: GIT_WORKTREE_BASE_SOURCE_STALE_TIME_MS,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: GIT_WORKTREE_BASE_SOURCE_REFETCH_INTERVAL_MS,
   });
 }
 

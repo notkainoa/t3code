@@ -123,6 +123,7 @@ import { isTerminalFocused } from "../lib/terminalFocus";
 import {
   type ComposerImageAttachment,
   type DraftThreadEnvMode,
+  type DraftWorktreeBaseSource,
   type PersistedComposerImageAttachment,
   useComposerDraftStore,
   useComposerThreadDraft,
@@ -393,7 +394,12 @@ export default function ChatView({ threadId }: ChatViewProps) {
   }, []);
 
   const openOrReuseProjectDraftThread = useCallback(
-    async (input: { branch: string; worktreePath: string | null; envMode: DraftThreadEnvMode }) => {
+    async (input: {
+      branch: string;
+      worktreePath: string | null;
+      envMode: DraftThreadEnvMode;
+      worktreeBaseSource?: DraftWorktreeBaseSource;
+    }) => {
       if (!activeProject) {
         throw new Error("No active project is available for this pull request.");
       }
@@ -449,6 +455,7 @@ export default function ChatView({ threadId }: ChatViewProps) {
         branch: input.branch,
         worktreePath: input.worktreePath,
         envMode: input.worktreePath ? "worktree" : "local",
+        worktreeBaseSource: "local",
       });
     },
     [openOrReuseProjectDraftThread],
@@ -2289,14 +2296,27 @@ export default function ChatView({ threadId }: ChatViewProps) {
     let turnStartSucceeded = false;
     let nextThreadBranch = activeThread.branch;
     let nextThreadWorktreePath = activeThread.worktreePath;
+    const worktreeBaseSourceForSend: DraftWorktreeBaseSource =
+      draftThread?.worktreeBaseSource ?? "local";
     await (async () => {
       // On first message: lock in branch + create worktree if needed.
       if (baseBranchForWorktree) {
         beginSendPhase("preparing-worktree");
         const newBranch = buildTemporaryWorktreeBranchName();
+        let worktreeBaseRef = baseBranchForWorktree;
+        if (worktreeBaseSourceForSend === "remote") {
+          const resolvedBaseSource = await api.git.resolveWorktreeBaseSource({
+            cwd: activeProject.cwd,
+            branch: baseBranchForWorktree,
+          });
+          if (!resolvedBaseSource.showSourcePicker || !resolvedBaseSource.remoteRef) {
+            throw new Error("Remote base is no longer available for the selected branch.");
+          }
+          worktreeBaseRef = resolvedBaseSource.remoteRef;
+        }
         const result = await createWorktreeMutation.mutateAsync({
           cwd: activeProject.cwd,
-          branch: baseBranchForWorktree,
+          branch: worktreeBaseRef,
           newBranch,
         });
         nextThreadBranch = result.worktree.branch;
@@ -2899,7 +2919,10 @@ export default function ChatView({ threadId }: ChatViewProps) {
   const onEnvModeChange = useCallback(
     (mode: DraftThreadEnvMode) => {
       if (isLocalDraftThread) {
-        setDraftThreadContext(threadId, { envMode: mode });
+        setDraftThreadContext(threadId, {
+          envMode: mode,
+          ...(mode === "local" ? { worktreeBaseSource: "local" as const } : {}),
+        });
       }
       scheduleComposerFocus();
     },

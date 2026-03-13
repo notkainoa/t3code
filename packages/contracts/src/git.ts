@@ -19,6 +19,7 @@ const GitStatusPrState = Schema.Literals(["open", "closed", "merged"]);
 const GitPullRequestReference = TrimmedNonEmptyStringSchema;
 const GitPullRequestState = Schema.Literals(["open", "closed", "merged"]);
 const GitPreparePullRequestThreadMode = Schema.Literals(["local", "worktree"]);
+const GitWorktreeBaseSource = Schema.Literals(["local", "remote"]);
 
 export const GitBranch = Schema.Struct({
   name: TrimmedNonEmptyStringSchema,
@@ -71,6 +72,12 @@ export const GitListBranchesInput = Schema.Struct({
   cwd: TrimmedNonEmptyStringSchema,
 });
 export type GitListBranchesInput = typeof GitListBranchesInput.Type;
+
+export const GitResolveWorktreeBaseSourceInput = Schema.Struct({
+  cwd: TrimmedNonEmptyStringSchema,
+  branch: TrimmedNonEmptyStringSchema,
+});
+export type GitResolveWorktreeBaseSourceInput = typeof GitResolveWorktreeBaseSourceInput.Type;
 
 export const GitCreateWorktreeInput = Schema.Struct({
   cwd: TrimmedNonEmptyStringSchema,
@@ -155,6 +162,19 @@ export const GitListBranchesResult = Schema.Struct({
   hasOriginRemote: Schema.Boolean,
 });
 export type GitListBranchesResult = typeof GitListBranchesResult.Type;
+
+export const GitResolveWorktreeBaseSourceResult = Schema.Struct({
+  branch: TrimmedNonEmptyStringSchema,
+  localRef: Schema.NullOr(TrimmedNonEmptyStringSchema),
+  remoteRef: Schema.NullOr(TrimmedNonEmptyStringSchema),
+  remoteName: Schema.NullOr(TrimmedNonEmptyStringSchema),
+  remoteBranch: Schema.NullOr(TrimmedNonEmptyStringSchema),
+  aheadCount: NonNegativeInt,
+  behindCount: NonNegativeInt,
+  showSourcePicker: Schema.Boolean,
+  recommendedSource: GitWorktreeBaseSource,
+});
+export type GitResolveWorktreeBaseSourceResult = typeof GitResolveWorktreeBaseSourceResult.Type;
 
 export const GitCreateWorktreeResult = Schema.Struct({
   worktree: GitWorktree,
