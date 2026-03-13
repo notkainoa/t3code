@@ -1,0 +1,29 @@
+apps/web/src/components/Sidebar.tsx
+  a3185b4891687d50 461,466
+apps/web/src/threadDraftDefaults.test.ts
+  a3185b4891687d50 84-101
+apps/web/src/threadDraftDefaults.ts
+  a3185b4891687d50 37-43,45
+apps/web/src/components/ChatView.browser.tsx
+  a3185b4891687d50 1072-1112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "b145a27b3246ef6f295d96363b3fec91dddb1029",
+  "prompts": {
+    "a3185b4891687d50": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cde9b-541d-7861-9803-186feb66fba2",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 76,
+      "total_deletions": 11,
+      "accepted_lines": 72,
+      "overriden_lines": 0
+    }
+  }
+}
