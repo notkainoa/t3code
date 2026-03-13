@@ -1,0 +1,55 @@
+apps/web/src/components/BranchToolbar.tsx
+  c37b84b30a156dad 2-3,6,8,16,54-72,126-131,133-159,161-186,209-218,228-229
+apps/server/src/git/Layers/GitCore.ts
+  c37b84b30a156dad 190-201,667-716,719-743,1297-1359,1569
+apps/web/src/lib/gitReactQuery.test.ts
+  c37b84b30a156dad 5,8,28-36,59-65
+apps/server/src/wsServer.ts
+  c37b84b30a156dad 814-818
+apps/server/src/git/Layers/GitCore.test.ts
+  c37b84b30a156dad 108,157-165,500-760
+apps/web/src/composerDraftStore.test.ts
+  c37b84b30a156dad 191,201,289,313,340-366
+packages/contracts/src/git.ts
+  c37b84b30a156dad 22,76-81,166-177
+packages/contracts/src/ws.ts
+  c37b84b30a156dad 23,60,125
+packages/contracts/src/ipc.ts
+  c37b84b30a156dad 7-8,141-143
+apps/web/src/components/BranchToolbarBaseSourcePicker.tsx
+  c37b84b30a156dad 1-43
+apps/web/src/composerDraftStore.ts
+  c37b84b30a156dad 19,95,125,146,159,308-311,359-361,390,630-631,642-643,703,712-713
+apps/web/src/components/ChatView.browser.tsx
+  c37b84b30a156dad 903
+apps/server/src/git/Services/GitCore.ts
+  c37b84b30a156dad 21-22,161-166
+apps/web/src/lib/gitReactQuery.ts
+  c37b84b30a156dad 9-10,16-17,65-85
+apps/web/src/components/ChatView.tsx
+  c37b84b30a156dad 126,400-401,458,2299-2300,2306-2316,2319,2923-2924
+apps/web/src/wsNativeApi.ts
+  c37b84b30a156dad 140-141
+apps/web/src/hooks/useHandleNewThread.ts
+  c37b84b30a156dad 6,36,49,59-60,66-68,92-93,99-101,116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "a0ea4ae74550f7a24ab20b9ac2cc7e7f8636b718",
+  "prompts": {
+    "c37b84b30a156dad": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ce4cf-2ab3-7a33-a932-468821ab4779",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton <k@kainoa.me>",
+      "messages": [],
+      "total_additions": 771,
+      "total_deletions": 19,
+      "accepted_lines": 748,
+      "overriden_lines": 0
+    }
+  }
+}
