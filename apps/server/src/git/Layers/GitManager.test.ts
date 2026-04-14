@@ -507,6 +507,7 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
           args: [
             "pr",
             "list",
+            ...(input.repository ? ["--repo", input.repository] : []),
             "--head",
             input.headSelector,
             "--state",
@@ -530,6 +531,7 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
           args: [
             "pr",
             "create",
+            ...(input.repository ? ["--repo", input.repository] : []),
             "--base",
             input.baseBranch,
             "--head",
@@ -543,7 +545,15 @@ function createGitHubCliWithFakeGh(scenario: FakeGhScenario = {}): {
       getDefaultBranch: (input) =>
         execute({
           cwd: input.cwd,
-          args: ["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"],
+          args: [
+            "repo",
+            "view",
+            ...(input.repository ? [input.repository] : []),
+            "--json",
+            "defaultBranchRef",
+            "--jq",
+            ".defaultBranchRef.name",
+          ],
         }).pipe(
           Effect.map((result) => {
             const value = result.stdout.trim();
@@ -584,6 +594,7 @@ function runStackedAction(
     actionId?: string;
     commitMessage?: string;
     featureBranch?: boolean;
+    prTarget?: "origin" | "upstream";
     filePaths?: readonly string[];
   },
   options?: Parameters<GitManagerShape["runStackedAction"]>[1],
@@ -1998,6 +2009,76 @@ it.layer(GitManagerTestLayer)("GitManager", (it) => {
       expect(
         ghCalls.some((call) =>
           call.includes("pr create --base statemachine --head octocat:statemachine"),
+        ),
+      ).toBe(false);
+    }),
+  );
+
+  it.effect("creates PRs in origin when the PR target is overridden to the current repo", () =>
+    Effect.gen(function* () {
+      const repoDir = yield* makeTempDir("t3code-git-manager-");
+      yield* initRepo(repoDir);
+      yield* runGit(repoDir, ["checkout", "-b", "feature/fork-target"]);
+      const originDir = yield* createBareRemote();
+      const upstreamDir = yield* createBareRemote();
+      yield* runGit(repoDir, ["remote", "add", "origin", originDir]);
+      yield* runGit(repoDir, ["remote", "add", "upstream", upstreamDir]);
+      fs.writeFileSync(path.join(repoDir, "changes.txt"), "change\n");
+      yield* runGit(repoDir, ["add", "changes.txt"]);
+      yield* runGit(repoDir, ["commit", "-m", "Feature commit"]);
+      yield* runGit(repoDir, ["push", "-u", "origin", "feature/fork-target"]);
+      yield* runGit(repoDir, [
+        "config",
+        "remote.origin.url",
+        "git@github.com:octocat/codething-mvp.git",
+      ]);
+      yield* runGit(repoDir, [
+        "config",
+        "remote.upstream.url",
+        "git@github.com:pingdotgg/codething-mvp.git",
+      ]);
+
+      const { manager, ghCalls } = yield* makeManager({
+        ghScenario: {
+          prListSequenceByHeadSelector: {
+            "feature/fork-target": [
+              JSON.stringify([]),
+              JSON.stringify([
+                {
+                  number: 299,
+                  title: "Origin-target PR",
+                  url: "https://github.com/octocat/codething-mvp/pull/299",
+                  baseRefName: "main",
+                  headRefName: "feature/fork-target",
+                  state: "OPEN",
+                  isCrossRepository: false,
+                },
+              ]),
+            ],
+          },
+        },
+      });
+
+      const result = yield* runStackedAction(manager, {
+        cwd: repoDir,
+        action: "create_pr",
+        prTarget: "origin",
+      });
+
+      expect(result.pr.status).toBe("created");
+      expect(result.pr.number).toBe(299);
+      expect(
+        ghCalls.some((call) =>
+          call.includes(
+            "pr create --repo octocat/codething-mvp --base main --head feature/fork-target",
+          ),
+        ),
+      ).toBe(true);
+      expect(
+        ghCalls.some((call) =>
+          call.includes(
+            "pr create --repo pingdotgg/codething-mvp --base main --head feature/fork-target",
+          ),
         ),
       ).toBe(false);
     }),

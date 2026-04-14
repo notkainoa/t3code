@@ -1,4 +1,5 @@
 import type {
+  GitPullRequestTargetId,
   GitRunStackedActionResult,
   GitStackedAction,
   GitStatusResult,
@@ -29,6 +30,38 @@ export interface DefaultBranchActionDialogCopy {
   title: string;
   description: string;
   continueLabel: string;
+}
+
+export function resolvePreferredPrTargetId(
+  gitStatus: GitStatusResult | null,
+  preferredTargetId?: GitPullRequestTargetId | null,
+): GitPullRequestTargetId | null {
+  const targets = gitStatus?.pullRequestTargets ?? [];
+  if (targets.length === 0) {
+    return null;
+  }
+
+  if (preferredTargetId && targets.some((target) => target.id === preferredTargetId)) {
+    return preferredTargetId;
+  }
+
+  return targets.find((target) => target.id === "upstream")?.id ?? targets[0]?.id ?? null;
+}
+
+export function resolveGitStatusForPrTarget(
+  gitStatus: GitStatusResult | null,
+  prTargetId: GitPullRequestTargetId | null,
+): GitStatusResult | null {
+  if (!gitStatus || !prTargetId || !gitStatus.pullRequestsByTarget) {
+    return gitStatus;
+  }
+
+  const targetPr =
+    gitStatus.pullRequestsByTarget?.find((target) => target.id === prTargetId)?.pr ?? null;
+  return {
+    ...gitStatus,
+    pr: targetPr,
+  };
 }
 
 export type DefaultBranchConfirmableAction =

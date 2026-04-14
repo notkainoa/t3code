@@ -265,6 +265,7 @@ function toRemoteStatusPart(status: GitStatusResult): GitStatusRemoteResult {
     aheadCount: status.aheadCount,
     behindCount: status.behindCount,
     pr: status.pr,
+    ...(status.pullRequestsByTarget ? { pullRequestsByTarget: status.pullRequestsByTarget } : {}),
   };
 }
 
@@ -273,6 +274,7 @@ function toLocalStatusPart(status: GitStatusResult): GitStatusLocalResult {
     isRepo: status.isRepo,
     ...(status.hostingProvider ? { hostingProvider: status.hostingProvider } : {}),
     hasOriginRemote: status.hasOriginRemote,
+    ...(status.pullRequestTargets ? { pullRequestTargets: status.pullRequestTargets } : {}),
     isDefaultBranch: status.isDefaultBranch,
     branch: status.branch,
     hasWorkingTreeChanges: status.hasWorkingTreeChanges,

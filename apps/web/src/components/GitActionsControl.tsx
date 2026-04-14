@@ -1,3 +1,4 @@
+import { Schema } from "effect";
 import { type ScopedThreadRef } from "@t3tools/contracts";
 import type {
   GitActionProgressEvent,
@@ -5,9 +6,18 @@ import type {
   GitStackedAction,
   GitStatusResult,
 } from "@t3tools/contracts";
+import { GitPullRequestTargetId } from "@t3tools/contracts";
+import type { GitPullRequestTargetId as GitPullRequestTargetIdValue } from "@t3tools/contracts";
 import { useIsMutating, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
-import { ChevronDownIcon, CloudUploadIcon, GitCommitIcon, InfoIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  CloudUploadIcon,
+  GitCommitIcon,
+  InfoIcon,
+  Settings2Icon,
+} from "lucide-react";
 import { GitHubIcon } from "./Icons";
 import {
   buildGitActionProgressStages,
@@ -17,11 +27,14 @@ import {
   type GitQuickAction,
   type DefaultBranchConfirmableAction,
   requiresDefaultBranchConfirmation,
+  resolveGitStatusForPrTarget,
   resolveDefaultBranchActionDialogCopy,
+  resolvePreferredPrTargetId,
   resolveLiveThreadBranchUpdate,
   resolveQuickAction,
   resolveThreadBranchUpdate,
 } from "./GitActionsControl.logic";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
@@ -40,6 +53,7 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { Textarea } from "~/components/ui/textarea";
 import { toastManager, type ThreadToastData } from "~/components/ui/toast";
 import { openInPreferredEditor } from "~/editorPreferences";
+import { useLocalStorage } from "~/hooks/useLocalStorage";
 import {
   gitInitMutationOptions,
   gitMutationKeys,
@@ -47,7 +61,7 @@ import {
   gitRunStackedActionMutationOptions,
 } from "~/lib/gitReactQuery";
 import { refreshGitStatus, useGitStatus } from "~/lib/gitStatusState";
-import { newCommandId, randomUUID } from "~/lib/utils";
+import { cn, newCommandId, randomUUID } from "~/lib/utils";
 import { resolvePathLinkTarget } from "~/terminal-links";
 import { useComposerDraftStore } from "~/composerDraftStore";
 import { readEnvironmentApi } from "~/environmentApi";
@@ -65,6 +79,7 @@ interface PendingDefaultBranchAction {
   branchName: string;
   includesCommit: boolean;
   commitMessage?: string;
+  prTarget?: GitPullRequestTargetIdValue;
   onConfirmed?: () => void;
   filePaths?: string[];
 }
@@ -91,10 +106,27 @@ interface RunGitActionWithToastInput {
   statusOverride?: GitStatusResult | null;
   featureBranch?: boolean;
   progressToastId?: GitActionToastId;
+  prTarget?: GitPullRequestTargetIdValue;
   filePaths?: string[];
 }
 
 const GIT_STATUS_WINDOW_REFRESH_DEBOUNCE_MS = 250;
+const GIT_PR_TARGET_PREFERENCES_STORAGE_KEY = "t3code:git-pr-target-preferences:v1";
+const GitPrTargetPreferencesSchema = Schema.Record(Schema.String, GitPullRequestTargetId);
+
+function isPrCreatingAction(action: GitStackedAction): action is "create_pr" | "commit_push_pr" {
+  return action === "create_pr" || action === "commit_push_pr";
+}
+
+function resolvePrTargetPreferenceKey(
+  environmentId: string | null,
+  cwd: string | null,
+): string | null {
+  if (!environmentId || !cwd) {
+    return null;
+  }
+  return `${environmentId}:${cwd}`;
+}
 
 function formatElapsedDescription(startedAtMs: number | null): string | undefined {
   if (startedAtMs === null) {
@@ -233,6 +265,7 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
   const [pendingDefaultBranchAction, setPendingDefaultBranchAction] =
     useState<PendingDefaultBranchAction | null>(null);
   const activeGitActionProgressRef = useRef<ActiveGitActionProgress | null>(null);
+  const [isGitActionsMenuOpen, setIsGitActionsMenuOpen] = useState(false);
   let runGitActionWithToast: (input: RunGitActionWithToastInput) => Promise<void>;
 
   const updateActiveProgressToast = useCallback(() => {
@@ -312,10 +345,40 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
     environmentId: activeEnvironmentId,
     cwd: gitCwd,
   });
+  const [prTargetPreferences, setPrTargetPreferences] = useLocalStorage(
+    GIT_PR_TARGET_PREFERENCES_STORAGE_KEY,
+    {},
+    GitPrTargetPreferencesSchema,
+  );
+  const prTargetPreferenceKey = useMemo(
+    () => resolvePrTargetPreferenceKey(activeEnvironmentId, gitCwd),
+    [activeEnvironmentId, gitCwd],
+  );
+  const storedPrTargetId = prTargetPreferenceKey
+    ? (prTargetPreferences[prTargetPreferenceKey] ?? null)
+    : null;
+  const selectedPrTargetId = useMemo(
+    () => resolvePreferredPrTargetId(gitStatus, storedPrTargetId),
+    [gitStatus, storedPrTargetId],
+  );
+  const selectedPrTarget = useMemo(
+    () =>
+      selectedPrTargetId
+        ? (gitStatus?.pullRequestTargets?.find((target) => target.id === selectedPrTargetId) ??
+          null)
+        : null,
+    [gitStatus, selectedPrTargetId],
+  );
+  const availablePrTargets = gitStatus?.pullRequestTargets ?? [];
+  const [isPrTargetDialogOpen, setIsPrTargetDialogOpen] = useState(false);
+  const [draftPrTargetId, setDraftPrTargetId] = useState<GitPullRequestTargetIdValue | null>(null);
   // Default to true while loading so we don't flash init controls.
   const isRepo = gitStatus?.isRepo ?? true;
   const hasOriginRemote = gitStatus?.hasOriginRemote ?? false;
-  const gitStatusForActions = gitStatus;
+  const gitStatusForActions = useMemo(
+    () => resolveGitStatusForPrTarget(gitStatus, selectedPrTargetId),
+    [gitStatus, selectedPrTargetId],
+  );
 
   const allFiles = gitStatusForActions?.workingTree.files ?? [];
   const selectedFiles = allFiles.filter((f) => !excludedFiles.has(f.path));
@@ -389,6 +452,8 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
         includesCommit: pendingDefaultBranchAction.includesCommit,
       })
     : null;
+  const prTargetDialogSelectionId = draftPrTargetId ?? selectedPrTargetId;
+  const hasConfigurablePrTargets = availablePrTargets.length > 1;
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -467,6 +532,26 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
     });
   }, [gitStatusForActions, threadToastData]);
 
+  const openPrTargetDialog = useCallback(() => {
+    if (availablePrTargets.length <= 1) {
+      return;
+    }
+    setDraftPrTargetId(selectedPrTargetId);
+    setIsPrTargetDialogOpen(true);
+  }, [availablePrTargets.length, selectedPrTargetId]);
+
+  const savePrTargetSelection = useCallback(() => {
+    if (!prTargetPreferenceKey || !draftPrTargetId) {
+      setIsPrTargetDialogOpen(false);
+      return;
+    }
+    setPrTargetPreferences((current) => ({
+      ...current,
+      [prTargetPreferenceKey]: draftPrTargetId,
+    }));
+    setIsPrTargetDialogOpen(false);
+  }, [draftPrTargetId, prTargetPreferenceKey, setPrTargetPreferences]);
+
   runGitActionWithToast = useEffectEvent(
     async ({
       action,
@@ -476,6 +561,7 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
       statusOverride,
       featureBranch = false,
       progressToastId,
+      prTarget,
       filePaths,
     }: RunGitActionWithToastInput) => {
       const actionStatus = statusOverride ?? gitStatusForActions;
@@ -504,6 +590,7 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
           branchName: actionBranch,
           includesCommit,
           ...(commitMessage ? { commitMessage } : {}),
+          ...(prTarget ? { prTarget } : {}),
           ...(onConfirmed ? { onConfirmed } : {}),
           ...(filePaths ? { filePaths } : {}),
         });
@@ -615,6 +702,7 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
         action,
         ...(commitMessage ? { commitMessage } : {}),
         ...(featureBranch ? { featureBranch } : {}),
+        ...(prTarget && isPrCreatingAction(action) ? { prTarget } : {}),
         ...(filePaths ? { filePaths } : {}),
         onProgress: applyProgressEvent,
       });
@@ -639,6 +727,9 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
               closeResultToast();
               void runGitActionWithToast({
                 action: toastCta.action.kind,
+                ...(toastCta.action.kind === "create_pr" && selectedPrTargetId
+                  ? { prTarget: selectedPrTargetId }
+                  : {}),
               });
             },
           };
@@ -687,11 +778,12 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
 
   const continuePendingDefaultBranchAction = () => {
     if (!pendingDefaultBranchAction) return;
-    const { action, commitMessage, onConfirmed, filePaths } = pendingDefaultBranchAction;
+    const { action, commitMessage, onConfirmed, prTarget, filePaths } = pendingDefaultBranchAction;
     setPendingDefaultBranchAction(null);
     void runGitActionWithToast({
       action,
       ...(commitMessage ? { commitMessage } : {}),
+      ...(prTarget ? { prTarget } : {}),
       ...(onConfirmed ? { onConfirmed } : {}),
       ...(filePaths ? { filePaths } : {}),
       skipDefaultBranchPrompt: true,
@@ -700,11 +792,12 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
 
   const checkoutFeatureBranchAndContinuePendingAction = () => {
     if (!pendingDefaultBranchAction) return;
-    const { action, commitMessage, onConfirmed, filePaths } = pendingDefaultBranchAction;
+    const { action, commitMessage, onConfirmed, prTarget, filePaths } = pendingDefaultBranchAction;
     setPendingDefaultBranchAction(null);
     void runGitActionWithToast({
       action,
       ...(commitMessage ? { commitMessage } : {}),
+      ...(prTarget ? { prTarget } : {}),
       ...(onConfirmed ? { onConfirmed } : {}),
       ...(filePaths ? { filePaths } : {}),
       featureBranch: true,
@@ -766,7 +859,12 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
       return;
     }
     if (quickAction.action) {
-      void runGitActionWithToast({ action: quickAction.action });
+      void runGitActionWithToast({
+        action: quickAction.action,
+        ...(isPrCreatingAction(quickAction.action) && selectedPrTargetId
+          ? { prTarget: selectedPrTargetId }
+          : {}),
+      });
     }
   };
 
@@ -781,12 +879,42 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
       return;
     }
     if (item.dialogAction === "create_pr") {
-      void runGitActionWithToast({ action: "create_pr" });
+      void runGitActionWithToast({
+        action: "create_pr",
+        ...(selectedPrTargetId ? { prTarget: selectedPrTargetId } : {}),
+      });
       return;
     }
     setExcludedFiles(new Set());
     setIsEditingFiles(false);
     setIsCommitDialogOpen(true);
+  };
+
+  const renderPrTargetButton = () => {
+    if (!hasConfigurablePrTargets) {
+      return null;
+    }
+
+    return (
+      <button
+        type="button"
+        className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label="Configure PR target"
+        title={
+          selectedPrTarget
+            ? `PR target: ${selectedPrTarget.repositoryNameWithOwner}`
+            : "Configure PR target"
+        }
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setIsGitActionsMenuOpen(false);
+          openPrTargetDialog();
+        }}
+      >
+        <Settings2Icon className="size-3.5" />
+      </button>
+    );
   };
 
   const runDialogAction = () => {
@@ -879,7 +1007,9 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
           )}
           <GroupSeparator className="hidden @3xl/header-actions:block" />
           <Menu
+            open={isGitActionsMenuOpen}
             onOpenChange={(open) => {
+              setIsGitActionsMenuOpen(open);
               if (open) {
                 void refreshGitStatus({
                   environmentId: activeEnvironmentId,
@@ -903,6 +1033,29 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
                   hasOriginRemote,
                 });
                 if (item.disabled && disabledReason) {
+                  if (item.id === "pr" && hasConfigurablePrTargets) {
+                    return (
+                      <div key={`${item.id}-${item.label}`} className="flex items-center gap-1">
+                        <Popover>
+                          <PopoverTrigger
+                            openOnHover
+                            nativeButton={false}
+                            render={<span className="block min-w-0 flex-1 cursor-not-allowed" />}
+                          >
+                            <MenuItem className="w-full min-w-0 flex-1" disabled>
+                              <GitActionItemIcon icon={item.icon} />
+                              <span>{item.label}</span>
+                            </MenuItem>
+                          </PopoverTrigger>
+                          <PopoverPopup tooltipStyle side="left" align="center">
+                            {disabledReason}
+                          </PopoverPopup>
+                        </Popover>
+                        {renderPrTargetButton()}
+                      </div>
+                    );
+                  }
+
                   return (
                     <Popover key={`${item.id}-${item.label}`}>
                       <PopoverTrigger
@@ -926,12 +1079,17 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
                   <MenuItem
                     key={`${item.id}-${item.label}`}
                     disabled={item.disabled}
+                    className={item.id === "pr" && hasConfigurablePrTargets ? "gap-1" : undefined}
                     onClick={() => {
                       openDialogForMenuItem(item);
                     }}
                   >
                     <GitActionItemIcon icon={item.icon} />
-                    {item.label}
+                    <span>{item.label}</span>
+                    {item.id === "pr" && hasConfigurablePrTargets && (
+                      <span className="min-w-0 flex-1" />
+                    )}
+                    {item.id === "pr" && renderPrTargetButton()}
                   </MenuItem>
                 );
               })}
@@ -1119,6 +1277,105 @@ export default function GitActionsControl({ gitCwd, activeThreadRef }: GitAction
             </Button>
             <Button size="sm" disabled={noneSelected} onClick={runDialogAction}>
               Commit
+            </Button>
+          </DialogFooter>
+        </DialogPopup>
+      </Dialog>
+
+      <Dialog
+        open={isPrTargetDialogOpen}
+        onOpenChange={(open) => {
+          setIsPrTargetDialogOpen(open);
+          if (!open) {
+            setDraftPrTargetId(selectedPrTargetId);
+          }
+        }}
+      >
+        <DialogPopup className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>PR target</DialogTitle>
+            <DialogDescription>
+              Choose which repository new pull requests should be created in.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogPanel className="space-y-4">
+            {hasConfigurablePrTargets ? (
+              <div className="space-y-2">
+                {availablePrTargets.map((target) => {
+                  const isSelected = prTargetDialogSelectionId === target.id;
+                  const targetPr =
+                    gitStatus?.pullRequestsByTarget?.find((entry) => entry.id === target.id)?.pr ??
+                    null;
+
+                  return (
+                    <button
+                      key={target.id}
+                      type="button"
+                      className={cn(
+                        "w-full rounded-xl border px-4 py-3 text-left transition-colors",
+                        isSelected
+                          ? "border-primary bg-accent/40"
+                          : "border-input bg-background hover:bg-accent/24",
+                      )}
+                      onClick={() => setDraftPrTargetId(target.id)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge size="sm" variant={isSelected ? "default" : "outline"}>
+                              {target.label}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{target.repositoryNameWithOwner}</p>
+                            <p className="mt-1 text-muted-foreground text-xs">
+                              {target.description}
+                            </p>
+                            {targetPr?.state === "open" && (
+                              <p className="mt-2 text-emerald-600 text-xs dark:text-emerald-300/90">
+                                Open PR #{targetPr.number}: {targetPr.title}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <span
+                          className={cn(
+                            "mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full border",
+                            isSelected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-input bg-background text-transparent",
+                          )}
+                        >
+                          <CheckIcon className="size-3.5" />
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-input bg-background px-4 py-3 text-muted-foreground text-sm">
+                No alternate GitHub PR targets were detected for this checkout.
+              </div>
+            )}
+          </DialogPanel>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsPrTargetDialogOpen(false);
+                setDraftPrTargetId(selectedPrTargetId);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={!hasConfigurablePrTargets || !prTargetDialogSelectionId}
+              onClick={savePrTargetSelection}
+            >
+              Save target
             </Button>
           </DialogFooter>
         </DialogPopup>

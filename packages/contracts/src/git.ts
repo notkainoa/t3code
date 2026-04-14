@@ -52,6 +52,8 @@ export const GitHostingProvider = Schema.Struct({
   baseUrl: Schema.String,
 });
 export type GitHostingProvider = typeof GitHostingProvider.Type;
+export const GitPullRequestTargetId = Schema.Literals(["origin", "upstream"]);
+export type GitPullRequestTargetId = typeof GitPullRequestTargetId.Type;
 export const GitRunStackedActionToastRunAction = Schema.Struct({
   kind: GitStackedAction,
 });
@@ -121,6 +123,7 @@ export const GitRunStackedActionInput = Schema.Struct({
   action: GitStackedAction,
   commitMessage: Schema.optional(TrimmedNonEmptyStringSchema.check(Schema.isMaxLength(10_000))),
   featureBranch: Schema.optional(Schema.Boolean),
+  prTarget: Schema.optional(GitPullRequestTargetId),
   filePaths: Schema.optional(
     Schema.Array(TrimmedNonEmptyStringSchema).check(Schema.isMinLength(1)),
   ),
@@ -199,11 +202,25 @@ const GitStatusPr = Schema.Struct({
   headBranch: TrimmedNonEmptyStringSchema,
   state: GitStatusPrState,
 });
+const GitPullRequestTarget = Schema.Struct({
+  id: GitPullRequestTargetId,
+  label: TrimmedNonEmptyStringSchema,
+  repositoryNameWithOwner: TrimmedNonEmptyStringSchema,
+  description: TrimmedNonEmptyStringSchema,
+  remoteName: Schema.optional(TrimmedNonEmptyStringSchema),
+});
+export type GitPullRequestTarget = typeof GitPullRequestTarget.Type;
+const GitPullRequestTargetStatus = Schema.Struct({
+  id: GitPullRequestTargetId,
+  pr: Schema.NullOr(GitStatusPr),
+});
+export type GitPullRequestTargetStatus = typeof GitPullRequestTargetStatus.Type;
 
 const GitStatusLocalShape = {
   isRepo: Schema.Boolean,
   hostingProvider: Schema.optional(GitHostingProvider),
   hasOriginRemote: Schema.Boolean,
+  pullRequestTargets: Schema.optional(Schema.Array(GitPullRequestTarget)),
   isDefaultBranch: Schema.Boolean,
   branch: Schema.NullOr(TrimmedNonEmptyStringSchema),
   hasWorkingTreeChanges: Schema.Boolean,
@@ -225,6 +242,7 @@ const GitStatusRemoteShape = {
   aheadCount: NonNegativeInt,
   behindCount: NonNegativeInt,
   pr: Schema.NullOr(GitStatusPr),
+  pullRequestsByTarget: Schema.optional(Schema.Array(GitPullRequestTargetStatus)),
 };
 
 export const GitStatusLocalResult = Schema.Struct(GitStatusLocalShape);

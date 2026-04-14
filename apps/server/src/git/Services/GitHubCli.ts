@@ -49,6 +49,7 @@ export interface GitHubCliShape {
     readonly cwd: string;
     readonly headSelector: string;
     readonly limit?: number;
+    readonly repository?: string;
   }) => Effect.Effect<ReadonlyArray<GitHubPullRequestSummary>, GitHubCliError>;
 
   /**
@@ -76,6 +77,7 @@ export interface GitHubCliShape {
     readonly headSelector: string;
     readonly title: string;
     readonly bodyFile: string;
+    readonly repository?: string;
   }) => Effect.Effect<void, GitHubCliError>;
 
   /**
@@ -83,6 +85,7 @@ export interface GitHubCliShape {
    */
   readonly getDefaultBranch: (input: {
     readonly cwd: string;
+    readonly repository?: string;
   }) => Effect.Effect<string | null, GitHubCliError>;
 
   /**

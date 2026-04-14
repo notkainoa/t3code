@@ -1,9 +1,11 @@
 import type { GitStatusResult } from "@t3tools/contracts";
-import { assert, describe, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import {
   buildGitActionProgressStages,
   buildMenuItems,
   requiresDefaultBranchConfirmation,
+  resolveGitStatusForPrTarget,
+  resolvePreferredPrTargetId,
   resolveAutoFeatureBranchName,
   resolveDefaultBranchActionDialogCopy,
   resolveLiveThreadBranchUpdate,
@@ -88,6 +90,94 @@ describe("when: branch is clean and has an open PR", () => {
         kind: "open_pr",
       },
     ]);
+  });
+});
+
+describe("when: PR targets are available", () => {
+  it("prefers the stored PR target when it still exists", () => {
+    expect(
+      resolvePreferredPrTargetId(
+        status({
+          pullRequestTargets: [
+            {
+              id: "origin",
+              label: "Current repo",
+              repositoryNameWithOwner: "octocat/t3code",
+              description: "Create pull requests in the repo this checkout is using.",
+              remoteName: "origin",
+            },
+            {
+              id: "upstream",
+              label: "Upstream repo",
+              repositoryNameWithOwner: "pingdotgg/t3code",
+              description: "Create pull requests in the upstream remote instead of origin.",
+              remoteName: "upstream",
+            },
+          ],
+        }),
+        "origin",
+      ),
+    ).toBe("origin");
+  });
+
+  it("defaults to upstream when no explicit preference is stored", () => {
+    expect(
+      resolvePreferredPrTargetId(
+        status({
+          pullRequestTargets: [
+            {
+              id: "origin",
+              label: "Current repo",
+              repositoryNameWithOwner: "octocat/t3code",
+              description: "Create pull requests in the repo this checkout is using.",
+              remoteName: "origin",
+            },
+            {
+              id: "upstream",
+              label: "Upstream repo",
+              repositoryNameWithOwner: "pingdotgg/t3code",
+              description: "Create pull requests in the upstream remote instead of origin.",
+              remoteName: "upstream",
+            },
+          ],
+        }),
+      ),
+    ).toBe("upstream");
+  });
+
+  it("rewrites the effective PR state to the selected target", () => {
+    expect(
+      resolveGitStatusForPrTarget(
+        status({
+          pr: {
+            number: 50,
+            title: "Upstream PR",
+            url: "https://example.com/pr/50",
+            baseBranch: "main",
+            headBranch: "feature/test",
+            state: "open",
+          },
+          pullRequestsByTarget: [
+            {
+              id: "origin",
+              pr: null,
+            },
+            {
+              id: "upstream",
+              pr: {
+                number: 50,
+                title: "Upstream PR",
+                url: "https://example.com/pr/50",
+                baseBranch: "main",
+                headBranch: "feature/test",
+                state: "open",
+              },
+            },
+          ],
+        }),
+        "origin",
+      )?.pr,
+    ).toBeNull();
   });
 });
 

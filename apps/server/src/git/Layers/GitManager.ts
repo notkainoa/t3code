@@ -6,6 +6,7 @@ import {
   GitActionProgressEvent,
   GitActionProgressPhase,
   GitCommandError,
+  type GitPullRequestTargetId,
   GitRunStackedActionResult,
   GitStackedAction,
   type GitStatusLocalResult,
@@ -86,6 +87,25 @@ interface BranchHeadContext {
   headRepositoryNameWithOwner: string | null;
   headRepositoryOwnerLogin: string | null;
   isCrossRepository: boolean;
+}
+
+interface PullRequestTargetContext {
+  id: GitPullRequestTargetId;
+  label: string;
+  repositoryNameWithOwner: string;
+  description: string;
+  remoteName?: string;
+}
+
+function resolveSelectedPullRequestTarget(
+  targets: ReadonlyArray<PullRequestTargetContext>,
+  requestedTarget: GitPullRequestTargetId | undefined,
+): PullRequestTargetContext | null {
+  if (requestedTarget) {
+    return targets.find((target) => target.id === requestedTarget) ?? null;
+  }
+
+  return targets.find((target) => target.id === "upstream") ?? targets[0] ?? null;
 }
 
 function parseRepositoryNameFromPullRequestUrl(url: string): string | null {
@@ -720,11 +740,19 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
     const hostingProvider = details.isRepo
       ? yield* resolveHostingProvider(cwd, details.branch)
       : null;
+    const pullRequestTargets =
+      details.branch !== null
+        ? yield* resolvePullRequestTargets(cwd, {
+            branch: details.branch,
+            upstreamRef: details.upstreamRef,
+          })
+        : [];
 
     return {
       isRepo: details.isRepo,
       ...(hostingProvider ? { hostingProvider } : {}),
       hasOriginRemote: details.hasOriginRemote,
+      ...(pullRequestTargets.length > 0 ? { pullRequestTargets } : {}),
       isDefaultBranch: details.isDefaultBranch,
       branch: details.branch,
       hasWorkingTreeChanges: details.hasWorkingTreeChanges,
@@ -755,12 +783,52 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
             Effect.catch(() => Effect.succeed(null)),
           )
         : null;
+    const pullRequestsByTarget =
+      details.branch !== null
+        ? yield* Effect.gen(function* () {
+            const branch = details.branch;
+            if (branch === null) {
+              return [];
+            }
+            const targets = yield* resolvePullRequestTargets(cwd, {
+              branch,
+              upstreamRef: details.upstreamRef,
+            });
+            if (targets.length === 0) {
+              return [];
+            }
+
+            const headContext = yield* resolveBranchHeadContext(cwd, {
+              branch,
+              upstreamRef: details.upstreamRef,
+            });
+
+            return yield* Effect.forEach(
+              targets,
+              (target) =>
+                findOpenPr(cwd, headContext, target.repositoryNameWithOwner).pipe(
+                  Effect.map((openPr) => ({
+                    id: target.id,
+                    pr: openPr ? toStatusPr(openPr) : null,
+                  })),
+                  Effect.catch(() =>
+                    Effect.succeed({
+                      id: target.id,
+                      pr: null,
+                    }),
+                  ),
+                ),
+              { concurrency: "unbounded" },
+            );
+          })
+        : [];
 
     return {
       hasUpstream: details.hasUpstream,
       aheadCount: details.aheadCount,
       behindCount: details.behindCount,
       pr,
+      ...(pullRequestsByTarget.length > 0 ? { pullRequestsByTarget } : {}),
     } satisfies GitStatusRemoteResult;
   });
   const remoteStatusResultCache = yield* Cache.makeWith(readRemoteStatus, {
@@ -805,6 +873,82 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
       repositoryNameWithOwner,
       ownerLogin: parseRepositoryOwnerLogin(repositoryNameWithOwner),
     };
+  });
+
+  const resolvePullRequestTargets = Effect.fn("resolvePullRequestTargets")(function* (
+    cwd: string,
+    details: { branch: string; upstreamRef: string | null },
+  ) {
+    const remoteName = yield* readConfigValueNullable(cwd, `branch.${details.branch}.remote`);
+    const [branchRemoteRepository, originRepository, namedUpstreamRepository] = yield* Effect.all(
+      [
+        resolveRemoteRepositoryContext(cwd, remoteName),
+        resolveRemoteRepositoryContext(cwd, "origin"),
+        resolveRemoteRepositoryContext(cwd, "upstream"),
+      ],
+      { concurrency: "unbounded" },
+    );
+    const upstreamRepositoryNameWithOwner =
+      namedUpstreamRepository.repositoryNameWithOwner ??
+      (remoteName !== null && remoteName !== "origin"
+        ? branchRemoteRepository.repositoryNameWithOwner
+        : null);
+    const upstreamRemoteName =
+      namedUpstreamRepository.repositoryNameWithOwner !== null
+        ? "upstream"
+        : remoteName !== null && remoteName !== "origin"
+          ? remoteName
+          : null;
+
+    const targets: PullRequestTargetContext[] = [];
+    const appendTarget = (target: PullRequestTargetContext | null) => {
+      if (!target) {
+        return;
+      }
+      const normalizedRepository = normalizeOptionalRepositoryNameWithOwner(
+        target.repositoryNameWithOwner,
+      );
+      if (
+        normalizedRepository &&
+        targets.some(
+          (existing) =>
+            normalizeOptionalRepositoryNameWithOwner(existing.repositoryNameWithOwner) ===
+            normalizedRepository,
+        )
+      ) {
+        return;
+      }
+      targets.push(target);
+    };
+
+    appendTarget(
+      originRepository.repositoryNameWithOwner
+        ? {
+            id: "origin",
+            label: "Current repo",
+            repositoryNameWithOwner: originRepository.repositoryNameWithOwner,
+            description: "Create pull requests in the repo this checkout is using.",
+            remoteName: "origin",
+          }
+        : null,
+    );
+
+    appendTarget(
+      upstreamRepositoryNameWithOwner
+        ? {
+            id: "upstream",
+            label: "Upstream repo",
+            repositoryNameWithOwner: upstreamRepositoryNameWithOwner,
+            description:
+              upstreamRemoteName === null
+                ? "Create pull requests in the tracked repository for this branch."
+                : `Create pull requests in the ${upstreamRemoteName} remote instead of origin.`,
+            ...(upstreamRemoteName ? { remoteName: upstreamRemoteName } : {}),
+          }
+        : null,
+    );
+
+    return targets;
   });
 
   const resolveBranchHeadContext = Effect.fn("resolveBranchHeadContext")(function* (
@@ -888,12 +1032,14 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
       | "headRepositoryOwnerLogin"
       | "isCrossRepository"
     >,
+    repositoryNameWithOwner?: string | null,
   ) {
     for (const headSelector of headContext.headSelectors) {
       const pullRequests = yield* gitHubCli.listOpenPullRequests({
         cwd,
         headSelector,
         limit: 1,
+        ...(repositoryNameWithOwner ? { repository: repositoryNameWithOwner } : {}),
       });
       const normalizedPullRequests = pullRequests.map(toPullRequestInfo);
 
@@ -1069,6 +1215,7 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
     branch: string,
     upstreamRef: string | null,
     headContext: Pick<BranchHeadContext, "isCrossRepository" | "remoteName">,
+    repositoryNameWithOwner?: string | null,
   ) {
     const configured = yield* gitCore.readConfigValue(cwd, `branch.${branch}.gh-merge-base`);
     if (configured) return configured;
@@ -1083,7 +1230,10 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
     }
 
     const defaultFromGh = yield* gitHubCli
-      .getDefaultBranch({ cwd })
+      .getDefaultBranch({
+        cwd,
+        ...(repositoryNameWithOwner ? { repository: repositoryNameWithOwner } : {}),
+      })
       .pipe(Effect.catch(() => Effect.succeed(null)));
     if (defaultFromGh) {
       return defaultFromGh;
@@ -1257,6 +1407,7 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
     cwd: string,
     fallbackBranch: string | null,
     emit: GitActionProgressEmitter,
+    requestedTarget: GitPullRequestTargetId | undefined,
   ) {
     const details = yield* gitCore.statusDetails(cwd);
     const branch = details.branch ?? fallbackBranch;
@@ -1277,8 +1428,23 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
       branch,
       upstreamRef: details.upstreamRef,
     });
+    const availableTargets = yield* resolvePullRequestTargets(cwd, {
+      branch,
+      upstreamRef: details.upstreamRef,
+    });
+    const selectedTarget = resolveSelectedPullRequestTarget(availableTargets, requestedTarget);
+    if (requestedTarget && !selectedTarget) {
+      return yield* gitManagerError(
+        "runPrStep",
+        `The "${requestedTarget}" pull request target is unavailable for this branch.`,
+      );
+    }
 
-    const existing = yield* findOpenPr(cwd, headContext);
+    const existing = yield* findOpenPr(
+      cwd,
+      headContext,
+      selectedTarget?.repositoryNameWithOwner ?? null,
+    );
     if (existing) {
       return {
         status: "opened_existing" as const,
@@ -1290,7 +1456,13 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
       };
     }
 
-    const baseBranch = yield* resolveBaseBranch(cwd, branch, details.upstreamRef, headContext);
+    const baseBranch = yield* resolveBaseBranch(
+      cwd,
+      branch,
+      details.upstreamRef,
+      headContext,
+      selectedTarget?.repositoryNameWithOwner ?? null,
+    );
     yield* emit({
       kind: "phase_started",
       phase: "pr",
@@ -1328,10 +1500,17 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
         headSelector: headContext.preferredHeadSelector,
         title: generated.title,
         bodyFile,
+        ...(selectedTarget?.repositoryNameWithOwner
+          ? { repository: selectedTarget.repositoryNameWithOwner }
+          : {}),
       })
       .pipe(Effect.ensuring(fileSystem.remove(bodyFile).pipe(Effect.catch(() => Effect.void))));
 
-    const created = yield* findOpenPr(cwd, headContext);
+    const created = yield* findOpenPr(
+      cwd,
+      headContext,
+      selectedTarget?.repositoryNameWithOwner ?? null,
+    );
     if (!created) {
       return {
         status: "created" as const,
@@ -1728,7 +1907,13 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
               .pipe(
                 Effect.tap(() => Ref.set(currentPhase, Option.some("pr"))),
                 Effect.flatMap(() =>
-                  runPrStep(modelSelection, input.cwd, currentBranch, progress.emit),
+                  runPrStep(
+                    modelSelection,
+                    input.cwd,
+                    currentBranch,
+                    progress.emit,
+                    input.prTarget,
+                  ),
                 ),
               )
           : { status: "skipped_not_requested" as const };

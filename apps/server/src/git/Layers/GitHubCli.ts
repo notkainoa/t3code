@@ -180,6 +180,7 @@ const makeGitHubCli = Effect.sync(() => {
         args: [
           "pr",
           "list",
+          ...(input.repository ? ["--repo", input.repository] : []),
           "--head",
           input.headSelector,
           "--state",
@@ -247,6 +248,7 @@ const makeGitHubCli = Effect.sync(() => {
         args: [
           "pr",
           "create",
+          ...(input.repository ? ["--repo", input.repository] : []),
           "--base",
           input.baseBranch,
           "--head",
@@ -260,7 +262,15 @@ const makeGitHubCli = Effect.sync(() => {
     getDefaultBranch: (input) =>
       execute({
         cwd: input.cwd,
-        args: ["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"],
+        args: [
+          "repo",
+          "view",
+          ...(input.repository ? [input.repository] : []),
+          "--json",
+          "defaultBranchRef",
+          "--jq",
+          ".defaultBranchRef.name",
+        ],
       }).pipe(
         Effect.map((value) => {
           const trimmed = value.stdout.trim();
