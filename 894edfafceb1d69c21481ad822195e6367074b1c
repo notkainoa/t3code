@@ -1,0 +1,525 @@
+apps/web/src/components/ui/combobox.tsx
+  369aaddab0fbc735 278-291,388
+apps/web/src/components/chat/MessagesTimeline.logic.ts
+  369aaddab0fbc735 3,28-30,40-43,68-107,115-116,122,169-179,194-206,208-209,211,214-216,218-220,222-223,225-226,228-237
+apps/web/src/components/chat/TraitsPicker.browser.tsx
+  369aaddab0fbc735 47-48,75-76
+apps/server/src/http.ts
+  369aaddab0fbc735 229
+apps/web/src/components/KeybindingsToast.browser.tsx
+  369aaddab0fbc735 83-84,101,172-208,466-484
+apps/server/src/provider/Layers/ClaudeAdapter.ts
+  369aaddab0fbc735 20-21,23,278-281,284-285,293,296,300,302-303,305-307,309-311,314-315,317-322,326-331,336,339-341,343-344,463-488,498-509,1382,1385-1386,1395-1398,1662-1681,2746,2786
+apps/web/src/components/DiffPanel.tsx
+  369aaddab0fbc735 463-469
+apps/web/src/components/ThreadTerminalDrawer.tsx
+  369aaddab0fbc735 24,28-29,32-35,414-418,437-440,445-453,459,461
+packages/contracts/src/keybindings.test.ts
+  369aaddab0fbc735 44-49
+apps/web/src/components/chat/MessagesTimeline.test.tsx
+  369aaddab0fbc735 1-2,5,7-32,60-64,75,77-100,107,136,142,162-187
+apps/web/src/environments/runtime/service.threadSubscriptions.test.ts
+  369aaddab0fbc735 1-298
+apps/web/src/localApi.ts
+  369aaddab0fbc735 32,34
+apps/web/src/components/settings/SettingsPanels.tsx
+  369aaddab0fbc735 15,236,239-271,361-413,447-449,464,514-515,927-951,1282-1308
+apps/desktop/src/serverListeningDetector.test.ts
+  369aaddab0fbc735 1-31
+apps/web/src/lib/windowControlsOverlay.ts
+  369aaddab0fbc735 1,3-6,9-10,13-15,18,21-23,26-33,36-39
+apps/web/src/lib/threadSort.test.ts
+  369aaddab0fbc735 1-187
+apps/desktop/src/desktopSettings.ts
+  369aaddab0fbc735 3,7,12,27-38,48,54
+apps/server/src/open.ts
+  369aaddab0fbc735 78-85,284,304-313
+apps/web/src/components/chat/composerSlashCommandSearch.ts
+  369aaddab0fbc735 1-83
+apps/desktop/src/updateMachine.test.ts
+  369aaddab0fbc735 26,45,61,79,101,123,134
+apps/web/src/components/Sidebar.logic.test.ts
+  369aaddab0fbc735 7,130-143,192-213
+apps/web/src/components/ui/command.tsx
+  369aaddab0fbc735 33,93,96-98,100
+apps/server/src/provider/Layers/CodexProvider.ts
+  369aaddab0fbc735 8,48,308,310,339-343,399,459-467,474,504,510,521,540,555-593,606,609,615-628,645
+apps/server/src/terminal/Layers/Manager.ts
+  369aaddab0fbc735 19,57-78,280-281,884,967,983,993,1019,1471,1476
+apps/web/src/rpc/serverState.test.ts
+  369aaddab0fbc735 51-52
+packages/shared/src/searchRanking.ts
+  369aaddab0fbc735 1-192
+apps/web/src/routes/__root.tsx
+  369aaddab0fbc735 15,97-101
+apps/server/src/orchestration/Layers/OrchestrationEngine.test.ts
+  369aaddab0fbc735 147-153,156,159-160
+apps/web/src/components/GitActionsControl.browser.tsx
+  369aaddab0fbc735 429-461
+apps/web/src/components/BranchToolbar.logic.test.ts
+  369aaddab0fbc735 13,161-167
+packages/contracts/src/editor.ts
+  369aaddab0fbc735 11,18
+apps/web/src/components/BranchToolbar.tsx
+  369aaddab0fbc735 23-25,38-40,53-55,68-74,109-111
+apps/web/src/components/chat/composerMenuHighlight.test.ts
+  369aaddab0fbc735 1,3,5-6,8-17,19-51
+apps/server/src/provider/providerStatusCache.test.ts
+  369aaddab0fbc735 1-136
+apps/server/src/auth/Layers/ServerSecretStore.ts
+  369aaddab0fbc735 3,31-32,38,108,129
+apps/web/src/store.test.ts
+  369aaddab0fbc735 20-21,248-302,304-312,314-321,323-344,346-368
+apps/server/src/git/Layers/GitHubCli.test.ts
+  369aaddab0fbc735 79-177
+apps/server/src/orchestration/Layers/ProjectionSnapshotQuery.ts
+  369aaddab0fbc735 9-10,16,21,54-55,163-220,270-273,451-467,506-639,955-1090,1140-1159,1217-1415,1420,1423,1426-1427
+apps/desktop/src/backendReadiness.ts
+  369aaddab0fbc735 7-8,11,62-63,81,85
+apps/server/src/serverSettings.test.ts
+  369aaddab0fbc735 95,171,181,188,222,238
+apps/web/src/components/BranchToolbarEnvModeSelector.tsx
+  369aaddab0fbc735 7,47,52
+apps/server/scripts/cli.ts
+  369aaddab0fbc735 17-32,211,219-220,228-231
+scripts/release-smoke.ts
+  369aaddab0fbc735 98,110-141
+apps/server/src/orchestration/Services/ProjectionSnapshotQuery.ts
+  369aaddab0fbc735 12,14-16,52-61,74-79,94-107
+apps/web/src/components/desktopUpdate.logic.test.ts
+  369aaddab0fbc735 20
+packages/shared/src/cliArgs.test.ts
+  369aaddab0fbc735 1-134
+scripts/lib/resolve-catalog.ts
+  369aaddab0fbc735 8-9,11
+apps/server/src/workspace/Layers/WorkspaceEntries.test.ts
+  369aaddab0fbc735 71-75,137-145,283-360
+scripts/lib/brand-assets.ts
+  369aaddab0fbc735 9-14
+apps/server/src/persistence/Migrations/023_ProjectionThreadShellSummary.ts
+  369aaddab0fbc735 1-26
+apps/web/src/components/Icons.tsx
+  369aaddab0fbc735 37-54
+apps/server/src/os-jank.ts
+  369aaddab0fbc735 3-8,10-12,19-21,28-29,32-51,53-54
+packages/contracts/src/rpc.ts
+  369aaddab0fbc735 7,87-89,172-175,312-316,319-320,322-324,363,390-391
+apps/web/src/components/CommandPalette.tsx
+  369aaddab0fbc735 1,3-93,95-118,121-131,134-137,140-154,157-176,178-183,187-189,191-195,197-198,201,204-248,250-266,268-273,275-313,315-322,324-351,353-367,369-390,392-393,395-398,400-402,404-432,434-436,438-444,447-461,464,466-496,499-514,516,518-529,531-537,539-546,548-554,556-566,568-581,583-598,600-601,603-610,613-619,621-654,660-667,669-679,681-691,693,695-746,748-759,761-809,811-821,823-847,850-853,855-880,882-885,887-899,901-914,917-921,923-927,929-937,939-940,942-955,957-960,962-1112
+apps/server/src/git/githubPullRequests.ts
+  369aaddab0fbc735 1-128
+apps/web/src/components/chat/composerMenuHighlight.ts
+  369aaddab0fbc735 1-20
+apps/server/src/os-jank.test.ts
+  369aaddab0fbc735 9,20-52
+apps/server/src/orchestration/Normalizer.ts
+  369aaddab0fbc735 31-47,51-55
+apps/web/src/filePathDisplay.test.ts
+  369aaddab0fbc735 3,5-6,8-12,15,17-21,24,26-30,33,35-39
+apps/web/src/lib/projectPaths.ts
+  369aaddab0fbc735 1-259
+apps/web/src/keybindings.ts
+  369aaddab0fbc735 40,374-393
+apps/web/src/composer-editor-mentions.test.ts
+  369aaddab0fbc735 32-45,70-82
+packages/shared/src/shell.test.ts
+  369aaddab0fbc735 5-6,8,66-97,164-188
+apps/server/src/orchestration/Layers/ProjectionSnapshotQuery.test.ts
+  369aaddab0fbc735 65-66,70-73,83-84,88-91,356-375,378-409,419-422,425-430,719-1020
+apps/desktop/src/syncShellEnvironment.ts
+  369aaddab0fbc735 2-4,9-22,28-30,36-38,41-49,52-58,64-74,76-77
+apps/server/src/persistence/Migrations.ts
+  369aaddab0fbc735 38-39,74-75
+apps/server/src/workspace/Layers/WorkspacePaths.test.ts
+  369aaddab0fbc735 61-78
+scripts/dev-runner.test.ts
+  369aaddab0fbc735 8,168,172,197-218,237,249,252-254,258-281,283-288,296,326
+apps/web/src/routes/_chat.$environmentId.$threadId.tsx
+  369aaddab0fbc735 20,175,196-215,230,239,271-272,292
+apps/server/src/git/Layers/GitHubCli.ts
+  369aaddab0fbc735 1-2,11-15,97,137-152,169-184
+apps/server/src/keybindings.ts
+  369aaddab0fbc735 64
+apps/server/src/persistence/Services/ProjectionThreads.ts
+  369aaddab0fbc735 12,37-40
+apps/web/src/components/GitActionsControl.tsx
+  369aaddab0fbc735 52,61,213-217,229-233,294,303,357-360,363,368,378,381
+apps/web/src/components/ui/toast.tsx
+  369aaddab0fbc735 212,384
+apps/web/src/session-logic.test.ts
+  369aaddab0fbc735 346-369,595,621-630,632-648,653-654,1287-1297
+apps/web/src/rpc/wsRpcClient.ts
+  369aaddab0fbc735 42-50,71-73,119-120,151-152,242-248,250
+apps/server/src/provider/codexAppServer.ts
+  369aaddab0fbc735 3,14-18,23-37,40-81,108,111,113,126-127,150,154-160,163,166-168,184,201-202,207-213,220-221
+apps/web/src/components/chat/ComposerPendingUserInputPanel.tsx
+  369aaddab0fbc735 103-106
+apps/web/src/routes/settings.tsx
+  369aaddab0fbc735 55,86-87
+apps/server/src/workspace/Layers/WorkspacePaths.ts
+  369aaddab0fbc735 7,33,35,38-51
+apps/web/src/composer-logic.ts
+  369aaddab0fbc735 4,15-19,65-73,95-99,109-112,156-157,235-240,256-263
+apps/web/src/localApi.test.ts
+  369aaddab0fbc735 8,34,54-56,90-91,93,163,191-192,218-219,277,304,309,312,323-324,326-327,338-339,342,371,375,378,380,425-435,437-441,506-516
+apps/web/vitest.browser.config.ts
+  369aaddab0fbc735 17-21,29-31
+apps/web/src/environments/runtime/service.ts
+  369aaddab0fbc735 5-6,57,73-82,85,90-357,359-373,469-470,477-480,490-494,496,578-625,631-638,747,1076-1078
+apps/server/src/provider/Layers/ClaudeAdapter.test.ts
+  369aaddab0fbc735 969-1059,1502-1554,1564-1644
+apps/web/src/components/CommandPalette.logic.ts
+  369aaddab0fbc735 1-346
+apps/web/src/components/chat/ProviderModelPicker.browser.tsx
+  369aaddab0fbc735 27-28,64-65,127-128
+apps/web/src/components/composerInlineChip.ts
+  369aaddab0fbc735 8-10
+apps/web/src/lib/gitStatusState.test.ts
+  369aaddab0fbc735 129-130
+assets/dev/blueprint-icon-composer.icon/Assets/T3.svg
+  369aaddab0fbc735 1-3
+packages/shared/src/git.ts
+  369aaddab0fbc735 9-10,12-13,88-94
+apps/server/src/auth/utils.ts
+  369aaddab0fbc735 5-16
+apps/web/src/components/chat/ComposerPrimaryActions.tsx
+  369aaddab0fbc735 143
+apps/server/src/auth/Layers/ServerAuthPolicy.ts
+  369aaddab0fbc735 6,33-36
+apps/server/src/git/Layers/GitManager.ts
+  369aaddab0fbc735 5-15,48-51,886-900,902
+apps/web/src/lib/chatThreadActions.ts
+  369aaddab0fbc735 1-98
+apps/web/src/uiStateStore.test.ts
+  369aaddab0fbc735 61,66-170
+apps/web/src/routes/_chat.tsx
+  369aaddab0fbc735 4,6-9,41-49,54-58,61,69-76,110-111
+apps/web/src/lib/threadSort.ts
+  369aaddab0fbc735 1-73
+apps/web/src/environments/runtime/connection.ts
+  369aaddab0fbc735 3-4,24-29,44-50,53-67,85,118-122,125,132,145,156,158-166
+apps/server/src/open.test.ts
+  369aaddab0fbc735 45-54,135-142,377,385
+apps/web/src/components/ui/select.tsx
+  369aaddab0fbc735 15
+KEYBINDINGS.md
+  369aaddab0fbc735 26,54
+apps/server/src/orchestration/Layers/ProjectionPipeline.ts
+  369aaddab0fbc735 5,93-174,518-525,527-557,578-581,686-688,699,715,731,747,1259-1284
+apps/server/src/auth/Layers/SessionCredentialService.ts
+  369aaddab0fbc735 5,20,85,91-94,481
+apps/web/src/components/ChatMarkdown.browser.tsx
+  369aaddab0fbc735 66,79-136
+apps/web/src/components/chat/MessagesTimeline.logic.test.ts
+  369aaddab0fbc735 2-8,152-433
+apps/web/src/components/settings/SettingsPanels.browser.tsx
+  369aaddab0fbc735 10,262,267,282,317-322
+apps/web/src/components/DiffPanelShell.tsx
+  369aaddab0fbc735 13-16
+scripts/dev-runner.ts
+  369aaddab0fbc735 12,17,225-240,244-246
+apps/server/src/persistence/Migrations/024_BackfillProjectionThreadShellSummary.ts
+  369aaddab0fbc735 1-277
+apps/server/src/provider/Layers/ProviderRegistry.test.ts
+  369aaddab0fbc735 34,225-267,546-547,558-559,566-619,628-632,660-662,664,984-1062
+apps/web/src/components/BranchToolbar.logic.ts
+  369aaddab0fbc735 53-56
+apps/web/src/filePathDisplay.ts
+  369aaddab0fbc735 1-57
+apps/web/src/branding.ts
+  369aaddab0fbc735 1-17
+apps/web/package.json
+  369aaddab0fbc735 3,24
+apps/web/src/components/GitActionsControl.logic.ts
+  369aaddab0fbc735 6,358-363
+apps/web/src/hooks/useThreadActions.ts
+  369aaddab0fbc735 5,36-41,82,85
+apps/web/src/lib/desktopUpdateReactQuery.test.ts
+  369aaddab0fbc735 13
+apps/web/src/threadDerivation.ts
+  369aaddab0fbc735 1-152
+apps/web/src/components/Sidebar.tsx
+  369aaddab0fbc735 8,42,57,81,92,121,125,140,143,148,643-657,755-757,1117-1121,1163,1354-1380,1539,1560,1702,2062,2104,2119,2143,2158,2185-2207,2248-2249,2251,2255,2257,2335,2365,2523-2525,2598,2664-2687,2893-2897,2995,3010
+apps/web/src/keybindings.test.ts
+  369aaddab0fbc735 23,105-109,258-261,395-406,408,564-587
+apps/server/src/serverRuntimeStartup.test.ts
+  369aaddab0fbc735 1-2,4,6-10,12,17-18,81,90,93-94,104-208
+apps/server/src/provider/Layers/ClaudeProvider.ts
+  369aaddab0fbc735 7,13-16,343,345,347-349,352-374,376-410,412-413,436,442-445,474-476,572-579,613-614,633-634,651-652,666-704,715,718-726,741
+apps/web/src/components/GitActionsControl.logic.test.ts
+  369aaddab0fbc735 1023-1031
+apps/web/src/components/chat/ChatComposer.tsx
+  369aaddab0fbc735 70-71,103-104,165,247-251,254,388,483,572-575,652-654,720,743-752,754,756,758-774,794-800,803-819,867-874,881,1005,1008-1013,1015,1017-1026,1095,1098-1099,1104-1105,1397-1427,1449-1455,1780-1784,1874,1912,1933,1956
+apps/web/src/components/chat/composerSlashCommandSearch.test.ts
+  369aaddab0fbc735 1-68
+apps/web/src/hooks/useTheme.ts
+  369aaddab0fbc735 11-14,21,26-27,30-31,35,38,91,110,125-127,130,142-143,147,175,182
+apps/web/src/components/ChatView.logic.ts
+  369aaddab0fbc735 19,159-163,325,331,335-355
+apps/server/src/checkpointing/Layers/CheckpointDiffQuery.test.ts
+  369aaddab0fbc735 85-86,89,92-93,144-145,148,151-152
+apps/server/src/workspace/Services/WorkspacePaths.ts
+  369aaddab0fbc735 24-35,62,77-81
+apps/web/src/authBootstrap.test.ts
+  369aaddab0fbc735 427,462,464
+assets/dev/blueprint-icon-composer.icon/icon.json
+  369aaddab0fbc735 1-47
+.oxfmtrc.json
+  369aaddab0fbc735 13-14
+packages/contracts/src/settings.ts
+  369aaddab0fbc735 73,88,168,174
+apps/server/src/workspace/Services/WorkspaceEntries.ts
+  369aaddab0fbc735 12-17,29-39,45-51
+apps/web/src/lib/chatThreadActions.test.ts
+  369aaddab0fbc735 1-107
+apps/desktop/scripts/electron-launcher.mjs
+  369aaddab0fbc735 9,27-29,50-111,171
+packages/shared/src/cliArgs.ts
+  369aaddab0fbc735 1-76
+packages/shared/src/searchRanking.test.ts
+  369aaddab0fbc735 1-95
+apps/web/src/components/chat/MessagesTimeline.browser.tsx
+  369aaddab0fbc735 1-160
+apps/server/src/orchestration/Layers/ProviderCommandReactor.test.ts
+  369aaddab0fbc735 30-33,184-201,251-258,313,548,552,1278-1329
+apps/web/src/uiStateStore.ts
+  369aaddab0fbc735 485-486,488,491-493,496-501,503-514,517-519,535-538,555-556
+apps/web/src/components/Sidebar.logic.ts
+  369aaddab0fbc735 6-11,18-20,291-296,357-361,565,579,592,610
+packages/shared/src/shell.ts
+  369aaddab0fbc735 1,14-17,19-23,25,27-42,45,67-103
+apps/web/src/markdown-links.test.ts
+  369aaddab0fbc735 3-7,64-84
+apps/web/src/components/ChatView.logic.test.ts
+  369aaddab0fbc735 14,86-96,545-672
+apps/web/src/components/ChatMarkdown.tsx
+  369aaddab0fbc735 6,21-23,29,31,244-472,476-494,501-503,507-510,512-516,519-526,552-558
+apps/web/src/components/ComposerPromptEditor.tsx
+  369aaddab0fbc735 8,74,77-78,103-114,132-163,165,177,181,195,197,201,205-321,324-338,341,345-346,349,352-359,363-368,435-438,442-444,469-479,595,639,665,831,844-852,891,1133,1137,1153-1155,1202,1404,1419-1421,1438-1440,1450,1454-1455,1467,1471,1477-1478,1480,1489,1647,1665,1678,1683,1685-1689,1704
+apps/web/src/composerDraftStore.ts
+  369aaddab0fbc735 1884-1887,1894-1895
+scripts/update-release-package-versions.ts
+  369aaddab0fbc735 5-6,45,50,52-55,57-59,61-62,65,71-75
+apps/web/src/components/chat/MessageCopyButton.tsx
+  369aaddab0fbc735 1,5-7,9-23,25-57,60-80
+apps/server/src/orchestration/Layers/ProviderCommandReactor.ts
+  369aaddab0fbc735 14,20,149,290,292,452
+apps/web/src/components/chat/ComposerCommandMenu.tsx
+  369aaddab0fbc735 1-6,8-11,14-21,40-44,55-60,65-88,90-114,120-121,127-131,155-176,179-204,217-219,246-251,253-256,263-267,269-271
+apps/web/src/environments/primary/context.ts
+  369aaddab0fbc735 55-58
+apps/web/src/index.css
+  369aaddab0fbc735 4-5,327-367,384-390,393-401,403,410,427
+apps/web/src/markdown-links.ts
+  369aaddab0fbc735 1-2,25-33,156-182
+apps/web/src/terminal-links.test.ts
+  369aaddab0fbc735 4,8-10,13-19,85-132,135-174
+apps/server/src/provider/providerSnapshot.ts
+  369aaddab0fbc735 5-6,37,135-136,149-150
+apps/web/test/wsRpcHarness.ts
+  369aaddab0fbc735 2,26-27
+apps/web/src/components/NoActiveThreadState.tsx
+  369aaddab0fbc735 13-15,19-21
+apps/web/src/lib/projectPaths.test.ts
+  369aaddab0fbc735 1-117
+apps/desktop/src/updateState.test.ts
+  369aaddab0fbc735 14
+apps/server/src/provider/Layers/CodexAdapter.ts
+  369aaddab0fbc735 58,84,1423,1451
+apps/server/src/provider/makeManagedServerProvider.ts
+  369aaddab0fbc735 14,24
+apps/web/src/routes/pair.tsx
+  369aaddab0fbc735 6-7
+packages/contracts/src/orchestration.ts
+  369aaddab0fbc735 24-25,312-398,405,1047-1057,1166-1172
+apps/web/src/components/ChatView.tsx
+  369aaddab0fbc735 31-32,61,93-94,159,166,173,317-318,325-326,580-586,656-657,692-694,700-701,833-838,1110,1462-1464,1477,1892-1893,1955-1957,1960-1973,1979-1981,1991-2001,2061,2066-2088,2091-2096,2206-2208,2409-2410,2416-2417,2457-2464,2556,2856-2862,3008,3067,3116-3120,3130,3134,3148,3163-3177,3190-3196,3202,3240-3264,3271,3312,3327-3328,3357-3363,3401,3409-3410
+apps/web/src/components/chat/MessagesTimeline.tsx
+  369aaddab0fbc735 3,5,13,39,43-44,54,57,63-87,89,91-93,98,100,105,116,119-121,126,128,133,144,146,153-154,156-163,165,167-170,172,174-177,179-180,183-185,188,190-282,284-285,287,289-292,298,306,326,362-363,371,383-392,399,407,410-422,424-438,441-442,452-454,468-474,481,483-487,489-497,499-518,520-559,562-570,575-590,592-601,603-623,625-666,669-671,777-831,870,877,879-880,935,937,941,1000-1011
+apps/desktop/src/backendReadiness.test.ts
+  369aaddab0fbc735 10,23-27,88-112
+apps/web/src/components/CommandPaletteResults.tsx
+  369aaddab0fbc735 1-110
+apps/web/src/environmentApi.ts
+  369aaddab0fbc735 6-7,23-24,43-46,60-62,76-85
+apps/web/src/components/ChatView.browser.tsx
+  369aaddab0fbc735 8,34,37-45,49,61,72-73,75,77,89,174-175,192-213,335,432,434-451,455,457-489,493-502,504-512,519,579-580,584-593,686-694,789-879,948-951,956-961,965-967,971,985,1478-1485,1498-1501,1505-1508,1510,1512-1515,1518-1526,1528-1538,1540,1548,1568,1589,1653-1674,1684-1687,1695-1697,2100-2139,2632-2633,2636-2934,3050-3052,3054-3084,3087-3273,3710-3731,3877-3963,4046-4081,4083-5140,5144-5147,5149-5154,5160,5163-5189,5193-5196,5198-5204,5206,5208-5209,5211-5216,5222,5225-5251,5255-5258,5260-5266,5268,5271,5273-5276,5282,5285,5291,5293,5296,5312-5320,5325,5383-5385,5574-5575,5608,5620-5674,5676-5678,5726-5769
+apps/server/package.json
+  369aaddab0fbc735 3
+apps/desktop/src/appBranding.ts
+  369aaddab0fbc735 1-27
+packages/contracts/src/filesystem.ts
+  369aaddab0fbc735 1-30
+apps/desktop/src/syncShellEnvironment.test.ts
+  369aaddab0fbc735 9,14,22-31,33,90-98,103-148
+packages/shared/src/path.test.ts
+  369aaddab0fbc735 1-34
+apps/server/src/orchestration/Layers/ProjectionPipeline.test.ts
+  369aaddab0fbc735 1508-1830
+apps/server/src/persistence/Layers/ProjectionRepositories.test.ts
+  369aaddab0fbc735 91-94
+apps/server/src/git/Layers/GitCore.ts
+  369aaddab0fbc735 30,63-74,81,373-380,920,922,927,929,945-946,948,952,968-969,1207-1211,1343-1346,1743-1752,2035
+apps/server/src/workspace/Layers/WorkspaceEntries.ts
+  369aaddab0fbc735 1,7-14,19,52,58-65,100-122,125,145-170,172-173,277,425-461,470-472,484-488,492,501
+apps/web/src/hooks/useHandleNewThread.ts
+  369aaddab0fbc735 90-91
+packages/contracts/package.json
+  369aaddab0fbc735 3
+apps/web/src/storeSelectors.ts
+  369aaddab0fbc735 1,3-4,16-17,29-30,35-37
+apps/web/src/providerSkillPresentation.ts
+  369aaddab0fbc735 1-52
+apps/web/src/components/chat/CompactComposerControlsMenu.tsx
+  369aaddab0fbc735 18,76-78
+apps/web/src/session-logic.ts
+  369aaddab0fbc735 148-155,351-359,474,504-516,520-526,531-536
+apps/server/src/auth/Layers/ServerAuthPolicy.test.ts
+  369aaddab0fbc735 36,41,71
+apps/desktop/src/backendPort.test.ts
+  369aaddab0fbc735 39-89,100-102
+apps/server/src/git/Layers/GitManager.test.ts
+  369aaddab0fbc735 189-206,715-798,800-848,872-884
+apps/web/src/branding.test.ts
+  369aaddab0fbc735 1-37
+apps/server/src/server.test.ts
+  369aaddab0fbc735 34,61-64,300,349-353,422-435,815,1793-1806,1863-1876,1889,1903-1905,1909,2042-2072,2988-3005,3030-3032,3110
+apps/web/src/components/CommandPalette.logic.test.ts
+  369aaddab0fbc735 1-166
+apps/desktop/src/serverListeningDetector.ts
+  369aaddab0fbc735 1-56
+apps/web/src/components/chat/ChatHeader.tsx
+  369aaddab0fbc735 11,23,49,115
+apps/desktop/package.json
+  369aaddab0fbc735 3
+.github/workflows/release.yml
+  369aaddab0fbc735 1,7-8,11-18,21,34,37-40,47-48,63-95,97-116,126-132,262,269-272,314,341-348,351-371,376,386,391
+.github/workflows/ci.yml
+  369aaddab0fbc735 95-97
+scripts/resolve-nightly-release.test.ts
+  369aaddab0fbc735 1-25
+apps/web/src/components/PlanSidebar.tsx
+  369aaddab0fbc735 57,68,134,175
+apps/web/src/providerSkillSearch.ts
+  369aaddab0fbc735 1-105
+apps/server/src/config.ts
+  369aaddab0fbc735 27,80,86,116
+README.md
+  369aaddab0fbc735 52-59
+scripts/resolve-previous-release-tag.ts
+  369aaddab0fbc735 1-203
+apps/web/src/rpc/wsTransport.ts
+  369aaddab0fbc735 15,125,154-157,193
+apps/server/src/provider/providerStatusCache.ts
+  369aaddab0fbc735 1-105
+packages/contracts/src/index.ts
+  369aaddab0fbc735 16
+scripts/update-release-package-versions.test.ts
+  369aaddab0fbc735 1-71
+apps/server/src/provider/Layers/ProviderRegistry.ts
+  369aaddab0fbc735 7,9,17-24,44-46,51-65,67-90,92-116,118-120,122-125,127-134,140-147,152-154,156-158,160-173,177-182,185,189
+apps/web/src/components/chat/OpenInPicker.tsx
+  369aaddab0fbc735 13,36-39
+apps/web/src/environments/runtime/connection.test.ts
+  369aaddab0fbc735 7,11-12,16-18,43-66,129-140,146,148-149,164-165,169,171,196-197,208,210-211,226-227,231,233,235,237-238,240-245
+docs/release.md
+  369aaddab0fbc735 3,7-11,13,19-26,29-44,61,64-65,69,84-85
+package.json
+  369aaddab0fbc735 65-67,69-71
+apps/desktop/src/main.ts
+  369aaddab0fbc735 10,21,25,28,44,61,75,87,91,110-115,129-154,156-165,182-183,204-208,406-409,416,431-510,590-595,597-599,1016-1027,1127-1144,1266,1274,1379,1416-1417,1436-1439,1452-1459,1471-1472,1477,1552-1556,1670,1672-1676,1678-1679,1785-1819,1875-1910,1913-1914,1921,1926,1961-1966,1995-2003,2005,2011,2042,2096,2130-2134
+apps/web/src/main.tsx
+  369aaddab0fbc735 12,19-21
+apps/web/src/composer-logic.test.ts
+  369aaddab0fbc735 63-86,160-169,195-203,280-283
+apps/server/src/orchestration/Layers/ProviderRuntimeIngestion.ts
+  369aaddab0fbc735 468
+apps/server/src/persistence/Migrations/024_BackfillProjectionThreadShellSummary.test.ts
+  369aaddab0fbc735 1-218
+apps/desktop/src/backendPort.ts
+  369aaddab0fbc735 11,25-50,55,70,75,81
+scripts/build-desktop-artifact.test.ts
+  369aaddab0fbc735 5-13,16-63
+apps/web/src/commandPaletteStore.ts
+  369aaddab0fbc735 1-32
+apps/web/src/components/chat/CompactComposerControlsMenu.browser.tsx
+  369aaddab0fbc735 126
+apps/web/src/providerSkillPresentation.test.ts
+  369aaddab0fbc735 3-6,8-9,11-13,15,18,20-21,23,25,27-28,30-32,34,37,39-43,45-55
+apps/web/src/providerSkillSearch.test.ts
+  369aaddab0fbc735 1-59
+apps/web/src/timestampFormat.ts
+  369aaddab0fbc735 60
+apps/web/src/components/BranchToolbarBranchSelector.tsx
+  369aaddab0fbc735 4,40,52-54,83-85,100-102,117-120,125-131,160,182,406,441-444,451-456,476,478,486,562-568,596-608,610-619
+apps/desktop/src/preload.ts
+  369aaddab0fbc735 12,16,29-35,56,73
+apps/server/src/ws.ts
+  369aaddab0fbc735 1,12,20,67-90,251-300,393,470,628,630,632-639,641,643-646,649-670,673-690,692-695,697-706,772-785,939,949-959,968
+packages/contracts/src/keybindings.ts
+  369aaddab0fbc735 36
+apps/web/src/environments/primary/auth.ts
+  369aaddab0fbc735 19,21-26,60,99-102,127-130,184,228,346-349,356-367,372
+apps/web/src/rpc/wsTransport.test.ts
+  369aaddab0fbc735 420-469,692-785
+apps/web/src/composer-editor-mentions.ts
+  369aaddab0fbc735 16-18,25,41-82,169,171-174,176-177,180-181,183,186
+packages/contracts/src/orchestration.test.ts
+  369aaddab0fbc735 98,106-118
+packages/contracts/src/server.test.ts
+  369aaddab0fbc735 1-26
+apps/desktop/src/desktopSettings.test.ts
+  369aaddab0fbc735 11,39,44,53,59-74
+packages/shared/src/git.test.ts
+  369aaddab0fbc735 6-7,10,56-70
+scripts/resolve-nightly-release.ts
+  369aaddab0fbc735 1-126
+apps/web/src/store.ts
+  369aaddab0fbc735 6,10-11,15,39,44-49,52-61,65-70,79-86,88,207-209,253-299,301-306,337-343,346-360,363-377,390,394,427-428,497,502-508,510-512,516,519,527,539,554-575,577-583,594,674-735,740-745,750,758-766,1019,1072,1074,1077-1079,1081-1101,1104-1109,1112,1114,1120,1122,1128-1138,1245,1632-1690,1812,1816-1822,1876-1884,1928-1932,1938,1951-1954,1959-1960
+packages/contracts/src/ipc.ts
+  369aaddab0fbc735 21,50-52,77-78,80-84,95,144-145,149,162,172,191,247-249,277-285
+scripts/build-desktop-artifact.ts
+  369aaddab0fbc735 28-32,69,159,207-211,218-224,226-228,265-275,346,350,352,366,369,373,377,379,384,388,392,394,399,441-443,455,460-461,477-478,482-511,515,518,522,528-529,536,580,584,589,594,662,714-723,740,887-888
+apps/desktop/src/updateMachine.ts
+  369aaddab0fbc735 1-5,12,17
+packages/shared/src/path.ts
+  369aaddab0fbc735 1-22
+apps/desktop/src/appBranding.test.ts
+  369aaddab0fbc735 1-47
+packages/shared/package.json
+  369aaddab0fbc735 55-58,62-69
+apps/server/src/auth/Layers/ServerAuth.ts
+  369aaddab0fbc735 23-26,71-77
+apps/server/src/git/Layers/GitCore.test.ts
+  369aaddab0fbc735 43-60,320-328,829,848-850,861-868,872-876,903-914,916-962,968,971,973-976,1685-1712
+packages/contracts/src/server.ts
+  369aaddab0fbc735 1,61-83,94-97
+apps/server/src/persistence/Layers/ProjectionThreads.ts
+  369aaddab0fbc735 43-46,62-65,81-84,107-110,135-138
+apps/server/src/serverRuntimeStartup.ts
+  369aaddab0fbc735 160,162-171,280,331,333,336-337,346,350-386
+apps/web/src/terminal-links.ts
+  369aaddab0fbc735 12-38,140,175-256
+apps/web/src/composerHandleContext.ts
+  369aaddab0fbc735 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "894edfafceb1d69c21481ad822195e6367074b1c",
+  "prompts": {
+    "369aaddab0fbc735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d78ba-4112-7f91-95b3-2d84772e8dbd",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton",
+      "messages": [],
+      "total_additions": 209921,
+      "total_deletions": 35169,
+      "accepted_lines": 209901,
+      "overriden_lines": 0
+    }
+  }
+}
