@@ -245,6 +245,7 @@ export function detectGitHostingProviderFromRemoteUrl(
 const EMPTY_GIT_STATUS_REMOTE: GitStatusRemoteResult = {
   hasUpstream: false,
   aheadCount: 0,
+  aheadOfBaseCount: 0,
   behindCount: 0,
   pr: null,
 };
@@ -263,6 +264,7 @@ function toRemoteStatusPart(status: GitStatusResult): GitStatusRemoteResult {
   return {
     hasUpstream: status.hasUpstream,
     aheadCount: status.aheadCount,
+    aheadOfBaseCount: status.aheadOfBaseCount,
     behindCount: status.behindCount,
     pr: status.pr,
   };

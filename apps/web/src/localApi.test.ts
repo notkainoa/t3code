@@ -258,6 +258,7 @@ const baseGitStatus: GitStatusResult = {
   workingTree: { files: [], insertions: 0, deletions: 0 },
   hasUpstream: true,
   aheadCount: 0,
+  aheadOfBaseCount: 0,
   behindCount: 0,
   pr: null,
 };

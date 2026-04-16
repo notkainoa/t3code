@@ -1642,6 +1642,7 @@ it.layer(TestLayer)("git integration", (it) => {
         expect(details.branch).toBe("feature/no-upstream-ahead");
         expect(details.hasUpstream).toBe(false);
         expect(details.aheadCount).toBe(1);
+        expect(details.aheadOfBaseCount).toBe(1);
         expect(details.behindCount).toBe(0);
       }),
     );
@@ -1674,6 +1675,7 @@ it.layer(TestLayer)("git integration", (it) => {
           expect(details.branch).toBe("feature/remote-base-only");
           expect(details.hasUpstream).toBe(false);
           expect(details.aheadCount).toBe(1);
+          expect(details.aheadOfBaseCount).toBe(1);
           expect(details.behindCount).toBe(0);
         }),
     );
@@ -1712,8 +1714,37 @@ it.layer(TestLayer)("git integration", (it) => {
           expect(details.branch).toBe("feature/non-origin-merge-base");
           expect(details.hasUpstream).toBe(false);
           expect(details.aheadCount).toBe(1);
+          expect(details.aheadOfBaseCount).toBe(1);
           expect(details.behindCount).toBe(0);
         }),
+    );
+
+    it.effect("reports ahead-of-base count even when branch is fully pushed to upstream", () =>
+      Effect.gen(function* () {
+        const remote = yield* makeTmpDir();
+        const source = yield* makeTmpDir();
+        yield* git(remote, ["init", "--bare"]);
+
+        yield* initRepoWithCommit(source);
+        const initialBranch = (yield* (yield* GitCore).listBranches({
+          cwd: source,
+        })).branches.find((branch) => branch.current)!.name;
+        yield* git(source, ["remote", "add", "origin", remote]);
+        yield* git(source, ["push", "-u", "origin", initialBranch]);
+        yield* git(source, ["checkout", "-b", "feature/pushed-no-pr"]);
+        yield* writeTextFile(path.join(source, "feature.txt"), "remote branch ahead of base\n");
+        yield* git(source, ["add", "feature.txt"]);
+        yield* git(source, ["commit", "-m", "feature commit"]);
+        yield* git(source, ["push", "-u", "origin", "feature/pushed-no-pr"]);
+
+        const core = yield* GitCore;
+        const details = yield* core.statusDetails(source);
+        expect(details.branch).toBe("feature/pushed-no-pr");
+        expect(details.hasUpstream).toBe(true);
+        expect(details.aheadCount).toBe(0);
+        expect(details.aheadOfBaseCount).toBe(1);
+        expect(details.behindCount).toBe(0);
+      }),
     );
 
     it.effect("skips push when no upstream is configured and branch is not ahead of base", () =>

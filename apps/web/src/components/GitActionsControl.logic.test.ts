@@ -12,6 +12,7 @@ import {
 } from "./GitActionsControl.logic";
 
 function status(overrides: Partial<GitStatusResult> = {}): GitStatusResult {
+  const aheadOfBaseCount = overrides.aheadOfBaseCount ?? overrides.aheadCount ?? 0;
   return {
     isRepo: true,
     hasOriginRemote: true,
@@ -25,6 +26,7 @@ function status(overrides: Partial<GitStatusResult> = {}): GitStatusResult {
     },
     hasUpstream: true,
     aheadCount: 0,
+    aheadOfBaseCount,
     behindCount: 0,
     pr: null,
     ...overrides,
@@ -214,7 +216,10 @@ describe("when: branch is clean, ahead, and has an open PR", () => {
 
 describe("when: branch is clean, ahead, and has no open PR", () => {
   it("resolveQuickAction pushes and creates a PR", () => {
-    const quick = resolveQuickAction(status({ aheadCount: 2, pr: null }), false);
+    const quick = resolveQuickAction(
+      status({ aheadCount: 2, aheadOfBaseCount: 2, pr: null }),
+      false,
+    );
     assert.deepInclude(quick, {
       kind: "run_action",
       action: "create_pr",
@@ -223,7 +228,7 @@ describe("when: branch is clean, ahead, and has no open PR", () => {
   });
 
   it("buildMenuItems enables push and create PR, with commit disabled", () => {
-    const items = buildMenuItems(status({ aheadCount: 2, pr: null }), false);
+    const items = buildMenuItems(status({ aheadCount: 2, aheadOfBaseCount: 2, pr: null }), false);
     assert.deepEqual(items, [
       {
         id: "commit",
@@ -237,6 +242,53 @@ describe("when: branch is clean, ahead, and has no open PR", () => {
         id: "push",
         label: "Push",
         disabled: false,
+        icon: "push",
+        kind: "open_dialog",
+        dialogAction: "push",
+      },
+      {
+        id: "pr",
+        label: "Create PR",
+        disabled: false,
+        icon: "pr",
+        kind: "open_dialog",
+        dialogAction: "create_pr",
+      },
+    ]);
+  });
+});
+
+describe("when: branch is clean, synced with upstream, and remote is ahead of base", () => {
+  it("resolveQuickAction creates a PR without pushing again", () => {
+    const quick = resolveQuickAction(
+      status({ aheadCount: 0, aheadOfBaseCount: 2, behindCount: 0, pr: null }),
+      false,
+    );
+    assert.deepInclude(quick, {
+      kind: "run_action",
+      action: "create_pr",
+      label: "Create PR",
+    });
+  });
+
+  it("buildMenuItems enables create PR while keeping push disabled", () => {
+    const items = buildMenuItems(
+      status({ aheadCount: 0, aheadOfBaseCount: 2, behindCount: 0, pr: null }),
+      false,
+    );
+    assert.deepEqual(items, [
+      {
+        id: "commit",
+        label: "Commit",
+        disabled: true,
+        icon: "commit",
+        kind: "open_dialog",
+        dialogAction: "commit",
+      },
+      {
+        id: "push",
+        label: "Push",
+        disabled: true,
         icon: "push",
         kind: "open_dialog",
         dialogAction: "push",

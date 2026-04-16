@@ -709,6 +709,7 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
     workingTree: { files: [], insertions: 0, deletions: 0 },
     hasUpstream: false,
     aheadCount: 0,
+    aheadOfBaseCount: 0,
     behindCount: 0,
   } satisfies GitStatusDetails;
   const readLocalStatus = Effect.fn("readLocalStatus")(function* (cwd: string) {
@@ -759,6 +760,7 @@ export const makeGitManager = Effect.fn("makeGitManager")(function* () {
     return {
       hasUpstream: details.hasUpstream,
       aheadCount: details.aheadCount,
+      aheadOfBaseCount: details.aheadOfBaseCount,
       behindCount: details.behindCount,
       pr,
     } satisfies GitStatusRemoteResult;

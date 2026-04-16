@@ -117,6 +117,7 @@ vi.mock("~/lib/gitStatusState", () => ({
       workingTree: { files: [], insertions: 0, deletions: 0 },
       hasUpstream: true,
       aheadCount: 1,
+      aheadOfBaseCount: 1,
       behindCount: 0,
       pr: null,
     },

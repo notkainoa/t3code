@@ -55,6 +55,7 @@ describe("applyGitStatusStreamEvent", () => {
     const remote: GitStatusRemoteResult = {
       hasUpstream: true,
       aheadCount: 2,
+      aheadOfBaseCount: 2,
       behindCount: 1,
       pr: null,
     };
@@ -68,6 +69,7 @@ describe("applyGitStatusStreamEvent", () => {
       workingTree: { files: [], insertions: 0, deletions: 0 },
       hasUpstream: true,
       aheadCount: 2,
+      aheadOfBaseCount: 2,
       behindCount: 1,
       pr: null,
     });
@@ -92,6 +94,7 @@ describe("applyGitStatusStreamEvent", () => {
       },
       hasUpstream: false,
       aheadCount: 0,
+      aheadOfBaseCount: 0,
       behindCount: 0,
       pr: null,
     };
@@ -99,6 +102,7 @@ describe("applyGitStatusStreamEvent", () => {
     const remote: GitStatusRemoteResult = {
       hasUpstream: true,
       aheadCount: 2,
+      aheadOfBaseCount: 2,
       behindCount: 1,
       pr: null,
     };
@@ -107,6 +111,7 @@ describe("applyGitStatusStreamEvent", () => {
       ...current,
       hasUpstream: true,
       aheadCount: 2,
+      aheadOfBaseCount: 2,
       behindCount: 1,
       pr: null,
     });

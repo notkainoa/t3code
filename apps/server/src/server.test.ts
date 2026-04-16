@@ -2088,6 +2088,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
               Effect.succeed({
                 hasUpstream: true,
                 aheadCount: 0,
+                aheadOfBaseCount: 0,
                 behindCount: 0,
                 pr: null,
               }),
@@ -2101,6 +2102,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                 workingTree: { files: [], insertions: 0, deletions: 0 },
                 hasUpstream: true,
                 aheadCount: 0,
+                aheadOfBaseCount: 0,
                 behindCount: 0,
                 pr: null,
               }),
@@ -2362,6 +2364,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                 return {
                   hasUpstream: true,
                   aheadCount: 0,
+                  aheadOfBaseCount: 0,
                   behindCount: 0,
                   pr: null,
                 };
@@ -2378,6 +2381,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                   workingTree: { files: [], insertions: 0, deletions: 0 },
                   hasUpstream: true,
                   aheadCount: 0,
+                  aheadOfBaseCount: 0,
                   behindCount: 0,
                   pr: null,
                 };
@@ -2439,6 +2443,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                 return {
                   hasUpstream: true,
                   aheadCount: 0,
+                  aheadOfBaseCount: 0,
                   behindCount: 0,
                   pr: null,
                 };
@@ -2455,6 +2460,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                   workingTree: { files: [], insertions: 0, deletions: 0 },
                   hasUpstream: true,
                   aheadCount: 0,
+                  aheadOfBaseCount: 0,
                   behindCount: 0,
                   pr: null,
                 };
@@ -2510,6 +2516,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                 Effect.as({
                   hasUpstream: true,
                   aheadCount: 0,
+                  aheadOfBaseCount: 0,
                   behindCount: 0,
                   pr: null,
                 }),
@@ -2553,6 +2560,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                   Effect.as({
                     hasUpstream: true,
                     aheadCount: 0,
+                    aheadOfBaseCount: 0,
                     behindCount: 0,
                     pr: null,
                   }),
@@ -2631,6 +2639,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
                   Effect.as({
                     hasUpstream: true,
                     aheadCount: 0,
+                    aheadOfBaseCount: 0,
                     behindCount: 0,
                     pr: null,
                   }),

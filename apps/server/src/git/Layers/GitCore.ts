@@ -1232,6 +1232,7 @@ export const makeGitCore = Effect.fn("makeGitCore")(function* (options?: {
     let branch: string | null = null;
     let upstreamRef: string | null = null;
     let aheadCount = 0;
+    let aheadOfBaseCount = 0;
     let behindCount = 0;
     let hasWorkingTreeChanges = false;
     const changedFilesWithoutNumstat = new Set<string>();
@@ -1261,10 +1262,14 @@ export const makeGitCore = Effect.fn("makeGitCore")(function* (options?: {
       }
     }
 
-    if (!upstreamRef && branch) {
-      aheadCount = yield* computeAheadCountAgainstBase(cwd, branch).pipe(
+    if (branch) {
+      aheadOfBaseCount = yield* computeAheadCountAgainstBase(cwd, branch).pipe(
         Effect.catch(() => Effect.succeed(0)),
       );
+    }
+
+    if (!upstreamRef && branch) {
+      aheadCount = aheadOfBaseCount;
       behindCount = 0;
     }
 
@@ -1311,6 +1316,7 @@ export const makeGitCore = Effect.fn("makeGitCore")(function* (options?: {
       },
       hasUpstream: upstreamRef !== null,
       aheadCount,
+      aheadOfBaseCount,
       behindCount,
     };
   });
@@ -1337,6 +1343,7 @@ export const makeGitCore = Effect.fn("makeGitCore")(function* (options?: {
         workingTree: details.workingTree,
         hasUpstream: details.hasUpstream,
         aheadCount: details.aheadCount,
+        aheadOfBaseCount: details.aheadOfBaseCount,
         behindCount: details.behindCount,
         pr: null,
       })),

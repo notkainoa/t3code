@@ -86,6 +86,7 @@ export function buildMenuItems(
   const hasChanges = gitStatus.hasWorkingTreeChanges;
   const hasOpenPr = gitStatus.pr?.state === "open";
   const isBehind = gitStatus.behindCount > 0;
+  const isAheadOfBase = gitStatus.aheadOfBaseCount > 0;
   const canPushWithoutUpstream = hasOriginRemote && !gitStatus.hasUpstream;
   const canCommit = !isBusy && hasChanges;
   const canPush =
@@ -100,7 +101,7 @@ export function buildMenuItems(
     hasBranch &&
     !hasChanges &&
     !hasOpenPr &&
-    gitStatus.aheadCount > 0 &&
+    isAheadOfBase &&
     !isBehind &&
     (gitStatus.hasUpstream || canPushWithoutUpstream);
   const canOpenPr = !isBusy && hasOpenPr;
@@ -164,6 +165,7 @@ export function resolveQuickAction(
   const hasChanges = gitStatus.hasWorkingTreeChanges;
   const hasOpenPr = gitStatus.pr?.state === "open";
   const isAhead = gitStatus.aheadCount > 0;
+  const isAheadOfBase = gitStatus.aheadOfBaseCount > 0;
   const isBehind = gitStatus.behindCount > 0;
   const isDiverged = isAhead && isBehind;
 
@@ -258,6 +260,15 @@ export function resolveQuickAction(
     }
     return {
       label: "Push & create PR",
+      disabled: false,
+      kind: "run_action",
+      action: "create_pr",
+    };
+  }
+
+  if (isAheadOfBase && !hasOpenPr && !isDefaultBranch) {
+    return {
+      label: "Create PR",
       disabled: false,
       kind: "run_action",
       action: "create_pr",

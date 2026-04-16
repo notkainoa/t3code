@@ -135,6 +135,7 @@ function getMenuActionDisabledReason({
   const hasChanges = gitStatus.hasWorkingTreeChanges;
   const hasOpenPr = gitStatus.pr?.state === "open";
   const isAhead = gitStatus.aheadCount > 0;
+  const isAheadOfBase = gitStatus.aheadOfBaseCount > 0;
   const isBehind = gitStatus.behindCount > 0;
 
   if (item.id === "commit") {
@@ -175,7 +176,7 @@ function getMenuActionDisabledReason({
   if (!gitStatus.hasUpstream && !hasOriginRemote) {
     return 'Add an "origin" remote before creating a PR.';
   }
-  if (!isAhead) {
+  if (!isAheadOfBase) {
     return "No local commits to include in a PR.";
   }
   if (isBehind) {

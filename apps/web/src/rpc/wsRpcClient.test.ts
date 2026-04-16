@@ -30,6 +30,7 @@ const baseLocalStatus: GitStatusLocalResult = {
 const baseRemoteStatus: GitStatusRemoteResult = {
   hasUpstream: true,
   aheadCount: 0,
+  aheadOfBaseCount: 0,
   behindCount: 0,
   pr: null,
 };
@@ -82,6 +83,7 @@ describe("wsRpcClient", () => {
           ...baseLocalStatus,
           hasUpstream: false,
           aheadCount: 0,
+          aheadOfBaseCount: 0,
           behindCount: 0,
           pr: null,
         },

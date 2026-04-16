@@ -714,6 +714,7 @@ it.layer(GitManagerTestLayer)("GitManager", (it) => {
         },
         hasUpstream: false,
         aheadCount: 0,
+        aheadOfBaseCount: 0,
         behindCount: 0,
         pr: null,
       });

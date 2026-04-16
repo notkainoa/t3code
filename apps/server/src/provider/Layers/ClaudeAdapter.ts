@@ -1629,11 +1629,7 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
         });
         return;
       }
-      if (
-        block.type !== "tool_use" &&
-        block.type !== "server_tool_use" &&
-        block.type !== "mcp_tool_use"
-      ) {
+      if (block.type !== "tool_use") {
         return;
       }
 
