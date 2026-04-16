@@ -1,0 +1,27 @@
+apps/server/src/git/Layers/GitCore.ts
+  ff2c35f05b9e7c39 73
+apps/server/src/server.test.ts
+  ff2c35f05b9e7c39 3011
+apps/server/src/orchestration/Layers/ProviderCommandReactor.test.ts
+  ff2c35f05b9e7c39 198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "fd242c06bcedd6747fb857d267f66aaa1f95aa98",
+  "prompts": {
+    "ff2c35f05b9e7c39": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d8d57-1716-7f00-a915-568a22abe5ff",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton",
+      "messages": [],
+      "total_additions": 3,
+      "total_deletions": 0,
+      "accepted_lines": 3136,
+      "overriden_lines": 0
+    }
+  }
+}
