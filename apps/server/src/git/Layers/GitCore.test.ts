@@ -9,10 +9,13 @@ import { describe, expect, vi } from "vitest";
 import { GitCoreLive, makeGitCore } from "./GitCore.ts";
 import { GitCore, type GitCoreShape } from "../Services/GitCore.ts";
 import { GitCommandError } from "@t3tools/contracts";
+import { preferRealGitOnPathForTests } from "../testHelpers.ts";
 import { type ProcessRunResult, runProcess } from "../../processRunner.ts";
 import { ServerConfig } from "../../config.ts";
 
 // ── Helpers ──
+
+preferRealGitOnPathForTests();
 
 const ServerConfigLayer = ServerConfig.layerTest(process.cwd(), { prefix: "t3-git-core-test-" });
 const GitCoreTestLayer = GitCoreLive.pipe(
@@ -1707,6 +1710,7 @@ it.layer(TestLayer)("git integration", (it) => {
           },
           hasUpstream: false,
           aheadCount: 0,
+          aheadOfBaseCount: 0,
           behindCount: 0,
         });
         expect(localStatus).toEqual(status);

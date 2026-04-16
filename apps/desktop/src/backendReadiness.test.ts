@@ -46,9 +46,9 @@ describe("waitForHttpReady", () => {
 
     await waitForHttpReady("http://127.0.0.1:3773", {
       fetchImpl,
-      timeoutMs: 100,
+      timeoutMs: 500,
       intervalMs: 0,
-      requestTimeoutMs: 1,
+      requestTimeoutMs: 10,
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(2);

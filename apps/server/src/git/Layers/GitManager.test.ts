@@ -24,6 +24,7 @@ import { type TextGenerationShape, TextGeneration } from "../Services/TextGenera
 import { GitCoreLive } from "./GitCore.ts";
 import { GitCore } from "../Services/GitCore.ts";
 import { makeGitManager } from "./GitManager.ts";
+import { preferRealGitOnPathForTests } from "../testHelpers.ts";
 import { ServerConfig } from "../../config.ts";
 import { ServerSettingsService } from "../../serverSettings.ts";
 import {
@@ -52,6 +53,8 @@ interface FakeGhScenario {
   repositoryCloneUrls?: Record<string, { url: string; sshUrl: string }>;
   failWith?: GitHubCliError;
 }
+
+preferRealGitOnPathForTests();
 
 interface FakeGitTextGeneration {
   generateCommitMessage: (input: {
@@ -900,6 +903,7 @@ it.layer(GitManagerTestLayer)("GitManager", (it) => {
         },
         hasUpstream: false,
         aheadCount: 0,
+        aheadOfBaseCount: 0,
         behindCount: 0,
         pr: null,
       });
