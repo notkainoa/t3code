@@ -1,5 +1,5 @@
 import {
-  type ApprovalRequestId,
+  ApprovalRequestId,
   DEFAULT_MODEL_BY_PROVIDER,
   type ClaudeCodeEffort,
   type EnvironmentId,
@@ -13,6 +13,7 @@ import {
   type ScopedThreadRef,
   type ThreadId,
   type TurnId,
+  type UserInputQuestion,
   type KeybindingCommand,
   OrchestrationThreadActivity,
   ProviderInteractionMode,
@@ -61,6 +62,8 @@ import { isScrollContainerNearBottom } from "../chat-scroll";
 import {
   buildPendingUserInputAnswers,
   derivePendingUserInputProgress,
+  formatPendingUserInputFallbackMessage,
+  isRecoverablePendingUserInputSubmissionFailure,
   setPendingUserInputCustomAnswer,
   togglePendingUserInputOptionSelection,
   type PendingUserInputDraftAnswer,
@@ -176,6 +179,90 @@ const EMPTY_CHANGED_FILES_EXPANDED_BY_TURN_ID: Record<string, boolean> = {};
 const EMPTY_PENDING_USER_INPUT_ANSWERS: Record<string, PendingUserInputDraftAnswer> = {};
 
 type ThreadPlanCatalogEntry = Pick<Thread, "id" | "proposedPlans">;
+type ComposerSendContext = ReturnType<ChatComposerHandle["getSendContext"]>;
+
+interface PendingUserInputFallbackSubmission {
+  questions: ReadonlyArray<UserInputQuestion>;
+  answers: Record<string, string | string[]>;
+  status: "awaiting-result" | "sending-fallback";
+}
+
+function readActivityPayloadValue(
+  activity: OrchestrationThreadActivity,
+  key: "requestId" | "detail",
+): string | undefined {
+  const payload =
+    activity.payload && typeof activity.payload === "object"
+      ? (activity.payload as Record<string, unknown>)
+      : null;
+  return typeof payload?.[key] === "string" ? (payload[key] as string) : undefined;
+}
+
+function collectUnknownErrorMessages(error: unknown): string[] {
+  const visited = new Set<object>();
+  const queue: unknown[] = [error];
+  const messages: string[] = [];
+
+  const pushMessage = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return;
+    }
+    if (!messages.includes(trimmed)) {
+      messages.push(trimmed);
+    }
+  };
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (typeof current === "string") {
+      pushMessage(current);
+      continue;
+    }
+
+    if (current instanceof Error) {
+      pushMessage(current.message);
+      if (current.cause !== undefined) {
+        queue.push(current.cause);
+      }
+      continue;
+    }
+
+    if (!current || typeof current !== "object") {
+      continue;
+    }
+    if (visited.has(current)) {
+      continue;
+    }
+    visited.add(current);
+
+    const record = current as Record<string, unknown>;
+    const message = record.message;
+    if (typeof message === "string") {
+      pushMessage(message);
+    }
+
+    const detail = record.detail;
+    if (typeof detail === "string") {
+      pushMessage(detail);
+    }
+
+    const customToString = current.toString;
+    if (typeof customToString === "function" && customToString !== Object.prototype.toString) {
+      pushMessage(customToString.call(current));
+    }
+
+    for (const value of Object.values(record)) {
+      queue.push(value);
+    }
+  }
+
+  return messages.filter((message) => message !== "[object Object]");
+}
+
+function shouldSubmitPendingUserInputAsPlainMessage(thread: Thread | null | undefined): boolean {
+  return thread?.session === null || thread?.session?.status === "closed";
+}
 
 function useThreadPlanCatalog(threadIds: readonly ThreadId[]): ThreadPlanCatalogEntry[] {
   return useStore(
@@ -668,6 +755,12 @@ export default function ChatView(props: ChatViewProps) {
   >({});
   const [pendingUserInputQuestionIndexByRequestId, setPendingUserInputQuestionIndexByRequestId] =
     useState<Record<string, number>>({});
+  const [pendingUserInputFallbacksByRequestId, setPendingUserInputFallbacksByRequestId] = useState<
+    Record<string, PendingUserInputFallbackSubmission>
+  >({});
+  const [dismissedPendingUserInputRequestIds, setDismissedPendingUserInputRequestIds] = useState<
+    Record<string, true>
+  >({});
   const [expandedWorkGroups, setExpandedWorkGroups] = useState<Record<string, boolean>>({});
   const [planSidebarOpen, setPlanSidebarOpen] = useState(false);
   // Tracks whether the user explicitly dismissed the sidebar for the active turn.
@@ -1059,8 +1152,11 @@ export default function ChatView(props: ChatViewProps) {
     [threadActivities],
   );
   const pendingUserInputs = useMemo(
-    () => derivePendingUserInputs(threadActivities),
-    [threadActivities],
+    () =>
+      derivePendingUserInputs(threadActivities).filter(
+        (entry) => !(entry.requestId in dismissedPendingUserInputRequestIds),
+      ),
+    [dismissedPendingUserInputRequestIds, threadActivities],
   );
   const activePendingUserInput = pendingUserInputs[0] ?? null;
   const activePendingDraftAnswers = useMemo(
@@ -2444,6 +2540,345 @@ export default function ChatView(props: ChatViewProps) {
     ],
   );
 
+  const clearPendingUserInputFallbackTracking = useCallback((requestId: ApprovalRequestId) => {
+    setPendingUserInputFallbacksByRequestId((existing) => {
+      if (!(requestId in existing)) {
+        return existing;
+      }
+      const next = { ...existing };
+      delete next[requestId];
+      return next;
+    });
+  }, []);
+
+  const clearPendingUserInputDraftState = useCallback((requestId: ApprovalRequestId) => {
+    setPendingUserInputAnswersByRequestId((existing) => {
+      if (!(requestId in existing)) {
+        return existing;
+      }
+      const next = { ...existing };
+      delete next[requestId];
+      return next;
+    });
+    setPendingUserInputQuestionIndexByRequestId((existing) => {
+      if (!(requestId in existing)) {
+        return existing;
+      }
+      const next = { ...existing };
+      delete next[requestId];
+      return next;
+    });
+  }, []);
+
+  const markPendingUserInputHandledLocally = useCallback((requestId: ApprovalRequestId) => {
+    setDismissedPendingUserInputRequestIds((existing) =>
+      requestId in existing ? existing : { ...existing, [requestId]: true },
+    );
+  }, []);
+
+  const sendThreadTurn = useCallback(
+    async (input: {
+      prompt: string;
+      composerImages: ComposerImageAttachment[];
+      composerTerminalContexts: ReadonlyArray<TerminalContextDraft>;
+      sendContext: ComposerSendContext;
+      clearComposerDraftOnStart?: boolean;
+      restoreComposerDraftOnFailure?: boolean;
+      errorMessage?: string;
+    }): Promise<boolean> => {
+      const api = readEnvironmentApi(environmentId);
+      if (!api || !activeThread || !activeProject) {
+        return false;
+      }
+
+      const {
+        selectedProvider: ctxSelectedProvider,
+        selectedModel: ctxSelectedModel,
+        selectedProviderModels: ctxSelectedProviderModels,
+        selectedPromptEffort: ctxSelectedPromptEffort,
+        selectedModelSelection: ctxSelectedModelSelection,
+      } = input.sendContext;
+      const promptForSend = input.prompt;
+      const composerImages = input.composerImages;
+      const composerTerminalContexts = [...input.composerTerminalContexts];
+      const clearComposerDraftOnStart = input.clearComposerDraftOnStart ?? true;
+      const restoreComposerDraftOnFailure =
+        input.restoreComposerDraftOnFailure ?? clearComposerDraftOnStart;
+      const {
+        trimmedPrompt: trimmed,
+        sendableTerminalContexts: sendableComposerTerminalContexts,
+        expiredTerminalContextCount,
+        hasSendableContent,
+      } = deriveComposerSendState({
+        prompt: promptForSend,
+        imageCount: composerImages.length,
+        terminalContexts: composerTerminalContexts,
+      });
+      if (!hasSendableContent) {
+        if (expiredTerminalContextCount > 0) {
+          const toastCopy = buildExpiredTerminalContextToastCopy(
+            expiredTerminalContextCount,
+            "empty",
+          );
+          toastManager.add({
+            type: "warning",
+            title: toastCopy.title,
+            description: toastCopy.description,
+          });
+        }
+        return false;
+      }
+
+      const threadIdForSend = activeThread.id;
+      const isFirstMessage = !isServerThread || activeThread.messages.length === 0;
+      const baseBranchForWorktree =
+        isFirstMessage && envMode === "worktree" && !activeThread.worktreePath
+          ? activeThread.branch
+          : null;
+
+      const shouldCreateWorktree =
+        isFirstMessage && envMode === "worktree" && !activeThread.worktreePath;
+      if (shouldCreateWorktree && !activeThread.branch) {
+        setThreadError(
+          threadIdForSend,
+          "Select a base branch before sending in New worktree mode.",
+        );
+        return false;
+      }
+
+      sendInFlightRef.current = true;
+      beginLocalDispatch({ preparingWorktree: Boolean(baseBranchForWorktree) });
+
+      const composerImagesSnapshot = [...composerImages];
+      const composerTerminalContextsSnapshot = [...sendableComposerTerminalContexts];
+      const messageTextForSend = appendTerminalContextsToPrompt(
+        promptForSend,
+        composerTerminalContextsSnapshot,
+      );
+      const messageIdForSend = newMessageId();
+      const messageCreatedAt = new Date().toISOString();
+      const outgoingMessageText = formatOutgoingPrompt({
+        provider: ctxSelectedProvider,
+        model: ctxSelectedModel,
+        models: ctxSelectedProviderModels,
+        effort: ctxSelectedPromptEffort,
+        text: messageTextForSend || IMAGE_ONLY_BOOTSTRAP_PROMPT,
+      });
+      const turnAttachmentsPromise = Promise.all(
+        composerImagesSnapshot.map(async (image) => ({
+          type: "image" as const,
+          name: image.name,
+          mimeType: image.mimeType,
+          sizeBytes: image.sizeBytes,
+          dataUrl: await readFileAsDataUrl(image.file),
+        })),
+      );
+      const optimisticAttachments = composerImagesSnapshot.map((image) => ({
+        type: "image" as const,
+        id: image.id,
+        name: image.name,
+        mimeType: image.mimeType,
+        sizeBytes: image.sizeBytes,
+        previewUrl: image.previewUrl,
+      }));
+      setOptimisticUserMessages((existing) => [
+        ...existing,
+        {
+          id: messageIdForSend,
+          role: "user",
+          text: outgoingMessageText,
+          ...(optimisticAttachments.length > 0 ? { attachments: optimisticAttachments } : {}),
+          createdAt: messageCreatedAt,
+          streaming: false,
+        },
+      ]);
+      shouldAutoScrollRef.current = true;
+      forceStickToBottom();
+
+      setThreadError(threadIdForSend, null);
+      if (expiredTerminalContextCount > 0) {
+        const toastCopy = buildExpiredTerminalContextToastCopy(
+          expiredTerminalContextCount,
+          "omitted",
+        );
+        toastManager.add({
+          type: "warning",
+          title: toastCopy.title,
+          description: toastCopy.description,
+        });
+      }
+      if (clearComposerDraftOnStart) {
+        promptRef.current = "";
+        clearComposerDraftContent(composerDraftTarget);
+        composerRef.current?.resetCursorState();
+      }
+
+      let turnStartSucceeded = false;
+      try {
+        let firstComposerImageName: string | null = null;
+        if (composerImagesSnapshot.length > 0) {
+          const firstComposerImage = composerImagesSnapshot[0];
+          if (firstComposerImage) {
+            firstComposerImageName = firstComposerImage.name;
+          }
+        }
+        let titleSeed = trimmed;
+        if (!titleSeed) {
+          if (firstComposerImageName) {
+            titleSeed = `Image: ${firstComposerImageName}`;
+          } else if (composerTerminalContextsSnapshot.length > 0) {
+            titleSeed = formatTerminalContextLabel(composerTerminalContextsSnapshot[0]!);
+          } else {
+            titleSeed = "New thread";
+          }
+        }
+        const title = truncate(titleSeed);
+        const threadCreateModelSelection: ModelSelection = {
+          provider: ctxSelectedProvider,
+          model:
+            ctxSelectedModel ||
+            activeProject.defaultModelSelection?.model ||
+            DEFAULT_MODEL_BY_PROVIDER.codex,
+          ...(ctxSelectedModelSelection.options
+            ? { options: ctxSelectedModelSelection.options }
+            : {}),
+        };
+
+        if (isFirstMessage && isServerThread) {
+          await api.orchestration.dispatchCommand({
+            type: "thread.meta.update",
+            commandId: newCommandId(),
+            threadId: threadIdForSend,
+            title,
+          });
+        }
+
+        if (isServerThread) {
+          await persistThreadSettingsForNextTurn({
+            threadId: threadIdForSend,
+            createdAt: messageCreatedAt,
+            ...(ctxSelectedModel ? { modelSelection: ctxSelectedModelSelection } : {}),
+            runtimeMode,
+            interactionMode,
+          });
+        }
+
+        const turnAttachments = await turnAttachmentsPromise;
+        const bootstrap =
+          isLocalDraftThread || baseBranchForWorktree
+            ? {
+                ...(isLocalDraftThread
+                  ? {
+                      createThread: {
+                        projectId: activeProject.id,
+                        title,
+                        modelSelection: threadCreateModelSelection,
+                        runtimeMode,
+                        interactionMode,
+                        branch: activeThread.branch,
+                        worktreePath: activeThread.worktreePath,
+                        createdAt: activeThread.createdAt,
+                      },
+                    }
+                  : {}),
+                ...(baseBranchForWorktree
+                  ? {
+                      prepareWorktree: {
+                        projectCwd: activeProject.cwd,
+                        baseBranch: baseBranchForWorktree,
+                        branch: buildTemporaryWorktreeBranchName(),
+                      },
+                      runSetupScript: true,
+                    }
+                  : {}),
+              }
+            : undefined;
+        beginLocalDispatch({ preparingWorktree: false });
+        await api.orchestration.dispatchCommand({
+          type: "thread.turn.start",
+          commandId: newCommandId(),
+          threadId: threadIdForSend,
+          message: {
+            messageId: messageIdForSend,
+            role: "user",
+            text: outgoingMessageText,
+            attachments: turnAttachments,
+          },
+          modelSelection: ctxSelectedModelSelection,
+          titleSeed: title,
+          runtimeMode,
+          interactionMode,
+          ...(bootstrap ? { bootstrap } : {}),
+          createdAt: messageCreatedAt,
+        });
+        turnStartSucceeded = true;
+      } catch (err) {
+        if (!turnStartSucceeded) {
+          setOptimisticUserMessages((existing) => {
+            const removed = existing.filter((message) => message.id === messageIdForSend);
+            for (const message of removed) {
+              revokeUserMessagePreviewUrls(message);
+            }
+            const next = existing.filter((message) => message.id !== messageIdForSend);
+            return next.length === existing.length ? existing : next;
+          });
+        }
+        if (
+          !turnStartSucceeded &&
+          clearComposerDraftOnStart &&
+          restoreComposerDraftOnFailure &&
+          promptRef.current.length === 0 &&
+          composerImagesRef.current.length === 0 &&
+          composerTerminalContextsRef.current.length === 0
+        ) {
+          promptRef.current = promptForSend;
+          const retryComposerImages = composerImagesSnapshot.map(cloneComposerImageForRetry);
+          composerImagesRef.current = retryComposerImages;
+          composerTerminalContextsRef.current = composerTerminalContextsSnapshot;
+          setComposerDraftPrompt(composerDraftTarget, promptForSend);
+          addComposerDraftImages(composerDraftTarget, retryComposerImages);
+          setComposerDraftTerminalContexts(composerDraftTarget, composerTerminalContextsSnapshot);
+          composerRef.current?.resetCursorState({
+            cursor: collapseExpandedComposerCursor(promptForSend, promptForSend.length),
+            prompt: promptForSend,
+            detectTrigger: true,
+          });
+        }
+        setThreadError(
+          threadIdForSend,
+          err instanceof Error ? err.message : (input.errorMessage ?? "Failed to send message."),
+        );
+      } finally {
+        sendInFlightRef.current = false;
+        if (!turnStartSucceeded) {
+          resetLocalDispatch();
+        }
+      }
+
+      return turnStartSucceeded;
+    },
+    [
+      activeProject,
+      activeThread,
+      addComposerDraftImages,
+      beginLocalDispatch,
+      clearComposerDraftContent,
+      composerDraftTarget,
+      envMode,
+      environmentId,
+      forceStickToBottom,
+      interactionMode,
+      isLocalDraftThread,
+      isServerThread,
+      persistThreadSettingsForNextTurn,
+      resetLocalDispatch,
+      runtimeMode,
+      setComposerDraftPrompt,
+      setComposerDraftTerminalContexts,
+      setThreadError,
+    ],
+  );
+
   const onSend = async (e?: { preventDefault: () => void }) => {
     e?.preventDefault();
     const api = readEnvironmentApi(environmentId);
@@ -2454,15 +2889,7 @@ export default function ChatView(props: ChatViewProps) {
     }
     const sendCtx = composerRef.current?.getSendContext();
     if (!sendCtx) return;
-    const {
-      images: composerImages,
-      terminalContexts: composerTerminalContexts,
-      selectedProvider: ctxSelectedProvider,
-      selectedModel: ctxSelectedModel,
-      selectedProviderModels: ctxSelectedProviderModels,
-      selectedPromptEffort: ctxSelectedPromptEffort,
-      selectedModelSelection: ctxSelectedModelSelection,
-    } = sendCtx;
+    const { images: composerImages, terminalContexts: composerTerminalContexts } = sendCtx;
     const promptForSend = promptRef.current;
     const {
       trimmedPrompt: trimmed,
@@ -2513,226 +2940,12 @@ export default function ChatView(props: ChatViewProps) {
       }
       return;
     }
-    if (!activeProject) return;
-    const threadIdForSend = activeThread.id;
-    const isFirstMessage = !isServerThread || activeThread.messages.length === 0;
-    const baseBranchForWorktree =
-      isFirstMessage && envMode === "worktree" && !activeThread.worktreePath
-        ? activeThread.branch
-        : null;
-
-    // In worktree mode, require an explicit base branch so we don't silently
-    // fall back to local execution when branch selection is missing.
-    const shouldCreateWorktree =
-      isFirstMessage && envMode === "worktree" && !activeThread.worktreePath;
-    if (shouldCreateWorktree && !activeThread.branch) {
-      setThreadError(threadIdForSend, "Select a base branch before sending in New worktree mode.");
-      return;
-    }
-
-    sendInFlightRef.current = true;
-    beginLocalDispatch({ preparingWorktree: Boolean(baseBranchForWorktree) });
-
-    const composerImagesSnapshot = [...composerImages];
-    const composerTerminalContextsSnapshot = [...sendableComposerTerminalContexts];
-    const messageTextForSend = appendTerminalContextsToPrompt(
-      promptForSend,
-      composerTerminalContextsSnapshot,
-    );
-    const messageIdForSend = newMessageId();
-    const messageCreatedAt = new Date().toISOString();
-    const outgoingMessageText = formatOutgoingPrompt({
-      provider: ctxSelectedProvider,
-      model: ctxSelectedModel,
-      models: ctxSelectedProviderModels,
-      effort: ctxSelectedPromptEffort,
-      text: messageTextForSend || IMAGE_ONLY_BOOTSTRAP_PROMPT,
+    await sendThreadTurn({
+      prompt: promptForSend,
+      composerImages,
+      composerTerminalContexts: sendableComposerTerminalContexts,
+      sendContext: sendCtx,
     });
-    const turnAttachmentsPromise = Promise.all(
-      composerImagesSnapshot.map(async (image) => ({
-        type: "image" as const,
-        name: image.name,
-        mimeType: image.mimeType,
-        sizeBytes: image.sizeBytes,
-        dataUrl: await readFileAsDataUrl(image.file),
-      })),
-    );
-    const optimisticAttachments = composerImagesSnapshot.map((image) => ({
-      type: "image" as const,
-      id: image.id,
-      name: image.name,
-      mimeType: image.mimeType,
-      sizeBytes: image.sizeBytes,
-      previewUrl: image.previewUrl,
-    }));
-    setOptimisticUserMessages((existing) => [
-      ...existing,
-      {
-        id: messageIdForSend,
-        role: "user",
-        text: outgoingMessageText,
-        ...(optimisticAttachments.length > 0 ? { attachments: optimisticAttachments } : {}),
-        createdAt: messageCreatedAt,
-        streaming: false,
-      },
-    ]);
-    // Sending a message should always bring the latest user turn into view.
-    shouldAutoScrollRef.current = true;
-    forceStickToBottom();
-
-    setThreadError(threadIdForSend, null);
-    if (expiredTerminalContextCount > 0) {
-      const toastCopy = buildExpiredTerminalContextToastCopy(
-        expiredTerminalContextCount,
-        "omitted",
-      );
-      toastManager.add({
-        type: "warning",
-        title: toastCopy.title,
-        description: toastCopy.description,
-      });
-    }
-    promptRef.current = "";
-    clearComposerDraftContent(composerDraftTarget);
-    composerRef.current?.resetCursorState();
-
-    let turnStartSucceeded = false;
-    await (async () => {
-      let firstComposerImageName: string | null = null;
-      if (composerImagesSnapshot.length > 0) {
-        const firstComposerImage = composerImagesSnapshot[0];
-        if (firstComposerImage) {
-          firstComposerImageName = firstComposerImage.name;
-        }
-      }
-      let titleSeed = trimmed;
-      if (!titleSeed) {
-        if (firstComposerImageName) {
-          titleSeed = `Image: ${firstComposerImageName}`;
-        } else if (composerTerminalContextsSnapshot.length > 0) {
-          titleSeed = formatTerminalContextLabel(composerTerminalContextsSnapshot[0]!);
-        } else {
-          titleSeed = "New thread";
-        }
-      }
-      const title = truncate(titleSeed);
-      const threadCreateModelSelection: ModelSelection = {
-        provider: ctxSelectedProvider,
-        model:
-          ctxSelectedModel ||
-          activeProject.defaultModelSelection?.model ||
-          DEFAULT_MODEL_BY_PROVIDER.codex,
-        ...(ctxSelectedModelSelection.options
-          ? { options: ctxSelectedModelSelection.options }
-          : {}),
-      };
-
-      // Auto-title from first message
-      if (isFirstMessage && isServerThread) {
-        await api.orchestration.dispatchCommand({
-          type: "thread.meta.update",
-          commandId: newCommandId(),
-          threadId: threadIdForSend,
-          title,
-        });
-      }
-
-      if (isServerThread) {
-        await persistThreadSettingsForNextTurn({
-          threadId: threadIdForSend,
-          createdAt: messageCreatedAt,
-          ...(ctxSelectedModel ? { modelSelection: ctxSelectedModelSelection } : {}),
-          runtimeMode,
-          interactionMode,
-        });
-      }
-
-      const turnAttachments = await turnAttachmentsPromise;
-      const bootstrap =
-        isLocalDraftThread || baseBranchForWorktree
-          ? {
-              ...(isLocalDraftThread
-                ? {
-                    createThread: {
-                      projectId: activeProject.id,
-                      title,
-                      modelSelection: threadCreateModelSelection,
-                      runtimeMode,
-                      interactionMode,
-                      branch: activeThread.branch,
-                      worktreePath: activeThread.worktreePath,
-                      createdAt: activeThread.createdAt,
-                    },
-                  }
-                : {}),
-              ...(baseBranchForWorktree
-                ? {
-                    prepareWorktree: {
-                      projectCwd: activeProject.cwd,
-                      baseBranch: baseBranchForWorktree,
-                      branch: buildTemporaryWorktreeBranchName(),
-                    },
-                    runSetupScript: true,
-                  }
-                : {}),
-            }
-          : undefined;
-      beginLocalDispatch({ preparingWorktree: false });
-      await api.orchestration.dispatchCommand({
-        type: "thread.turn.start",
-        commandId: newCommandId(),
-        threadId: threadIdForSend,
-        message: {
-          messageId: messageIdForSend,
-          role: "user",
-          text: outgoingMessageText,
-          attachments: turnAttachments,
-        },
-        modelSelection: ctxSelectedModelSelection,
-        titleSeed: title,
-        runtimeMode,
-        interactionMode,
-        ...(bootstrap ? { bootstrap } : {}),
-        createdAt: messageCreatedAt,
-      });
-      turnStartSucceeded = true;
-    })().catch(async (err: unknown) => {
-      if (
-        !turnStartSucceeded &&
-        promptRef.current.length === 0 &&
-        composerImagesRef.current.length === 0 &&
-        composerTerminalContextsRef.current.length === 0
-      ) {
-        setOptimisticUserMessages((existing) => {
-          const removed = existing.filter((message) => message.id === messageIdForSend);
-          for (const message of removed) {
-            revokeUserMessagePreviewUrls(message);
-          }
-          const next = existing.filter((message) => message.id !== messageIdForSend);
-          return next.length === existing.length ? existing : next;
-        });
-        promptRef.current = promptForSend;
-        const retryComposerImages = composerImagesSnapshot.map(cloneComposerImageForRetry);
-        composerImagesRef.current = retryComposerImages;
-        composerTerminalContextsRef.current = composerTerminalContextsSnapshot;
-        setComposerDraftPrompt(composerDraftTarget, promptForSend);
-        addComposerDraftImages(composerDraftTarget, retryComposerImages);
-        setComposerDraftTerminalContexts(composerDraftTarget, composerTerminalContextsSnapshot);
-        composerRef.current?.resetCursorState({
-          cursor: collapseExpandedComposerCursor(promptForSend, promptForSend.length),
-          prompt: promptForSend,
-          detectTrigger: true,
-        });
-      }
-      setThreadError(
-        threadIdForSend,
-        err instanceof Error ? err.message : "Failed to send message.",
-      );
-    });
-    sendInFlightRef.current = false;
-    if (!turnStartSucceeded) {
-      resetLocalDispatch();
-    }
   };
 
   const onInterrupt = async () => {
@@ -2745,6 +2958,51 @@ export default function ChatView(props: ChatViewProps) {
       createdAt: new Date().toISOString(),
     });
   };
+
+  const sendPendingUserInputFallback = useCallback(
+    async (requestId: ApprovalRequestId, submission: PendingUserInputFallbackSubmission) => {
+      const sendCtx = composerRef.current?.getSendContext();
+      if (!sendCtx) {
+        clearPendingUserInputFallbackTracking(requestId);
+        return false;
+      }
+
+      setPendingUserInputFallbacksByRequestId((existing) => ({
+        ...existing,
+        [requestId]: {
+          ...submission,
+          status: "sending-fallback",
+        },
+      }));
+
+      const sent = await sendThreadTurn({
+        prompt: formatPendingUserInputFallbackMessage(submission.questions, submission.answers),
+        composerImages: [],
+        composerTerminalContexts: [],
+        sendContext: sendCtx,
+        clearComposerDraftOnStart: false,
+        restoreComposerDraftOnFailure: false,
+        errorMessage: "Failed to send restarted user input answers.",
+      });
+      if (sent) {
+        markPendingUserInputHandledLocally(requestId);
+        clearPendingUserInputDraftState(requestId);
+        toastManager.add({
+          type: "info",
+          title: "Sent answers as a normal message",
+          description: "The original question expired after restart.",
+        });
+      }
+      clearPendingUserInputFallbackTracking(requestId);
+      return sent;
+    },
+    [
+      clearPendingUserInputDraftState,
+      clearPendingUserInputFallbackTracking,
+      markPendingUserInputHandledLocally,
+      sendThreadTurn,
+    ],
+  );
 
   const onRespondToApproval = useCallback(
     async (requestId: ApprovalRequestId, decision: ProviderApprovalDecision) => {
@@ -2775,10 +3033,22 @@ export default function ChatView(props: ChatViewProps) {
   );
 
   const onRespondToUserInput = useCallback(
-    async (requestId: ApprovalRequestId, answers: Record<string, unknown>) => {
+    async (
+      requestId: ApprovalRequestId,
+      questions: ReadonlyArray<UserInputQuestion>,
+      answers: Record<string, string | string[]>,
+    ) => {
       const api = readEnvironmentApi(environmentId);
       if (!api || !activeThreadId) return;
 
+      setPendingUserInputFallbacksByRequestId((existing) => ({
+        ...existing,
+        [requestId]: {
+          questions,
+          answers,
+          status: "awaiting-result",
+        },
+      }));
       setRespondingUserInputRequestIds((existing) =>
         existing.includes(requestId) ? existing : [...existing, requestId],
       );
@@ -2792,15 +3062,86 @@ export default function ChatView(props: ChatViewProps) {
           createdAt: new Date().toISOString(),
         })
         .catch((err: unknown) => {
+          const errorMessages = collectUnknownErrorMessages(err);
+          const detail = errorMessages.find((message) =>
+            isRecoverablePendingUserInputSubmissionFailure(message),
+          );
+          if (detail && activePendingUserInput?.requestId === requestId) {
+            void sendPendingUserInputFallback(requestId, {
+              questions,
+              answers,
+              status: "awaiting-result",
+            });
+            return;
+          }
+          clearPendingUserInputFallbackTracking(requestId);
           setThreadError(
             activeThreadId,
-            err instanceof Error ? err.message : "Failed to submit user input.",
+            errorMessages[0] ?? detail ?? "Failed to submit user input.",
           );
         });
       setRespondingUserInputRequestIds((existing) => existing.filter((id) => id !== requestId));
     },
-    [activeThreadId, environmentId, setThreadError],
+    [
+      activePendingUserInput?.requestId,
+      activeThreadId,
+      clearPendingUserInputFallbackTracking,
+      environmentId,
+      sendPendingUserInputFallback,
+      setThreadError,
+    ],
   );
+
+  useEffect(() => {
+    if (!activeThread || Object.keys(pendingUserInputFallbacksByRequestId).length === 0) {
+      return;
+    }
+    if (isSendBusy || isConnecting || sendInFlightRef.current) {
+      return;
+    }
+
+    for (const [requestId, submission] of Object.entries(pendingUserInputFallbacksByRequestId)) {
+      const resolved = threadActivities.findLast(
+        (activity) =>
+          activity.kind === "user-input.resolved" &&
+          readActivityPayloadValue(activity, "requestId") === requestId,
+      );
+      if (resolved) {
+        clearPendingUserInputDraftState(ApprovalRequestId.make(requestId));
+        clearPendingUserInputFallbackTracking(ApprovalRequestId.make(requestId));
+        continue;
+      }
+
+      const failed = threadActivities.findLast(
+        (activity) =>
+          activity.kind === "provider.user-input.respond.failed" &&
+          readActivityPayloadValue(activity, "requestId") === requestId,
+      );
+      if (!failed) {
+        continue;
+      }
+
+      const failureDetail = readActivityPayloadValue(failed, "detail");
+      if (!isRecoverablePendingUserInputSubmissionFailure(failureDetail)) {
+        clearPendingUserInputFallbackTracking(ApprovalRequestId.make(requestId));
+        continue;
+      }
+      if (submission.status === "sending-fallback") {
+        continue;
+      }
+
+      void sendPendingUserInputFallback(ApprovalRequestId.make(requestId), submission);
+    }
+  }, [
+    activeThread,
+    clearPendingUserInputFallbackTracking,
+    clearPendingUserInputDraftState,
+    isConnecting,
+    isSendBusy,
+    pendingUserInputFallbacksByRequestId,
+    sendPendingUserInputFallback,
+    threadActivities,
+  ]);
 
   const setActivePendingUserInputQuestionIndex = useCallback(
     (nextQuestionIndex: number) => {
@@ -2888,16 +3229,30 @@ export default function ChatView(props: ChatViewProps) {
     }
     if (activePendingProgress.isLastQuestion) {
       if (activePendingResolvedAnswers) {
-        void onRespondToUserInput(activePendingUserInput.requestId, activePendingResolvedAnswers);
+        if (shouldSubmitPendingUserInputAsPlainMessage(activeThread)) {
+          void sendPendingUserInputFallback(activePendingUserInput.requestId, {
+            questions: activePendingUserInput.questions,
+            answers: activePendingResolvedAnswers,
+            status: "awaiting-result",
+          });
+        } else {
+          void onRespondToUserInput(
+            activePendingUserInput.requestId,
+            activePendingUserInput.questions,
+            activePendingResolvedAnswers,
+          );
+        }
       }
       return;
     }
     setActivePendingUserInputQuestionIndex(activePendingProgress.questionIndex + 1);
   }, [
+    activeThread,
     activePendingProgress,
     activePendingResolvedAnswers,
     activePendingUserInput,
     onRespondToUserInput,
+    sendPendingUserInputFallback,
     setActivePendingUserInputQuestionIndex,
   ]);
 

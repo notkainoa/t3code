@@ -5,6 +5,8 @@ import {
   countAnsweredPendingUserInputQuestions,
   derivePendingUserInputProgress,
   findFirstUnansweredPendingUserInputQuestionIndex,
+  formatPendingUserInputFallbackMessage,
+  isRecoverablePendingUserInputSubmissionFailure,
   resolvePendingUserInputAnswer,
   setPendingUserInputCustomAnswer,
   togglePendingUserInputOptionSelection,
@@ -152,6 +154,80 @@ describe("buildPendingUserInputAnswers", () => {
 
   it("returns null when any question is unanswered", () => {
     expect(buildPendingUserInputAnswers([singleSelectQuestion], {})).toBeNull();
+  });
+});
+
+describe("isRecoverablePendingUserInputSubmissionFailure", () => {
+  it("matches stale restart failures", () => {
+    expect(
+      isRecoverablePendingUserInputSubmissionFailure(
+        "Stale pending user-input request: req-1. Provider callback state does not survive app restarts or recovered sessions. Restart the turn to continue.",
+      ),
+    ).toBe(true);
+  });
+
+  it("matches unknown orphaned request failures", () => {
+    expect(
+      isRecoverablePendingUserInputSubmissionFailure("Unknown pending user-input request: req-1"),
+    ).toBe(true);
+  });
+
+  it("matches missing-session failures", () => {
+    expect(
+      isRecoverablePendingUserInputSubmissionFailure(
+        "No active provider session is bound to this thread.",
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores unrelated failures", () => {
+    expect(isRecoverablePendingUserInputSubmissionFailure("database unavailable")).toBe(false);
+  });
+});
+
+describe("formatPendingUserInputFallbackMessage", () => {
+  it("formats answers in question order", () => {
+    expect(
+      formatPendingUserInputFallbackMessage(
+        [
+          singleSelectQuestion,
+          multiSelectQuestion,
+          {
+            id: "compat",
+            header: "Compat",
+            question: "How strict should compatibility be?",
+            options: [
+              {
+                label: "Keep current envelope",
+                description: "Preserve current wire format",
+              },
+            ],
+            multiSelect: false,
+          },
+        ],
+        {
+          scope: "Orchestration-first",
+          areas: ["Server", "Web"],
+          compat: "Keep the current envelope for one release window",
+        },
+      ),
+    ).toBe(
+      [
+        "Answering the earlier questions after restart:",
+        "",
+        "Scope",
+        "Question: What should the plan target first?",
+        "Answer: Orchestration-first",
+        "",
+        "Areas",
+        "Question: Which areas should this change cover?",
+        "Answer: Server, Web",
+        "",
+        "Compat",
+        "Question: How strict should compatibility be?",
+        "Answer: Keep the current envelope for one release window",
+      ].join("\n"),
+    );
   });
 });
 

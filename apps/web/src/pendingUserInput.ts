@@ -115,6 +115,45 @@ export function buildPendingUserInputAnswers(
   return answers;
 }
 
+export function isRecoverablePendingUserInputSubmissionFailure(
+  detail: string | undefined,
+): boolean {
+  const normalized = detail?.toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  return (
+    normalized.includes("stale pending user-input request") ||
+    normalized.includes("unknown pending user-input request") ||
+    normalized.includes("no active provider session is bound to this thread")
+  );
+}
+
+export function formatPendingUserInputFallbackMessage(
+  questions: ReadonlyArray<UserInputQuestion>,
+  answers: Record<string, string | string[]>,
+): string {
+  const lines = ["Answering the earlier questions after restart:", ""];
+
+  for (const question of questions) {
+    const answer = answers[question.id];
+    if (!answer) {
+      continue;
+    }
+    lines.push(question.header);
+    lines.push(`Question: ${question.question}`);
+    lines.push(`Answer: ${Array.isArray(answer) ? answer.join(", ") : answer}`);
+    lines.push("");
+  }
+
+  while (lines.length > 0 && lines[lines.length - 1] === "") {
+    lines.pop();
+  }
+
+  return lines.join("\n");
+}
+
 export function countAnsweredPendingUserInputQuestions(
   questions: ReadonlyArray<UserInputQuestion>,
   draftAnswers: Record<string, PendingUserInputDraftAnswer>,

@@ -41,7 +41,11 @@ import { __resetLocalApiForTests } from "../localApi";
 import { AppAtomRegistryProvider } from "../rpc/atomRegistry";
 import { getServerConfig } from "../rpc/serverState";
 import { getRouter } from "../router";
-import { selectBootstrapCompleteForActiveEnvironment, useStore } from "../store";
+import {
+  applyOrchestrationEvents,
+  selectBootstrapCompleteForActiveEnvironment,
+  useStore,
+} from "../store";
 import { useTerminalStateStore } from "../terminalStateStore";
 import { useUiStateStore } from "../uiStateStore";
 import { createAuthenticatedSessionHandlers } from "../../test/authHttpHandlers";
@@ -456,8 +460,47 @@ function createThreadSessionSetEvent(threadId: ThreadId, sequence: number): Orch
   };
 }
 
+function createThreadActivityAppendedEvent(
+  threadId: ThreadId,
+  sequence: number,
+  activity: OrchestrationReadModel["threads"][number]["activities"][number],
+): OrchestrationEvent {
+  return {
+    sequence,
+    eventId: EventId.make(`event-thread-activity-appended-${sequence}`),
+    aggregateKind: "thread",
+    aggregateId: threadId,
+    occurredAt: NOW_ISO,
+    commandId: null,
+    causationEventId: null,
+    correlationId: null,
+    metadata: {},
+    type: "thread.activity-appended",
+    payload: {
+      threadId,
+      activity,
+    },
+  };
+}
+
 function sendOrchestrationDomainEvent(event: OrchestrationEvent): void {
   rpcHarness.emitStreamValue(WS_METHODS.subscribeOrchestrationDomainEvents, event);
+}
+
+function queryToastTitles(): string[] {
+  return Array.from(document.querySelectorAll('[data-slot="toast-title"]')).map(
+    (element) => element.textContent?.trim() ?? "",
+  );
+}
+
+async function waitForToast(title: string): Promise<void> {
+  await vi.waitFor(
+    () => {
+      const matches = queryToastTitles().filter((value) => value === title);
+      expect(matches.length, `Expected "${title}" toast`).toBeGreaterThan(0);
+    },
+    { timeout: 8_000, interval: 16 },
+  );
 }
 
 async function waitForWsClient(): Promise<void> {
@@ -653,9 +696,16 @@ function createSnapshotWithLongProposedPlan(): OrchestrationReadModel {
 }
 
 function createSnapshotWithPendingUserInput(): OrchestrationReadModel {
+  return createSnapshotWithPendingUserInputState();
+}
+
+function createSnapshotWithPendingUserInputState(options?: {
+  sessionStatus?: OrchestrationSessionStatus;
+}): OrchestrationReadModel {
   const snapshot = createSnapshotForTargetUser({
     targetMessageId: "msg-user-pending-input-target" as MessageId,
     targetText: "question thread",
+    ...(options?.sessionStatus ? { sessionStatus: options.sessionStatus } : {}),
   });
 
   return {
@@ -3584,6 +3634,248 @@ describe("ChatView timeline estimator parity (full app)", () => {
         },
         { timeout: 8_000, interval: 16 },
       );
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
+  it("falls back to a normal message when restarted pending user input becomes stale", async () => {
+    const snapshot = createSnapshotWithPendingUserInput();
+    let nextSequence = snapshot.snapshotSequence + 1;
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot,
+      resolveRpc: (body) => {
+        if (body._tag !== ORCHESTRATION_WS_METHODS.dispatchCommand) {
+          return undefined;
+        }
+
+        const responseSequence = nextSequence++;
+        if (body.type === "thread.user-input.respond") {
+          const failureSequence = nextSequence++;
+          setTimeout(() => {
+            useStore.setState((state) =>
+              applyOrchestrationEvents(
+                state,
+                [
+                  createThreadActivityAppendedEvent(THREAD_ID, failureSequence, {
+                    id: EventId.make("activity-user-input-stale"),
+                    tone: "error",
+                    kind: "provider.user-input.respond.failed",
+                    summary: "Provider user input response failed",
+                    payload: {
+                      requestId: "req-browser-user-input",
+                      detail:
+                        "Stale pending user-input request: req-browser-user-input. Provider callback state does not survive app restarts or recovered sessions. Restart the turn to continue.",
+                    },
+                    turnId: null,
+                    sequence: failureSequence,
+                    createdAt: isoAt(1_001),
+                  }),
+                ],
+                LOCAL_ENVIRONMENT_ID,
+              ),
+            );
+          }, 0);
+        }
+
+        return {
+          sequence: responseSequence,
+        };
+      },
+    });
+
+    try {
+      const firstOption = await waitForButtonContainingText("Tight");
+      firstOption.click();
+
+      const finalOption = await waitForButtonContainingText("Conservative");
+      finalOption.click();
+
+      await vi.waitFor(
+        () => {
+          const userInputSubmit = wsRequests.find(
+            (request) =>
+              request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
+              request.type === "thread.user-input.respond",
+          ) as
+            | {
+                _tag: string;
+                type?: string;
+                requestId?: string;
+              }
+            | undefined;
+          expect(userInputSubmit?.requestId).toBe("req-browser-user-input");
+
+          const fallbackSend = wsRequests.findLast(
+            (request) =>
+              request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
+              request.type === "thread.turn.start",
+          ) as
+            | {
+                _tag: string;
+                type?: string;
+                message?: { text?: string };
+              }
+            | undefined;
+
+          expect(fallbackSend).toMatchObject({
+            _tag: ORCHESTRATION_WS_METHODS.dispatchCommand,
+            type: "thread.turn.start",
+            message: {
+              text: [
+                "Answering the earlier questions after restart:",
+                "",
+                "Scope",
+                "Question: What should this change cover?",
+                "Answer: Tight",
+                "",
+                "Risk",
+                "Question: How aggressive should the imaginary plan be?",
+                "Answer: Conservative",
+              ].join("\n"),
+            },
+          });
+        },
+        { timeout: 8_000, interval: 16 },
+      );
+
+      await waitForToast("Sent answers as a normal message");
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
+  it("submits reopened pending user input as plain text when the thread session is closed", async () => {
+    let nextSequence = fixture.snapshot.snapshotSequence + 1;
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: createSnapshotWithPendingUserInputState({
+        sessionStatus: "stopped",
+      }),
+      resolveRpc: (body) => {
+        if (body._tag !== ORCHESTRATION_WS_METHODS.dispatchCommand) {
+          return undefined;
+        }
+
+        return {
+          sequence: nextSequence++,
+        };
+      },
+    });
+
+    try {
+      const firstOption = await waitForButtonContainingText("Tight");
+      firstOption.click();
+
+      const finalOption = await waitForButtonContainingText("Conservative");
+      finalOption.click();
+
+      await vi.waitFor(
+        () => {
+          const userInputSubmit = wsRequests.find(
+            (request) =>
+              request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
+              request.type === "thread.user-input.respond",
+          );
+          expect(userInputSubmit).toBeUndefined();
+
+          const fallbackSend = wsRequests.findLast(
+            (request) =>
+              request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
+              request.type === "thread.turn.start",
+          ) as
+            | {
+                _tag: string;
+                type?: string;
+                message?: { text?: string };
+              }
+            | undefined;
+
+          expect(fallbackSend).toMatchObject({
+            _tag: ORCHESTRATION_WS_METHODS.dispatchCommand,
+            type: "thread.turn.start",
+            message: {
+              text: [
+                "Answering the earlier questions after restart:",
+                "",
+                "Scope",
+                "Question: What should this change cover?",
+                "Answer: Tight",
+                "",
+                "Risk",
+                "Question: How aggressive should the imaginary plan be?",
+                "Answer: Conservative",
+              ].join("\n"),
+            },
+          });
+        },
+        { timeout: 8_000, interval: 16 },
+      );
+
+      await waitForToast("Sent answers as a normal message");
+
+      await vi.waitFor(
+        () => {
+          const hasPendingSubmit = Array.from(document.querySelectorAll("button")).some(
+            (button) => button.textContent?.trim() === "Submit",
+          );
+          expect(hasPendingSubmit).toBe(false);
+        },
+        { timeout: 8_000, interval: 16 },
+      );
+    } finally {
+      await mounted.cleanup();
+    }
+  });
+
+  it("keeps the final pending user input question in place after a generic submit failure", async () => {
+    let nextSequence = fixture.snapshot.snapshotSequence + 1;
+    const mounted = await mountChatView({
+      viewport: DEFAULT_VIEWPORT,
+      snapshot: createSnapshotWithPendingUserInput(),
+      resolveRpc: (body) => {
+        if (body._tag !== ORCHESTRATION_WS_METHODS.dispatchCommand) {
+          return undefined;
+        }
+
+        if (body.type === "thread.user-input.respond") {
+          return Promise.reject(new Error("database unavailable"));
+        }
+
+        return {
+          sequence: nextSequence++,
+        };
+      },
+    });
+
+    try {
+      const firstOption = await waitForButtonContainingText("Tight");
+      firstOption.click();
+
+      const finalOption = await waitForButtonContainingText("Conservative");
+      finalOption.click();
+
+      await vi.waitFor(
+        () => {
+          expect(document.body.textContent).toContain("Failed to submit user input.");
+          expect(document.body.textContent).toContain(
+            "How aggressive should the imaginary plan be?",
+          );
+          expect(document.body.textContent).toContain("Conservative");
+          expect(document.body.textContent).not.toContain("What should this change cover?");
+        },
+        { timeout: 8_000, interval: 16 },
+      );
+
+      await waitForButtonByText("Submit");
+
+      const fallbackSend = wsRequests.find(
+        (request) =>
+          request._tag === ORCHESTRATION_WS_METHODS.dispatchCommand &&
+          request.type === "thread.turn.start",
+      );
+      expect(fallbackSend).toBeUndefined();
     } finally {
       await mounted.cleanup();
     }
