@@ -1,0 +1,23 @@
+apps/web/src/components/Sidebar.tsx
+  369aaddab0fbc735 1413-1415
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "14b3e668165b554a62cb13485c335701d5d632ca",
+  "prompts": {
+    "369aaddab0fbc735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d78ba-4112-7f91-95b3-2d84772e8dbd",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 149,
+      "accepted_lines": 4,
+      "overriden_lines": 0
+    }
+  }
+}
