@@ -3008,6 +3008,7 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
             },
             hasUpstream: true,
             aheadCount: 0,
+            aheadOfBaseCount: 0,
             behindCount: 0,
             pr: null,
           }),

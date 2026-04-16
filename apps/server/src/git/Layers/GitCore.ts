@@ -70,6 +70,7 @@ const NON_REPOSITORY_STATUS_DETAILS = Object.freeze<GitStatusDetails>({
   workingTree: { files: [], insertions: 0, deletions: 0 },
   hasUpstream: false,
   aheadCount: 0,
+  aheadOfBaseCount: 0,
   behindCount: 0,
 });
 
