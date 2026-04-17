@@ -1,0 +1,171 @@
+apps/server/src/provider/cliVersion.test.ts
+  369aaddab0fbc735 1-17
+packages/shared/src/serverSettings.ts
+  369aaddab0fbc735 1,3,42-71
+apps/server/src/serverRuntimeStartup.ts
+  369aaddab0fbc735 35,285,330-333
+apps/server/src/provider/Layers/ProviderSessionReaper.ts
+  369aaddab0fbc735 1-133
+apps/web/src/components/RightPanelSheet.tsx
+  369aaddab0fbc735 1-30
+apps/server/src/serverSettings.ts
+  369aaddab0fbc735 45,84-97,331-333
+scripts/lib/build-target-arch.test.ts
+  369aaddab0fbc735 1-61
+apps/desktop/src/updateChannels.test.ts
+  369aaddab0fbc735 1-41
+packages/contracts/src/environment.ts
+  369aaddab0fbc735 54
+apps/server/src/provider/Layers/ProviderSessionDirectory.ts
+  369aaddab0fbc735 4,10,55-75,86-87,161-172,179
+packages/contracts/src/settings.ts
+  369aaddab0fbc735 26-33,38-44
+apps/web/src/components/Sidebar.tsx
+  369aaddab0fbc735 34,36,39,107-126,166,172-177,193-197,217-238,1044-1048,1126-1127,1134,1139,1146,1163-1171,1175-1184,1358-1478,1487-1551,1554-1559,1566,1570,1575-1579,1690-1691,1707,1712,1720,1729,1737-1777,1848-1929,1937-1940,1999,2043-2051,2084,2135-2252,2289,2292,2296,2299,2352-2375,2493,2533,2574-2579,2638,2641,2756-2760,2794-2813,2816-2817,2819-2823,2827,2855-2858,2860,2867-2870,2880,2947-2950,2999-3002,3019,3424
+apps/server/src/provider/Layers/ProviderRegistry.test.ts
+  369aaddab0fbc735 976-1038
+apps/web/src/components/Sidebar.logic.ts
+  369aaddab0fbc735 9
+apps/web/src/routes/_chat.$environmentId.$threadId.tsx
+  369aaddab0fbc735 2,20,24,169,270,272
+apps/server/src/codexAppServerManager.test.ts
+  369aaddab0fbc735 473-620
+apps/server/package.json
+  369aaddab0fbc735 23-24,27
+apps/server/src/provider/Layers/CodexAdapter.test.ts
+  369aaddab0fbc735 149
+scripts/lib/build-target-arch.ts
+  369aaddab0fbc735 1-50
+apps/web/src/components/ChatView.browser.tsx
+  369aaddab0fbc735 5,22,52,82-93,203,220-222,229-239,1755,1758,1760,1775,1800,1802-1804,1812-1830,1860-1862,1866-1871,1885,1887-1889,1897-1915,1951
+apps/server/src/provider/Services/ProviderSessionDirectory.ts
+  369aaddab0fbc735 25-28,56-58
+apps/web/src/sidebarProjectGrouping.ts
+  369aaddab0fbc735 1-118
+apps/server/src/provider/Layers/ProviderSessionDirectory.test.ts
+  369aaddab0fbc735 136-207
+.github/workflows/release.yml
+  369aaddab0fbc735 163-167,280-290,361,366-393
+packages/contracts/src/ipc.ts
+  369aaddab0fbc735 63
+scripts/resolve-nightly-release.ts
+  369aaddab0fbc735 35-45,73
+apps/server/src/orchestration/Layers/ProjectionPipeline.ts
+  369aaddab0fbc735 1287-1294
+apps/desktop/src/appBranding.ts
+  369aaddab0fbc735 3-4,15
+apps/server/src/ws.ts
+  369aaddab0fbc735 553-567,570-591
+apps/web/src/components/PlanSidebar.tsx
+  369aaddab0fbc735 62,74,128-135
+scripts/release-smoke.ts
+  369aaddab0fbc735 2-10,81-147,154-165,217,222,227,234-240,259-372
+apps/server/src/codexAppServerManager.ts
+  369aaddab0fbc735 453-471,923-935,956-959
+apps/web/src/routes/__root.tsx
+  369aaddab0fbc735 25-29,212-215,236-248,250
+apps/web/src/logicalProject.ts
+  369aaddab0fbc735 2-3,6-100,102-105,107-111,113-114,119-127,130-133,135-156
+apps/server/src/git/Layers/CodexTextGeneration.ts
+  369aaddab0fbc735 169
+scripts/merge-update-manifests.test.ts
+  369aaddab0fbc735 4-7,9,11-12,28-29,45,59-113,119-120,123-124,128,131-132,135-136,140,143-146,150-151,170-189
+apps/server/src/serverSettings.test.ts
+  369aaddab0fbc735 145-173
+apps/desktop/src/clientPersistence.test.ts
+  369aaddab0fbc735 55-58
+scripts/resolve-nightly-release.test.ts
+  369aaddab0fbc735 6,15-20,23,25-28
+apps/server/src/project/Layers/RepositoryIdentityResolver.ts
+  369aaddab0fbc735 45,61,71,113
+apps/web/src/localApi.test.ts
+  369aaddab0fbc735 531,535-544,566,577,588,592-601,617
+apps/web/src/components/Sidebar.logic.test.ts
+  369aaddab0fbc735 23,25,690-694,696-700,732-736,738
+apps/web/src/rightPanelLayout.ts
+  369aaddab0fbc735 1-2
+apps/server/src/provider/Layers/ProviderService.test.ts
+  369aaddab0fbc735 657-693
+apps/server/src/provider/Layers/ProviderSessionReaper.test.ts
+  369aaddab0fbc735 1-522
+apps/web/src/hooks/useHandleNewThread.ts
+  369aaddab0fbc735 13,18,22-25,56,137
+packages/shared/src/serverSettings.test.ts
+  369aaddab0fbc735 1,4,55-109
+apps/web/src/contextMenuFallback.ts
+  369aaddab0fbc735 3-16,19,29,31,34-36,38,40-42,45,47-49,51,53-59,61-122,124-140
+apps/server/src/project/Layers/RepositoryIdentityResolver.test.ts
+  369aaddab0fbc735 1-2,15-18,50,58-78,143,159-162
+package.json
+  369aaddab0fbc735 19,43,53-55,78,81
+apps/server/src/provider/Layers/ClaudeAdapter.ts
+  369aaddab0fbc735 43,87,219-221,225-231,299,473-476,979-983,1022-1026,1415-1417,1481-1483,1605-1607,1666-1670,1682-1684,1703-1707,1777-1779,1851-1853,1876-1878,1903-1905,2261-2263,2480-2500,2536-2539,2575-2579,2588-2591,2606-2608,2622-2626,2796-2798,2834,2840
+apps/web/src/components/ChatView.tsx
+  369aaddab0fbc735 4,95-96,116,176,309,681,850-853,856-859,895,925-928,989,1915-1919,3417,3426-3427,3449-3463
+apps/web/src/hooks/useSettings.ts
+  369aaddab0fbc735 22,157
+apps/server/src/server.test.ts
+  369aaddab0fbc735 14,170-195,2975,2978-2980,2987,2991-3016,3032-3388
+packages/contracts/src/model.ts
+  369aaddab0fbc735 5-16,19,26,84-86
+scripts/build-desktop-artifact.ts
+  369aaddab0fbc735 12,86
+apps/web/src/environmentGrouping.test.ts
+  369aaddab0fbc735 13-18,39-42,250,283-410,424-448
+docs/release.md
+  369aaddab0fbc735 40
+apps/desktop/src/desktopSettings.ts
+  369aaddab0fbc735 5-6,10,16,19-25,42-46,49-51,54,61,63-70,75-79,82
+apps/desktop/src/main.ts
+  369aaddab0fbc735 61,163-191,223,1173,1318-1326,1747,1768-1791,1793,1795-1796,1798,1840-1842
+apps/server/src/provider/cliVersion.ts
+  369aaddab0fbc735 1-123
+scripts/merge-update-manifests.ts
+  369aaddab0fbc735 1-91
+apps/server/src/provider/Services/ProviderSessionReaper.ts
+  369aaddab0fbc735 1-14
+apps/web/src/composerDraftStore.ts
+  369aaddab0fbc735 2-3,107,548-551,553-554,578-580
+apps/server/src/provider/Layers/ClaudeAdapter.test.ts
+  369aaddab0fbc735 354-400,1310-1371
+apps/server/src/provider/codexCliVersion.ts
+  369aaddab0fbc735 1-2,7,15
+apps/server/src/provider/Layers/ClaudeProvider.ts
+  369aaddab0fbc735 29,44,46-67,123-140,529,541,563,581,601,614-623,713-717
+apps/web/src/environments/runtime/service.ts
+  369aaddab0fbc735 63,472,545
+apps/web/src/contextMenuFallback.test.ts
+  369aaddab0fbc735 1-221
+apps/desktop/src/updateChannels.ts
+  369aaddab0fbc735 1-18
+apps/server/src/server.ts
+  369aaddab0fbc735 26,138-141,160,164-167,202-206,211
+apps/server/src/provider/Layers/ProviderService.ts
+  369aaddab0fbc735 300-333,388-391
+scripts/lib/update-manifest.ts
+  369aaddab0fbc735 1,7,9,12-13,16,30,33-34,44,54,67-71,73-74,78,87,98,109,122,131,141,151,165,169,172-174,177,189-193,199,208-212,215,219,224,235,243,250-256,267-269
+apps/desktop/src/desktopSettings.test.ts
+  369aaddab0fbc735 10,32-40,49,52,55,65,72,82,89,97-145
+packages/shared/src/model.ts
+  369aaddab0fbc735 4,228
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "4a035d81ee067f7f6f631aeb88f70ea64c34f5b5",
+  "prompts": {
+    "369aaddab0fbc735": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d78ba-4112-7f91-95b3-2d84772e8dbd",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Kainoa Newton",
+      "messages": [],
+      "total_additions": 44103,
+      "total_deletions": 1239,
+      "accepted_lines": 43848,
+      "overriden_lines": 0
+    }
+  }
+}
