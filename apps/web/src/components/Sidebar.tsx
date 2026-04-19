@@ -32,8 +32,6 @@ import { restrictToFirstScrollableAncestor, restrictToVerticalAxis } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import {
   type DesktopUpdateState,
-  ProjectId,
-  type ScopedProjectRef,
   type ScopedThreadRef,
   type ThreadEnvMode,
   ThreadId,
@@ -129,9 +127,7 @@ import {
   resolveSidebarNewThreadEnvMode,
   resolveThreadRowClassName,
   resolveThreadStatusPill,
-  orderItemsByPreferredIds,
   shouldClearThreadSelectionOnMouseDown,
-  sortProjectsForSidebar,
   useThreadJumpHintVisibility,
   ThreadStatusPill,
 } from "./Sidebar.logic";
@@ -142,12 +138,12 @@ import { CommandDialogTrigger } from "./ui/command";
 import { readEnvironmentApi } from "../environmentApi";
 import { useSettings, useUpdateSettings } from "~/hooks/useSettings";
 import { useServerKeybindings } from "../rpc/serverState";
-import { deriveLogicalProjectKey } from "../logicalProject";
+import { buildSidebarProjectOrdering, type SidebarProjectSnapshot } from "../sidebarProjects";
 import {
   useSavedEnvironmentRegistryStore,
   useSavedEnvironmentRuntimeStore,
 } from "../environments/runtime";
-import type { Project, SidebarThreadSummary } from "../types";
+import type { SidebarThreadSummary } from "../types";
 const THREAD_PREVIEW_LIMIT = 6;
 const SIDEBAR_SORT_LABELS: Record<SidebarProjectSortOrder, string> = {
   updated_at: "Last user message",
@@ -212,15 +208,6 @@ function buildThreadJumpLabelMap(input: {
   return mapping.size > 0 ? mapping : EMPTY_THREAD_JUMP_LABELS;
 }
 
-type EnvironmentPresence = "local-only" | "remote-only" | "mixed";
-
-type SidebarProjectSnapshot = Project & {
-  projectKey: string;
-  environmentPresence: EnvironmentPresence;
-  memberProjectRefs: readonly ScopedProjectRef[];
-  /** Labels for remote environments this project lives in. */
-  remoteEnvironmentLabels: readonly string[];
-};
 interface TerminalStatusIndicator {
   label: "Terminal process running";
   colorClass: string;
@@ -2307,100 +2294,28 @@ export default function Sidebar() {
   const primaryEnvironmentId = usePrimaryEnvironmentId();
   const savedEnvironmentRegistry = useSavedEnvironmentRegistryStore((s) => s.byId);
   const savedEnvironmentRuntimeById = useSavedEnvironmentRuntimeStore((s) => s.byId);
-  const orderedProjects = useMemo(() => {
-    return orderItemsByPreferredIds({
-      items: projects,
-      preferredIds: projectOrder,
-      getId: (project) => scopedProjectKey(scopeProjectRef(project.environmentId, project.id)),
-    });
-  }, [projectOrder, projects]);
-
-  // Build a mapping from physical project key → logical project key for
-  // cross-environment grouping.  Projects that share a repositoryIdentity
-  // canonicalKey are treated as one logical project in the sidebar.
-  const physicalToLogicalKey = useMemo(() => {
-    const mapping = new Map<string, string>();
-    for (const project of orderedProjects) {
-      const physicalKey = scopedProjectKey(scopeProjectRef(project.environmentId, project.id));
-      mapping.set(physicalKey, deriveLogicalProjectKey(project));
-    }
-    return mapping;
-  }, [orderedProjects]);
-
-  const sidebarProjects = useMemo<SidebarProjectSnapshot[]>(() => {
-    // Group projects by logical key while preserving insertion order from
-    // orderedProjects.
-    const groupedMembers = new Map<string, Project[]>();
-    for (const project of orderedProjects) {
-      const logicalKey = deriveLogicalProjectKey(project);
-      const existing = groupedMembers.get(logicalKey);
-      if (existing) {
-        existing.push(project);
-      } else {
-        groupedMembers.set(logicalKey, [project]);
-      }
-    }
-
-    const result: SidebarProjectSnapshot[] = [];
-    const seen = new Set<string>();
-    for (const project of orderedProjects) {
-      const logicalKey = deriveLogicalProjectKey(project);
-      if (seen.has(logicalKey)) continue;
-      seen.add(logicalKey);
-
-      const members = groupedMembers.get(logicalKey)!;
-      // Prefer the primary environment's project as the representative.
-      const representative: Project | undefined =
-        (primaryEnvironmentId
-          ? members.find((p) => p.environmentId === primaryEnvironmentId)
-          : undefined) ?? members[0];
-      if (!representative) continue;
-      const hasLocal =
-        primaryEnvironmentId !== null &&
-        members.some((p) => p.environmentId === primaryEnvironmentId);
-      const hasRemote =
-        primaryEnvironmentId !== null
-          ? members.some((p) => p.environmentId !== primaryEnvironmentId)
-          : false;
-
-      const refs = members.map((p) => scopeProjectRef(p.environmentId, p.id));
-      const remoteLabels = members
-        .filter((p) => primaryEnvironmentId !== null && p.environmentId !== primaryEnvironmentId)
-        .map((p) => {
-          const rt = savedEnvironmentRuntimeById[p.environmentId];
-          const saved = savedEnvironmentRegistry[p.environmentId];
-          return rt?.descriptor?.label ?? saved?.label ?? p.environmentId;
-        });
-      const snapshot: SidebarProjectSnapshot = {
-        id: representative.id,
-        environmentId: representative.environmentId,
-        name: representative.name,
-        cwd: representative.cwd,
-        repositoryIdentity: representative.repositoryIdentity ?? null,
-        defaultModelSelection: representative.defaultModelSelection,
-        createdAt: representative.createdAt,
-        updatedAt: representative.updatedAt,
-        scripts: representative.scripts,
-        projectKey: logicalKey,
-        environmentPresence:
-          hasLocal && hasRemote ? "mixed" : hasRemote ? "remote-only" : "local-only",
-        memberProjectRefs: refs,
-        remoteEnvironmentLabels: remoteLabels,
-      };
-      result.push(snapshot);
-    }
-    return result;
-  }, [
-    orderedProjects,
-    primaryEnvironmentId,
-    savedEnvironmentRegistry,
-    savedEnvironmentRuntimeById,
-  ]);
-
-  const sidebarProjectByKey = useMemo(
-    () => new Map(sidebarProjects.map((project) => [project.projectKey, project] as const)),
-    [sidebarProjects],
+  const { physicalToLogicalKey, sidebarProjects, sortedProjects } = useMemo(
+    () =>
+      buildSidebarProjectOrdering({
+        projects,
+        sidebarThreads,
+        preferredProjectKeys: projectOrder,
+        primaryEnvironmentId,
+        savedEnvironmentRegistryById: savedEnvironmentRegistry,
+        savedEnvironmentRuntimeById,
+        sortOrder: sidebarProjectSortOrder,
+      }),
+    [
+      primaryEnvironmentId,
+      projectOrder,
+      projects,
+      savedEnvironmentRegistry,
+      savedEnvironmentRuntimeById,
+      sidebarProjectSortOrder,
+      sidebarThreads,
+    ],
   );
+
   const sidebarThreadByKey = useMemo(
     () =>
       new Map(
@@ -2547,37 +2462,6 @@ export default function Sidebar() {
     animatedThreadListsRef.current.add(node);
   }, []);
 
-  const visibleThreads = useMemo(
-    () => sidebarThreads.filter((thread) => thread.archivedAt === null),
-    [sidebarThreads],
-  );
-  const sortedProjects = useMemo(() => {
-    const sortableProjects = sidebarProjects.map((project) => ({
-      ...project,
-      id: project.projectKey,
-    }));
-    const sortableThreads = visibleThreads.map((thread) => {
-      const physicalKey = scopedProjectKey(scopeProjectRef(thread.environmentId, thread.projectId));
-      return {
-        ...thread,
-        projectId: (physicalToLogicalKey.get(physicalKey) ?? physicalKey) as ProjectId,
-      };
-    });
-    return sortProjectsForSidebar(
-      sortableProjects,
-      sortableThreads,
-      sidebarProjectSortOrder,
-    ).flatMap((project) => {
-      const resolvedProject = sidebarProjectByKey.get(project.id);
-      return resolvedProject ? [resolvedProject] : [];
-    });
-  }, [
-    sidebarProjectSortOrder,
-    physicalToLogicalKey,
-    sidebarProjectByKey,
-    sidebarProjects,
-    visibleThreads,
-  ]);
   const isManualProjectSorting = sidebarProjectSortOrder === "manual";
   const visibleSidebarThreadKeys = useMemo(
     () =>

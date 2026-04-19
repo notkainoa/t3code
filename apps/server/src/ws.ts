@@ -4,6 +4,7 @@ import {
   AuthSessionId,
   CommandId,
   EventId,
+  ServerExtensionCatalogError,
   type OrchestrationCommand,
   type GitActionProgressEvent,
   type GitManagerServiceError,
@@ -63,6 +64,7 @@ import {
   type SessionCredentialChange,
 } from "./auth/Services/SessionCredentialService";
 import { respondToAuthError } from "./auth/http";
+import { loadExtensionCatalog } from "./extensionsCatalog";
 
 function isThreadDetailEvent(event: OrchestrationEvent): event is Extract<
   OrchestrationEvent,
@@ -712,6 +714,31 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
           observeRpcEffect(WS_METHODS.serverGetConfig, loadServerConfig, {
             "rpc.aggregate": "server",
           }),
+        [WS_METHODS.serverGetExtensionCatalog]: (input) =>
+          observeRpcEffect(
+            WS_METHODS.serverGetExtensionCatalog,
+            serverSettings.getSettings.pipe(
+              Effect.mapError(
+                (error) =>
+                  new ServerExtensionCatalogError({
+                    message: error.message,
+                  }),
+              ),
+              Effect.flatMap((settings) =>
+                Effect.tryPromise({
+                  try: () => loadExtensionCatalog(input, settings).then((items) => ({ items })),
+                  catch: (cause) =>
+                    new ServerExtensionCatalogError({
+                      message:
+                        cause instanceof Error
+                          ? cause.message
+                          : "Failed to load the extension catalog.",
+                    }),
+                }),
+              ),
+            ),
+            { "rpc.aggregate": "server" },
+          ),
         [WS_METHODS.serverRefreshProviders]: (_input) =>
           observeRpcEffect(
             WS_METHODS.serverRefreshProviders,

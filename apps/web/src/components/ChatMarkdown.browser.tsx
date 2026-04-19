@@ -7,7 +7,10 @@ import { render } from "vitest-browser-react";
 const { openInPreferredEditorMock, readLocalApiMock } = vi.hoisted(() => ({
   openInPreferredEditorMock: vi.fn(async () => "vscode"),
   readLocalApiMock: vi.fn(() => ({
-    server: { getConfig: vi.fn(async () => ({ availableEditors: ["vscode"] })) },
+    server: {
+      getConfig: vi.fn(async () => ({ availableEditors: ["vscode"] })),
+      getExtensionCatalog: vi.fn(async () => ({ items: [] })),
+    },
     shell: { openInEditor: vi.fn(async () => undefined) },
   })),
 }));

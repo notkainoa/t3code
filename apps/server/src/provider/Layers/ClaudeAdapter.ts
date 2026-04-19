@@ -18,7 +18,6 @@ import {
   type SettingSource,
   type SDKUserMessage,
   ModelUsage,
-  NonNullableUsage,
 } from "@anthropic-ai/claude-agent-sdk";
 import { parseCliArgs } from "@t3tools/shared/cliArgs";
 import {
@@ -290,7 +289,7 @@ function maxClaudeContextWindowFromModelUsage(
 }
 
 function normalizeClaudeTokenUsage(
-  value: NonNullableUsage | undefined,
+  value: unknown,
   contextWindow?: number,
 ): ThreadTokenUsageSnapshot | undefined {
   if (!value || typeof value !== "object") {
@@ -1685,18 +1684,17 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
 
     if (event.type === "content_block_start") {
       const { index, content_block: block } = event;
-      if (block.type === "text") {
-        yield* ensureAssistantTextBlock(context, index, {
-          fallbackText: extractContentBlockText(block),
-        });
-        return;
-      }
-      if (
-        block.type !== "tool_use" &&
-        block.type !== "server_tool_use" &&
-        block.type !== "mcp_tool_use"
-      ) {
-        return;
+      switch (block.type) {
+        case "text": {
+          yield* ensureAssistantTextBlock(context, index, {
+            fallbackText: extractContentBlockText(block),
+          });
+          return;
+        }
+        case "tool_use":
+          break;
+        default:
+          return;
       }
 
       const toolName = block.name;

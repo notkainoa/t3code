@@ -91,6 +91,7 @@ const baseServerConfig: ServerConfig = {
 
 const serverApi = {
   getConfig: vi.fn<() => Promise<ServerConfig>>(),
+  getExtensionCatalog: vi.fn(async () => ({ items: [] })),
   subscribeConfig: vi.fn((listener: (event: ServerConfigStreamEvent) => void) =>
     registerListener(configListeners, listener),
   ),

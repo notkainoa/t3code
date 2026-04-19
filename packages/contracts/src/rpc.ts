@@ -3,6 +3,11 @@ import * as Rpc from "effect/unstable/rpc/Rpc";
 import * as RpcGroup from "effect/unstable/rpc/RpcGroup";
 
 import { OpenError, OpenInEditorInput } from "./editor";
+import {
+  ServerGetExtensionCatalogInput,
+  ServerGetExtensionCatalogResult,
+  ServerExtensionCatalogError,
+} from "./extensions";
 import { AuthAccessStreamEvent } from "./auth";
 import { FilesystemBrowseInput, FilesystemBrowseResult, FilesystemBrowseError } from "./filesystem";
 import {
@@ -110,6 +115,7 @@ export const WS_METHODS = {
 
   // Server meta
   serverGetConfig: "server.getConfig",
+  serverGetExtensionCatalog: "server.getExtensionCatalog",
   serverRefreshProviders: "server.refreshProviders",
   serverUpsertKeybinding: "server.upsertKeybinding",
   serverGetSettings: "server.getSettings",
@@ -133,6 +139,12 @@ export const WsServerGetConfigRpc = Rpc.make(WS_METHODS.serverGetConfig, {
   payload: Schema.Struct({}),
   success: ServerConfig,
   error: Schema.Union([KeybindingsConfigError, ServerSettingsError]),
+});
+
+export const WsServerGetExtensionCatalogRpc = Rpc.make(WS_METHODS.serverGetExtensionCatalog, {
+  payload: ServerGetExtensionCatalogInput,
+  success: ServerGetExtensionCatalogResult,
+  error: ServerExtensionCatalogError,
 });
 
 export const WsServerRefreshProvidersRpc = Rpc.make(WS_METHODS.serverRefreshProviders, {
@@ -353,6 +365,7 @@ export const WsSubscribeAuthAccessRpc = Rpc.make(WS_METHODS.subscribeAuthAccess,
 
 export const WsRpcGroup = RpcGroup.make(
   WsServerGetConfigRpc,
+  WsServerGetExtensionCatalogRpc,
   WsServerRefreshProvidersRpc,
   WsServerUpsertKeybindingRpc,
   WsServerGetSettingsRpc,

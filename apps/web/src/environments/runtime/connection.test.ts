@@ -22,6 +22,7 @@ function createTestClient() {
           environmentId: EnvironmentId.make("env-1"),
         },
       })),
+      getExtensionCatalog: vi.fn(async () => ({ items: [] })),
       subscribeConfig: (listener: (event: any) => void) => {
         configListeners.add(listener);
         return () => configListeners.delete(listener);

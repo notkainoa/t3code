@@ -19,6 +19,7 @@ import type {
   GitCreateBranchResult,
 } from "./git";
 import type { FilesystemBrowseInput, FilesystemBrowseResult } from "./filesystem";
+import type { ServerGetExtensionCatalogInput, ServerGetExtensionCatalogResult } from "./extensions";
 import type {
   ProjectSearchEntriesInput,
   ProjectSearchEntriesResult,
@@ -214,6 +215,9 @@ export interface LocalApi {
   };
   server: {
     getConfig: () => Promise<ServerConfig>;
+    getExtensionCatalog: (
+      input: ServerGetExtensionCatalogInput,
+    ) => Promise<ServerGetExtensionCatalogResult>;
     refreshProviders: () => Promise<ServerProviderUpdatedPayload>;
     upsertKeybinding: (input: ServerUpsertKeybindingInput) => Promise<ServerUpsertKeybindingResult>;
     getSettings: () => Promise<ServerSettings>;
