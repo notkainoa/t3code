@@ -117,6 +117,7 @@ export function buildMenuItems(
     hasBranch &&
     !hasChanges &&
     !hasOpenPr &&
+    !gitStatus.isDefaultRef &&
     isAheadOfBase &&
     !isBehind &&
     (gitStatus.hasUpstream || canPushWithoutUpstream);

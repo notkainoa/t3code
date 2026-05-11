@@ -543,6 +543,14 @@ describe("when: on default ref without open PR", () => {
       disabled: false,
     });
   });
+
+  it("buildMenuItems keeps create PR disabled even if the ref is ahead of base", () => {
+    const items = buildMenuItems(
+      status({ refName: "main", isDefaultRef: true, aheadCount: 2, aheadOfBaseCount: 2, pr: null }),
+      false,
+    );
+    assert.equal(items.find((item) => item.id === "pr")?.disabled, true);
+  });
 });
 
 describe("when: working tree has local changes and ref is behind upstream", () => {

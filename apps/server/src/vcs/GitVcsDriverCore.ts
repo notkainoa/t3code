@@ -1264,12 +1264,7 @@ export const makeGitVcsDriverCore = Effect.fn("makeGitVcsDriverCore")(function* 
       (refName === defaultBranch ||
         (defaultBranch === null && (refName === "main" || refName === "master")));
     if (refName && !isDefaultBranch) {
-      aheadOfDefaultCount =
-        fallbackAheadCount !== null
-          ? fallbackAheadCount
-          : yield* computeAheadCountAgainstBase(cwd, refName).pipe(
-              Effect.catch(() => Effect.succeed(0)),
-            );
+      aheadOfDefaultCount = aheadOfBaseCount;
     }
 
     const stagedEntries = parseNumstatEntries(stagedNumstatStdout);
