@@ -54,7 +54,25 @@
   }
   body {
     @apply text-foreground relative;
-    background-color: var(--app-chrome-background);
+    background: var(--app-shell-background, var(--app-chrome-background));
+  }
+}
+
+@layer components {
+  .sidebar-icon-button {
+    @apply items-center justify-center rounded-sm p-0.5 text-muted-foreground/60 transition-colors hover:text-foreground/82 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring;
+    background: transparent;
+  }
+
+  .sidebar-icon-button:hover {
+    background: var(--color-background-button-secondary-hover);
+  }
+
+  .app-sidebar-surface {
+    background: var(--app-sidebar-surface, var(--card));
+    box-shadow: var(--app-sidebar-shadow, none);
+    backdrop-filter: var(--app-sidebar-backdrop-filter, none);
+    -webkit-backdrop-filter: var(--app-sidebar-backdrop-filter, none);
   }
 }
 
@@ -88,6 +106,10 @@
   --radius: 0.625rem;
   --background: var(--color-white);
   --app-chrome-background: var(--background);
+  --app-shell-background: var(--app-chrome-background);
+  --app-sidebar-backdrop-filter: none;
+  --app-sidebar-shadow: none;
+  --app-sidebar-surface: var(--card);
   --foreground: var(--color-neutral-800);
   --card: var(--color-white);
   --card-foreground: var(--color-neutral-800);
@@ -112,6 +134,32 @@
   --success-foreground: var(--color-emerald-700);
   --warning: var(--color-amber-500);
   --warning-foreground: var(--color-amber-700);
+  --color-text-foreground: var(--foreground);
+  --color-text-foreground-secondary: color-mix(in srgb, var(--foreground) 72%, transparent);
+  --color-border-light: color-mix(in srgb, var(--border) 78%, transparent);
+  --color-border-focus: color-mix(in srgb, var(--foreground) 16%, var(--border));
+  --color-background-surface: var(--background);
+  --color-background-control: color-mix(in srgb, var(--background) 94%, var(--foreground) 6%);
+  --color-background-control-opaque: color-mix(
+    in srgb,
+    var(--background) 97%,
+    var(--foreground) 3%
+  );
+  --color-background-elevated-primary: color-mix(in srgb, var(--card) 96%, var(--foreground) 4%);
+  --color-background-elevated-primary-opaque: var(--card);
+  --color-background-elevated-secondary: color-mix(in srgb, var(--card) 92%, var(--foreground) 8%);
+  --color-background-button-secondary: color-mix(in srgb, var(--card) 88%, var(--foreground) 12%);
+  --color-background-button-secondary-hover: color-mix(
+    in srgb,
+    var(--card) 82%,
+    var(--foreground) 18%
+  );
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-accent: var(--color-background-button-secondary-hover);
+  --sidebar-accent-active: var(--color-background-button-secondary);
+  --sidebar-accent-foreground: var(--color-text-foreground);
+  --sidebar-border: var(--border);
 
   @variant dark {
     color-scheme: dark;
@@ -141,6 +189,44 @@
     --success-foreground: var(--color-emerald-400);
     --warning: var(--color-amber-500);
     --warning-foreground: var(--color-amber-400);
+    --app-shell-background: var(--app-chrome-background);
+    --app-sidebar-backdrop-filter: saturate(140%) blur(16px);
+    --app-sidebar-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    --app-sidebar-surface: color-mix(in srgb, var(--background) 78%, transparent);
+    --color-text-foreground: var(--foreground);
+    --color-text-foreground-secondary: color-mix(in srgb, var(--foreground) 74%, transparent);
+    --color-border-light: color-mix(in srgb, var(--border) 88%, transparent);
+    --color-border-focus: color-mix(in srgb, var(--foreground) 18%, var(--border));
+    --color-background-surface: var(--background);
+    --color-background-control: color-mix(in srgb, var(--background) 90%, var(--foreground) 10%);
+    --color-background-control-opaque: color-mix(
+      in srgb,
+      var(--background) 94%,
+      var(--foreground) 6%
+    );
+    --color-background-elevated-primary: color-mix(in srgb, var(--card) 88%, var(--foreground) 12%);
+    --color-background-elevated-primary-opaque: color-mix(
+      in srgb,
+      var(--card) 96%,
+      var(--foreground) 4%
+    );
+    --color-background-elevated-secondary: color-mix(
+      in srgb,
+      var(--card) 84%,
+      var(--foreground) 16%
+    );
+    --color-background-button-secondary: color-mix(in srgb, var(--card) 80%, var(--foreground) 20%);
+    --color-background-button-secondary-hover: color-mix(
+      in srgb,
+      var(--card) 74%,
+      var(--foreground) 26%
+    );
+    --sidebar: var(--card);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-accent: var(--color-background-button-secondary-hover);
+    --sidebar-accent-active: var(--color-background-button-secondary);
+    --sidebar-accent-foreground: var(--color-text-foreground);
+    --sidebar-border: var(--border);
   }
 }
 

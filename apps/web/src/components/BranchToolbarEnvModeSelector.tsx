@@ -40,7 +40,7 @@ export const BranchToolbarEnvModeSelector = memo(function BranchToolbarEnvModeSe
 
   if (envLocked) {
     return (
-      <span className="inline-flex items-center gap-1 border border-transparent px-[calc(--spacing(3)-1px)] text-sm font-medium text-muted-foreground/70 sm:text-xs">
+      <span className="inline-flex items-center gap-1 rounded-md border border-transparent px-2 py-1 text-sm font-medium text-[var(--color-text-foreground-secondary)] sm:text-xs">
         {activeWorktreePath ? (
           <>
             <FolderGitIcon className="size-3" />

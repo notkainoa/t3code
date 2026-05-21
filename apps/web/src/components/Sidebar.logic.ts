@@ -305,25 +305,28 @@ export function resolveThreadRowClassName(input: {
   if (input.isSelected && input.isActive) {
     return cn(
       baseClassName,
-      "bg-primary/22 text-foreground font-medium hover:bg-primary/26 hover:text-foreground dark:bg-primary/30 dark:hover:bg-primary/36",
+      "bg-[var(--color-background-button-secondary)] text-[var(--color-text-foreground)] font-medium hover:bg-[var(--color-background-button-secondary)] hover:text-[var(--color-text-foreground)]",
     );
   }
 
   if (input.isSelected) {
     return cn(
       baseClassName,
-      "bg-primary/15 text-foreground hover:bg-primary/19 hover:text-foreground dark:bg-primary/22 dark:hover:bg-primary/28",
+      "bg-[var(--color-background-elevated-secondary)] text-[var(--color-text-foreground)] hover:bg-[var(--color-background-elevated-secondary)] hover:text-[var(--color-text-foreground)]",
     );
   }
 
   if (input.isActive) {
     return cn(
       baseClassName,
-      "bg-accent/85 text-foreground font-medium hover:bg-accent hover:text-foreground dark:bg-accent/55 dark:hover:bg-accent/70",
+      "bg-[var(--color-background-button-secondary)] text-[var(--color-text-foreground)] font-medium hover:bg-[var(--color-background-button-secondary)] hover:text-[var(--color-text-foreground)]",
     );
   }
 
-  return cn(baseClassName, "text-muted-foreground hover:bg-accent hover:text-foreground");
+  return cn(
+    baseClassName,
+    "text-[var(--color-text-foreground-secondary)] hover:bg-[var(--color-background-button-secondary-hover)] hover:text-[var(--color-text-foreground)]",
+  );
 }
 
 export function resolveThreadStatusPill(input: {
