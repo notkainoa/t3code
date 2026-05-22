@@ -1,5 +1,4 @@
 import type {
-  ProviderDriverKind,
   ModelCapabilities,
   ServerProvider,
   ServerProviderAuth,
@@ -8,6 +7,7 @@ import type {
   ServerProviderModel,
   ServerProviderState,
 } from "@t3tools/contracts";
+import { ProviderDriverKind } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 import * as Data from "effect/Data";
 import * as Stream from "effect/Stream";
@@ -201,6 +201,35 @@ export function buildServerProvider(input: {
   skills?: ReadonlyArray<ServerProviderSkill>;
   probe: ProviderProbeResult;
 }): ServerProviderDraft {
+  const codexTaskExecution = !input.enabled
+    ? {
+        status: "unavailable" as const,
+        reason: "Enable Codex to allow background task execution.",
+      }
+    : !input.probe.installed
+      ? {
+          status: "unavailable" as const,
+          reason: "Codex CLI is not installed, so background task execution is unavailable.",
+        }
+      : input.probe.auth.status !== "authenticated"
+        ? {
+            status: "unavailable" as const,
+            reason:
+              "Authenticate Codex before using it for background task execution in service mode.",
+          }
+        : {
+            status: "runnable" as const,
+          };
+  const taskExecution =
+    input.driver === undefined
+      ? undefined
+      : input.driver === ProviderDriverKind.make("codex")
+        ? codexTaskExecution
+        : {
+            status: "unavailable" as const,
+            reason:
+              "Unavailable in service mode. Only Codex task execution ships in the first version.",
+          };
   const versionAdvisory = input.driver
     ? createProviderVersionAdvisory({
         driver: input.driver,
@@ -224,6 +253,7 @@ export function buildServerProvider(input: {
     models: input.models,
     slashCommands: [...(input.slashCommands ?? [])],
     skills: [...(input.skills ?? [])],
+    ...(taskExecution ? { taskExecution } : {}),
     ...(versionAdvisory ? { versionAdvisory } : {}),
   };
 }

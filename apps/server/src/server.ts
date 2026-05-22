@@ -19,6 +19,8 @@ import { ServerLifecycleEventsLive } from "./serverLifecycleEvents.ts";
 import { AnalyticsServiceLayerLive } from "./telemetry/Layers/AnalyticsService.ts";
 import { ProviderSessionDirectoryLive } from "./provider/Layers/ProviderSessionDirectory.ts";
 import { ProviderSessionRuntimeRepositoryLive } from "./persistence/Layers/ProviderSessionRuntime.ts";
+import { ProjectTaskRepositoryLive } from "./persistence/Layers/ProjectTasks.ts";
+import { ProjectTaskRunRepositoryLive } from "./persistence/Layers/ProjectTaskRuns.ts";
 import { ProviderAdapterRegistryLive } from "./provider/Layers/ProviderAdapterRegistry.ts";
 import { ProviderEventLoggersLive } from "./provider/Layers/ProviderEventLoggers.ts";
 import { ProviderServiceLive } from "./provider/Layers/ProviderService.ts";
@@ -61,6 +63,16 @@ import * as SourceControlRepositoryService from "./sourceControl/SourceControlRe
 import { ProjectSetupScriptRunnerLive } from "./project/Layers/ProjectSetupScriptRunner.ts";
 import { ObservabilityLive } from "./observability/Layers/Observability.ts";
 import { ServerEnvironmentLive } from "./environment/Layers/ServerEnvironment.ts";
+import { TaskBoardLive } from "./tasks/Layers/TaskBoard.ts";
+import { TaskAssistantLive } from "./tasks/Layers/TaskAssistant.ts";
+import { TaskRunExecutorLive } from "./taskRunner/TaskRunExecutor.ts";
+import { TaskWorkspaceManagerLive } from "./taskRunner/WorkspaceManager.ts";
+import {
+  taskRunnerRefreshRouteLayer,
+  taskRunnerStateRouteLayer,
+  taskRunnerTaskDetailRouteLayer,
+} from "./tasks/http.ts";
+import * as ProcessRunner from "./processRunner.ts";
 import {
   authBearerBootstrapRouteLayer,
   authBootstrapRouteLayer,
@@ -231,6 +243,41 @@ const WorkspaceLayerLive = Layer.mergeAll(
   WorkspaceFileSystemLayerLive,
 );
 
+const TaskBoardPersistenceLayerLive = Layer.mergeAll(
+  ProjectTaskRepositoryLive,
+  ProjectTaskRunRepositoryLive,
+).pipe(Layer.provideMerge(PersistenceLayerLive));
+
+const TaskWorkspaceServicesLayerLive = TaskWorkspaceManagerLive.pipe(
+  Layer.provideMerge(ProcessRunner.layer),
+  Layer.provideMerge(WorkspaceLayerLive),
+);
+
+const TaskBoardExecutionLayerLive = TaskRunExecutorLive.pipe(
+  Layer.provideMerge(ProcessRunner.layer),
+  Layer.provideMerge(TaskWorkspaceServicesLayerLive),
+  Layer.provideMerge(TaskBoardPersistenceLayerLive),
+  Layer.provideMerge(ServerSettingsLive),
+  Layer.provideMerge(OrchestrationLayerLive),
+);
+
+const TaskBoardLayerLive = TaskBoardLive.pipe(
+  Layer.provideMerge(TaskBoardPersistenceLayerLive),
+  Layer.provideMerge(TaskBoardExecutionLayerLive),
+);
+
+const TaskAssistantLayerLive = TaskAssistantLive.pipe(
+  Layer.provideMerge(TaskBoardLayerLive),
+  Layer.provideMerge(TaskBoardPersistenceLayerLive),
+);
+
+const TaskServicesLayerLive = Layer.empty.pipe(
+  Layer.provideMerge(TaskBoardPersistenceLayerLive),
+  Layer.provideMerge(TaskBoardExecutionLayerLive),
+  Layer.provideMerge(TaskBoardLayerLive),
+  Layer.provideMerge(TaskAssistantLayerLive),
+);
+
 const AuthLayerLive = ServerAuthLive.pipe(
   Layer.provideMerge(PersistenceLayerLive),
   Layer.provide(ServerSecretStoreLive),
@@ -249,6 +296,7 @@ const RuntimeCoreDependenciesLive = ReactorLayerLive.pipe(
   Layer.provideMerge(VcsLayerLive),
   Layer.provideMerge(ProviderRuntimeLayerLive),
   Layer.provideMerge(TerminalLayerLive),
+  Layer.provideMerge(TaskServicesLayerLive),
   Layer.provideMerge(PersistenceLayerLive),
   Layer.provideMerge(KeybindingsLive),
   Layer.provideMerge(ProviderRegistryLive),
@@ -309,6 +357,9 @@ export const makeRoutesLayer = Layer.mergeAll(
   orchestrationSnapshotRouteLayer,
   otlpTracesProxyRouteLayer,
   projectFaviconRouteLayer,
+  taskRunnerRefreshRouteLayer,
+  taskRunnerStateRouteLayer,
+  taskRunnerTaskDetailRouteLayer,
   serverEnvironmentRouteLayer,
   staticAndDevRouteLayer,
   websocketRpcRouteLayer,

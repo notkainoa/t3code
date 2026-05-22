@@ -153,6 +153,15 @@ export const ServerProviderUpdateState = Schema.Struct({
 });
 export type ServerProviderUpdateState = typeof ServerProviderUpdateState.Type;
 
+export const ServerProviderTaskExecutionStatus = Schema.Literals(["runnable", "unavailable"]);
+export type ServerProviderTaskExecutionStatus = typeof ServerProviderTaskExecutionStatus.Type;
+
+export const ServerProviderTaskExecution = Schema.Struct({
+  status: ServerProviderTaskExecutionStatus,
+  reason: Schema.optional(TrimmedNonEmptyString),
+});
+export type ServerProviderTaskExecution = typeof ServerProviderTaskExecution.Type;
+
 export const ServerProvider = Schema.Struct({
   // Routing key for the configured instance this snapshot represents. This
   // is the only stable identity consumers may use for provider routing.
@@ -186,6 +195,7 @@ export const ServerProvider = Schema.Struct({
     Schema.withDecodingDefault(Effect.succeed([])),
   ),
   skills: Schema.Array(ServerProviderSkill).pipe(Schema.withDecodingDefault(Effect.succeed([]))),
+  taskExecution: Schema.optionalKey(ServerProviderTaskExecution),
   versionAdvisory: Schema.optionalKey(ServerProviderVersionAdvisory),
   updateState: Schema.optionalKey(ServerProviderUpdateState),
 });
@@ -202,6 +212,38 @@ export type ServerProviders = typeof ServerProviders.Type;
  */
 export const isProviderAvailable = (snapshot: ServerProvider): boolean =>
   snapshot.availability !== "unavailable";
+
+export const getProviderTaskExecution = (
+  snapshot: ServerProvider,
+): {
+  readonly runnable: boolean;
+  readonly reason: string | null;
+} =>
+  snapshot.taskExecution
+    ? {
+        runnable: snapshot.taskExecution.status === "runnable",
+        reason: snapshot.taskExecution.reason ?? null,
+      }
+    : snapshot.driver === ProviderDriverKind.make("codex")
+      ? !snapshot.enabled
+        ? { runnable: false, reason: "Enable Codex to allow background task execution." }
+        : !snapshot.installed
+          ? {
+              runnable: false,
+              reason: "Codex CLI is not installed, so background task execution is unavailable.",
+            }
+          : snapshot.auth.status !== "authenticated"
+            ? {
+                runnable: false,
+                reason:
+                  "Authenticate Codex before using it for background task execution in service mode.",
+              }
+            : { runnable: true, reason: null }
+      : {
+          runnable: false,
+          reason:
+            "Unavailable in service mode. Only Codex task execution ships in the first version.",
+        };
 
 export const ServerObservability = Schema.Struct({
   logsDirectoryPath: TrimmedNonEmptyString,

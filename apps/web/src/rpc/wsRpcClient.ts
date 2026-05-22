@@ -70,6 +70,19 @@ export interface WsRpcClient {
     readonly searchEntries: RpcUnaryMethod<typeof WS_METHODS.projectsSearchEntries>;
     readonly writeFile: RpcUnaryMethod<typeof WS_METHODS.projectsWriteFile>;
   };
+  readonly projectTasks: {
+    readonly getBoard: RpcUnaryMethod<typeof WS_METHODS.projectTasksGetBoard>;
+    readonly getTask: RpcUnaryMethod<typeof WS_METHODS.projectTasksGetTask>;
+    readonly createTask: RpcUnaryMethod<typeof WS_METHODS.projectTasksCreateTask>;
+    readonly updateTask: RpcUnaryMethod<typeof WS_METHODS.projectTasksUpdateTask>;
+    readonly moveTask: RpcUnaryMethod<typeof WS_METHODS.projectTasksMoveTask>;
+    readonly reorderTasks: RpcUnaryMethod<typeof WS_METHODS.projectTasksReorderTasks>;
+    readonly listRuns: RpcUnaryMethod<typeof WS_METHODS.projectTasksListRuns>;
+    readonly startRun: RpcUnaryMethod<typeof WS_METHODS.projectTasksStartRun>;
+    readonly stopRun: RpcUnaryMethod<typeof WS_METHODS.projectTasksStopRun>;
+    readonly retryRun: RpcUnaryMethod<typeof WS_METHODS.projectTasksRetryRun>;
+    readonly assistantRespond: RpcUnaryMethod<typeof WS_METHODS.projectTasksAssistantRespond>;
+  };
   readonly filesystem: {
     readonly browse: RpcUnaryMethod<typeof WS_METHODS.filesystemBrowse>;
   };
@@ -181,6 +194,30 @@ export function createWsRpcClient(transport: WsTransport): WsRpcClient {
         transport.request((client) => client[WS_METHODS.projectsSearchEntries](input)),
       writeFile: (input) =>
         transport.request((client) => client[WS_METHODS.projectsWriteFile](input)),
+    },
+    projectTasks: {
+      getBoard: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksGetBoard](input)),
+      getTask: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksGetTask](input)),
+      createTask: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksCreateTask](input)),
+      updateTask: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksUpdateTask](input)),
+      moveTask: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksMoveTask](input)),
+      reorderTasks: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksReorderTasks](input)),
+      listRuns: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksListRuns](input)),
+      startRun: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksStartRun](input)),
+      stopRun: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksStopRun](input)),
+      retryRun: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksRetryRun](input)),
+      assistantRespond: (input) =>
+        transport.request((client) => client[WS_METHODS.projectTasksAssistantRespond](input)),
     },
     filesystem: {
       browse: (input) => transport.request((client) => client[WS_METHODS.filesystemBrowse](input)),

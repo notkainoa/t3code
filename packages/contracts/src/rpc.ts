@@ -58,6 +58,26 @@ import {
   ProjectWriteFileResult,
 } from "./project.ts";
 import {
+  CreateProjectTaskInput,
+  GetProjectTaskBoardInput,
+  GetProjectTaskInput,
+  ListProjectTaskRunsInput,
+  MoveProjectTaskInput,
+  ProjectTask,
+  ProjectTaskAssistantError,
+  ProjectTaskAssistantRequest,
+  ProjectTaskAssistantResponse,
+  ProjectTaskBoardError,
+  ProjectTaskBoardSnapshot,
+  ProjectTaskNotFoundError,
+  ProjectTaskRun,
+  ReorderProjectTasksInput,
+  RetryProjectTaskRunInput,
+  StartProjectTaskRunInput,
+  StopProjectTaskRunInput,
+  UpdateProjectTaskInput,
+} from "./tasks.ts";
+import {
   TerminalClearInput,
   TerminalCloseInput,
   TerminalError,
@@ -106,6 +126,17 @@ export const WS_METHODS = {
   projectsRemove: "projects.remove",
   projectsSearchEntries: "projects.searchEntries",
   projectsWriteFile: "projects.writeFile",
+  projectTasksGetBoard: "projectTasks.getBoard",
+  projectTasksGetTask: "projectTasks.getTask",
+  projectTasksCreateTask: "projectTasks.createTask",
+  projectTasksUpdateTask: "projectTasks.updateTask",
+  projectTasksMoveTask: "projectTasks.moveTask",
+  projectTasksReorderTasks: "projectTasks.reorderTasks",
+  projectTasksListRuns: "projectTasks.listRuns",
+  projectTasksStartRun: "projectTasks.startRun",
+  projectTasksStopRun: "projectTasks.stopRun",
+  projectTasksRetryRun: "projectTasks.retryRun",
+  projectTasksAssistantRespond: "projectTasks.assistantRespond",
 
   // Shell methods
   shellOpenInEditor: "shell.openInEditor",
@@ -274,6 +305,72 @@ export const WsProjectsWriteFileRpc = Rpc.make(WS_METHODS.projectsWriteFile, {
   payload: ProjectWriteFileInput,
   success: ProjectWriteFileResult,
   error: ProjectWriteFileError,
+});
+
+export const WsProjectTasksGetBoardRpc = Rpc.make(WS_METHODS.projectTasksGetBoard, {
+  payload: GetProjectTaskBoardInput,
+  success: ProjectTaskBoardSnapshot,
+  error: ProjectTaskBoardError,
+});
+
+export const WsProjectTasksGetTaskRpc = Rpc.make(WS_METHODS.projectTasksGetTask, {
+  payload: GetProjectTaskInput,
+  success: ProjectTask,
+  error: Schema.Union([ProjectTaskBoardError, ProjectTaskNotFoundError]),
+});
+
+export const WsProjectTasksCreateTaskRpc = Rpc.make(WS_METHODS.projectTasksCreateTask, {
+  payload: CreateProjectTaskInput,
+  success: ProjectTask,
+  error: ProjectTaskBoardError,
+});
+
+export const WsProjectTasksUpdateTaskRpc = Rpc.make(WS_METHODS.projectTasksUpdateTask, {
+  payload: UpdateProjectTaskInput,
+  success: ProjectTask,
+  error: Schema.Union([ProjectTaskBoardError, ProjectTaskNotFoundError]),
+});
+
+export const WsProjectTasksMoveTaskRpc = Rpc.make(WS_METHODS.projectTasksMoveTask, {
+  payload: MoveProjectTaskInput,
+  success: ProjectTask,
+  error: Schema.Union([ProjectTaskBoardError, ProjectTaskNotFoundError]),
+});
+
+export const WsProjectTasksReorderTasksRpc = Rpc.make(WS_METHODS.projectTasksReorderTasks, {
+  payload: ReorderProjectTasksInput,
+  success: Schema.Array(ProjectTask),
+  error: Schema.Union([ProjectTaskBoardError, ProjectTaskNotFoundError]),
+});
+
+export const WsProjectTasksListRunsRpc = Rpc.make(WS_METHODS.projectTasksListRuns, {
+  payload: ListProjectTaskRunsInput,
+  success: Schema.Array(ProjectTaskRun),
+  error: ProjectTaskBoardError,
+});
+
+export const WsProjectTasksStartRunRpc = Rpc.make(WS_METHODS.projectTasksStartRun, {
+  payload: StartProjectTaskRunInput,
+  success: ProjectTaskRun,
+  error: Schema.Union([ProjectTaskBoardError, ProjectTaskNotFoundError]),
+});
+
+export const WsProjectTasksStopRunRpc = Rpc.make(WS_METHODS.projectTasksStopRun, {
+  payload: StopProjectTaskRunInput,
+  success: ProjectTaskRun,
+  error: Schema.Union([ProjectTaskBoardError, ProjectTaskNotFoundError]),
+});
+
+export const WsProjectTasksRetryRunRpc = Rpc.make(WS_METHODS.projectTasksRetryRun, {
+  payload: RetryProjectTaskRunInput,
+  success: ProjectTaskRun,
+  error: Schema.Union([ProjectTaskBoardError, ProjectTaskNotFoundError]),
+});
+
+export const WsProjectTasksAssistantRespondRpc = Rpc.make(WS_METHODS.projectTasksAssistantRespond, {
+  payload: ProjectTaskAssistantRequest,
+  success: ProjectTaskAssistantResponse,
+  error: ProjectTaskAssistantError,
 });
 
 export const WsShellOpenInEditorRpc = Rpc.make(WS_METHODS.shellOpenInEditor, {
@@ -490,6 +587,17 @@ export const WsRpcGroup = RpcGroup.make(
   WsSourceControlPublishRepositoryRpc,
   WsProjectsSearchEntriesRpc,
   WsProjectsWriteFileRpc,
+  WsProjectTasksGetBoardRpc,
+  WsProjectTasksGetTaskRpc,
+  WsProjectTasksCreateTaskRpc,
+  WsProjectTasksUpdateTaskRpc,
+  WsProjectTasksMoveTaskRpc,
+  WsProjectTasksReorderTasksRpc,
+  WsProjectTasksListRunsRpc,
+  WsProjectTasksStartRunRpc,
+  WsProjectTasksStopRunRpc,
+  WsProjectTasksRetryRunRpc,
+  WsProjectTasksAssistantRespondRpc,
   WsShellOpenInEditorRpc,
   WsFilesystemBrowseRpc,
   WsSubscribeVcsStatusRpc,

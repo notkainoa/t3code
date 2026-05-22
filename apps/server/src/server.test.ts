@@ -20,6 +20,7 @@ import {
   ProviderDriverKind,
   ProviderInstanceId,
   ResolvedKeybindingRule,
+  TaskId,
   ThreadId,
   WS_METHODS,
   WsRpcGroup,
@@ -74,12 +75,15 @@ import {
   type ProjectionSnapshotQueryShape,
 } from "./orchestration/Services/ProjectionSnapshotQuery.ts";
 import { SqlitePersistenceMemory } from "./persistence/Layers/Sqlite.ts";
+import { ProjectTaskRepositoryLive } from "./persistence/Layers/ProjectTasks.ts";
+import { ProjectTaskRunRepositoryLive } from "./persistence/Layers/ProjectTaskRuns.ts";
 import { PersistenceSqlError } from "./persistence/Errors.ts";
 import {
   ProviderRegistry,
   type ProviderRegistryShape,
 } from "./provider/Services/ProviderRegistry.ts";
 import { makeManualOnlyProviderMaintenanceCapabilities } from "./provider/providerMaintenance.ts";
+import { TaskRunExecutor } from "./taskRunner/TaskRunExecutor.ts";
 import { ServerLifecycleEvents, type ServerLifecycleEventsShape } from "./serverLifecycleEvents.ts";
 import { ServerRuntimeStartup, type ServerRuntimeStartupShape } from "./serverRuntimeStartup.ts";
 import { ServerSettingsService, type ServerSettingsShape } from "./serverSettings.ts";
@@ -118,6 +122,9 @@ import * as ProcessDiagnostics from "./diagnostics/ProcessDiagnostics.ts";
 import * as ProcessResourceMonitor from "./diagnostics/ProcessResourceMonitor.ts";
 import * as TraceDiagnostics from "./diagnostics/TraceDiagnostics.ts";
 import * as Data from "effect/Data";
+import { TaskBoard, type TaskBoardShape } from "./tasks/Services/TaskBoard.ts";
+import { TaskAssistant, type TaskAssistantShape } from "./tasks/Services/TaskAssistant.ts";
+import { TaskBoardLive } from "./tasks/Layers/TaskBoard.ts";
 
 const defaultProjectId = ProjectId.make("project-default");
 const defaultThreadId = ThreadId.make("thread-default");
@@ -337,6 +344,8 @@ const buildAppUnderTest = (options?: {
     serverRuntimeStartup?: Partial<ServerRuntimeStartupShape>;
     serverEnvironment?: Partial<ServerEnvironmentShape>;
     repositoryIdentityResolver?: Partial<RepositoryIdentityResolverShape>;
+    taskBoard?: Partial<TaskBoardShape>;
+    taskAssistant?: Partial<TaskAssistantShape>;
   };
 }) =>
   Effect.gen(function* () {
@@ -496,6 +505,49 @@ const buildAppUnderTest = (options?: {
     const vcsProvisioningLayer = VcsProvisioningService.layer.pipe(
       Layer.provide(vcsDriverRegistryLayer),
     );
+    const taskPersistenceLayer = Layer.mergeAll(
+      ProjectTaskRepositoryLive,
+      ProjectTaskRunRepositoryLive,
+    ).pipe(Layer.provideMerge(SqlitePersistenceMemory));
+    const providerRegistryLayer = Layer.mock(ProviderRegistry)({
+      getProviders: Effect.succeed([]),
+      refresh: () => Effect.succeed([]),
+      refreshInstance: () => Effect.succeed([]),
+      getProviderMaintenanceCapabilitiesForInstance: (_instanceId, provider) =>
+        Effect.succeed(
+          makeManualOnlyProviderMaintenanceCapabilities({ provider, packageName: null }),
+        ),
+      setProviderMaintenanceActionState: () => Effect.succeed([]),
+      streamChanges: Stream.empty,
+      ...options?.layers?.providerRegistry,
+    });
+    const taskBoardLayer = options?.layers?.taskBoard
+      ? Layer.mock(TaskBoard)({
+          ...options.layers.taskBoard,
+        })
+      : TaskBoardLive.pipe(
+          Layer.provideMerge(taskPersistenceLayer),
+          Layer.provideMerge(providerRegistryLayer),
+          Layer.provide(
+            Layer.succeed(TaskRunExecutor, {
+              enqueueRun: () => Effect.void,
+              cancelRun: () => Effect.void,
+            }),
+          ),
+        );
+    const taskAssistantLayer = options?.layers?.taskAssistant
+      ? Layer.mock(TaskAssistant)({
+          ...options.layers.taskAssistant,
+        })
+      : Layer.mock(TaskAssistant)({
+          respond: () =>
+            Effect.succeed({
+              reply: "Restricted task assistant only.",
+              toolCalls: [],
+            }),
+          invokeTool: () =>
+            Effect.die("task assistant tool invocation is not configured for this test"),
+        });
     const vcsStatusBroadcasterLayer = options?.layers?.vcsStatusBroadcaster
       ? Layer.mock(VcsStatusBroadcaster.VcsStatusBroadcaster)({
           ...options.layers.vcsStatusBroadcaster,
@@ -516,20 +568,7 @@ const buildAppUnderTest = (options?: {
           ...options?.layers?.keybindings,
         }),
       ),
-      Layer.provide(
-        Layer.mock(ProviderRegistry)({
-          getProviders: Effect.succeed([]),
-          refresh: () => Effect.succeed([]),
-          refreshInstance: () => Effect.succeed([]),
-          getProviderMaintenanceCapabilitiesForInstance: (_instanceId, provider) =>
-            Effect.succeed(
-              makeManualOnlyProviderMaintenanceCapabilities({ provider, packageName: null }),
-            ),
-          setProviderMaintenanceActionState: () => Effect.succeed([]),
-          streamChanges: Stream.empty,
-          ...options?.layers?.providerRegistry,
-        }),
-      ),
+      Layer.provide(providerRegistryLayer),
       Layer.provide(
         Layer.mock(ServerSettingsService)({
           start: Effect.void,
@@ -722,6 +761,9 @@ const buildAppUnderTest = (options?: {
           ...options?.layers?.repositoryIdentityResolver,
         }),
       ),
+      Layer.provide(taskBoardLayer),
+      Layer.provide(taskAssistantLayer),
+      Layer.provideMerge(taskPersistenceLayer),
       Layer.provideMerge(makeAuthTestLayer()),
       Layer.provide(workspaceAndProjectServicesLayer),
       Layer.provideMerge(FetchHttpClient.layer),
@@ -2526,6 +2568,400 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
         result.failure.message,
         "Workspace file path must stay within the project root.",
       );
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+
+  it.effect("routes websocket rpc projectTasks methods", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest({
+        layers: {
+          providerRegistry: {
+            getProviders: Effect.succeed([
+              {
+                instanceId: ProviderInstanceId.make("codex"),
+                driver: ProviderDriverKind.make("codex"),
+                enabled: true,
+                installed: true,
+                version: "1.0.0",
+                status: "ready",
+                auth: { status: "authenticated" },
+                checkedAt: "2026-05-20T00:00:00.000Z",
+                models: [],
+                slashCommands: [],
+                skills: [],
+                taskExecution: { status: "runnable" },
+              },
+              {
+                instanceId: ProviderInstanceId.make("claudeAgent"),
+                driver: ProviderDriverKind.make("claudeAgent"),
+                enabled: true,
+                installed: true,
+                version: "1.0.0",
+                status: "ready",
+                auth: { status: "authenticated" },
+                checkedAt: "2026-05-20T00:00:00.000Z",
+                models: [],
+                slashCommands: [],
+                skills: [],
+                taskExecution: {
+                  status: "unavailable",
+                  reason:
+                    "Unavailable in service mode. Only Codex task execution ships in the first version.",
+                },
+              },
+            ]),
+          },
+        },
+      });
+
+      const wsUrl = yield* getWsServerUrl("/ws");
+      const projectId = ProjectId.make("project-task-board");
+
+      const created = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksCreateTask]({
+            projectId,
+            identifier: "ABC-123",
+            title: "Ship board view",
+            description: null,
+            column: "Todo",
+            columnKey: "todo",
+            priority: "high",
+            labels: ["board"],
+            blockedBy: [],
+          }),
+        ),
+      );
+      assert.equal(created.projectId, projectId);
+
+      const board = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksGetBoard]({
+            projectId,
+          }),
+        ),
+      );
+      assert.equal(board.columns.find((column) => column.key === "todo")?.tasks.length, 1);
+      assert.equal(board.activeRunCount, 0);
+
+      const moved = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksMoveTask]({
+            taskId: created.id,
+            column: "In Progress",
+            columnKey: "in_progress",
+          }),
+        ),
+      );
+      assert.equal(moved.columnKey, "in_progress");
+
+      const fetched = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksGetTask]({
+            taskId: created.id,
+          }),
+        ),
+      );
+      assert.equal(fetched.column, "In Progress");
+
+      const startedRun = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksStartRun]({
+            taskId: created.id,
+            instanceId: ProviderInstanceId.make("codex"),
+          }),
+        ),
+      );
+      assert.equal(startedRun.status, "queued");
+
+      const stoppedRun = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksStopRun]({
+            taskId: created.id,
+          }),
+        ),
+      );
+      assert.equal(stoppedRun.status, "canceled");
+
+      const retriedRun = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksRetryRun]({
+            taskId: created.id,
+          }),
+        ),
+      );
+      assert.equal(retriedRun.status, "retrying");
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+
+  it.effect("routes websocket rpc project task assistant messages", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest({
+        layers: {
+          taskAssistant: {
+            respond: (input) =>
+              Effect.succeed({
+                reply: `Created task from assistant message for ${input.projectId}.`,
+                toolCalls: [
+                  {
+                    toolName: "create_task",
+                    summary: "Created task ABC-124 in Todo.",
+                  },
+                ],
+              }),
+          },
+        },
+      });
+
+      const wsUrl = yield* getWsServerUrl("/ws");
+      const response = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksAssistantRespond]({
+            projectId: ProjectId.make("project-task-board"),
+            message: "create task ABC-124: Add assistant sidebar in Todo",
+          }),
+        ),
+      );
+
+      assert.equal(response.toolCalls[0]?.toolName, "create_task");
+      assert.include(response.reply, "Created task from assistant message");
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+
+  it.effect("routes websocket rpc projectTasks.getTask not found errors", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest();
+
+      const wsUrl = yield* getWsServerUrl("/ws");
+      const result = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksGetTask]({
+            taskId: TaskId.make("task-missing"),
+          }),
+        ).pipe(Effect.result),
+      );
+
+      assertTrue(result._tag === "Failure");
+      assert.equal(result.failure._tag, "ProjectTaskNotFoundError");
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+
+  it.effect("rejects websocket rpc task runs for non-runnable providers", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest({
+        layers: {
+          providerRegistry: {
+            getProviders: Effect.succeed([
+              {
+                instanceId: ProviderInstanceId.make("codex"),
+                driver: ProviderDriverKind.make("codex"),
+                enabled: true,
+                installed: true,
+                version: "1.0.0",
+                status: "ready",
+                auth: { status: "authenticated" },
+                checkedAt: "2026-05-20T00:00:00.000Z",
+                models: [],
+                slashCommands: [],
+                skills: [],
+                taskExecution: { status: "runnable" },
+              },
+              {
+                instanceId: ProviderInstanceId.make("claudeAgent"),
+                driver: ProviderDriverKind.make("claudeAgent"),
+                enabled: true,
+                installed: true,
+                version: "1.0.0",
+                status: "ready",
+                auth: { status: "authenticated" },
+                checkedAt: "2026-05-20T00:00:00.000Z",
+                models: [],
+                slashCommands: [],
+                skills: [],
+                taskExecution: {
+                  status: "unavailable",
+                  reason:
+                    "Unavailable in service mode. Only Codex task execution ships in the first version.",
+                },
+              },
+            ]),
+          },
+        },
+      });
+
+      const wsUrl = yield* getWsServerUrl("/ws");
+      const created = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksCreateTask]({
+            projectId: ProjectId.make("project-task-board-2"),
+            identifier: "ABC-900",
+            title: "Reject bad provider",
+            description: null,
+            column: "Todo",
+            columnKey: "todo",
+            priority: "medium",
+            labels: [],
+            blockedBy: [],
+          }),
+        ),
+      );
+
+      const result = yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksStartRun]({
+            taskId: created.id,
+            instanceId: ProviderInstanceId.make("claudeAgent"),
+          }),
+        ).pipe(Effect.result),
+      );
+
+      assertTrue(result._tag === "Failure");
+      assert.equal(result.failure._tag, "ProjectTaskBoardError");
+      assert.include(
+        result.failure.message,
+        "Only Codex task execution ships in the first version.",
+      );
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+
+  it.effect("serves authenticated task runner state over HTTP", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest();
+
+      const cookie = yield* getAuthenticatedSessionCookieHeader();
+      const wsUrl = appendSessionCookieToWsUrl(
+        yield* getWsServerUrl("/ws", { authenticated: false }),
+        cookie,
+      );
+      yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksCreateTask]({
+            projectId: defaultProjectId,
+            identifier: "ABC-321",
+            title: "Serve task runner state",
+            description: null,
+            column: "Todo",
+            columnKey: "todo",
+            priority: "medium",
+            labels: [],
+            blockedBy: [],
+          }),
+        ),
+      );
+
+      const url = yield* getHttpServerUrl("/api/v1/state");
+      const response = yield* Effect.promise(() =>
+        fetch(url, {
+          headers: {
+            cookie,
+          },
+        }),
+      );
+      const body = (yield* Effect.promise(() => response.json())) as {
+        readonly projects: Array<{ readonly id: string; readonly taskCount: number }>;
+      };
+
+      assert.equal(response.status, 200);
+      assert.equal(body.projects.find((project) => project.id === defaultProjectId)?.taskCount, 1);
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+
+  it.effect("serves authenticated task detail and returns 404 for unknown identifiers", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest();
+
+      const cookie = yield* getAuthenticatedSessionCookieHeader();
+      const wsUrl = appendSessionCookieToWsUrl(
+        yield* getWsServerUrl("/ws", { authenticated: false }),
+        cookie,
+      );
+      yield* Effect.scoped(
+        withWsRpcClient(wsUrl, (client) =>
+          client[WS_METHODS.projectTasksCreateTask]({
+            projectId: defaultProjectId,
+            identifier: "ABC-777",
+            title: "Serve task detail",
+            description: null,
+            column: "Todo",
+            columnKey: "todo",
+            priority: "high",
+            labels: [],
+            blockedBy: [],
+          }),
+        ),
+      );
+
+      const detailUrl = yield* getHttpServerUrl("/api/v1/tasks/ABC-777");
+      const detailResponse = yield* Effect.promise(() =>
+        fetch(detailUrl, {
+          headers: {
+            cookie,
+          },
+        }),
+      );
+      const detailBody = (yield* Effect.promise(() => detailResponse.json())) as {
+        readonly task: { readonly identifier: string };
+        readonly runs: ReadonlyArray<unknown>;
+      };
+
+      assert.equal(detailResponse.status, 200);
+      assert.equal(detailBody.task.identifier, "ABC-777");
+      assert.deepEqual(detailBody.runs, []);
+
+      const missingUrl = yield* getHttpServerUrl("/api/v1/tasks/ABC-404");
+      const missingResponse = yield* Effect.promise(() =>
+        fetch(missingUrl, {
+          headers: {
+            cookie,
+          },
+        }),
+      );
+      assert.equal(missingResponse.status, 404);
+    }).pipe(Effect.provide(NodeHttpServer.layerTest)),
+  );
+
+  it.effect("serves authenticated task refresh acknowledgements over HTTP", () =>
+    Effect.gen(function* () {
+      yield* buildAppUnderTest({
+        layers: {
+          providerRegistry: {
+            refresh: () =>
+              Effect.succeed([
+                {
+                  instanceId: ProviderInstanceId.make("codex"),
+                  driver: ProviderDriverKind.make("codex"),
+                  enabled: true,
+                  installed: true,
+                  version: "1.0.0",
+                  status: "ready",
+                  auth: { status: "authenticated" },
+                  checkedAt: "2026-05-20T00:00:00.000Z",
+                  models: [],
+                  slashCommands: [],
+                  skills: [],
+                  taskExecution: { status: "runnable" },
+                },
+              ]),
+          },
+        },
+      });
+
+      const cookie = yield* getAuthenticatedSessionCookieHeader();
+      const url = yield* getHttpServerUrl("/api/v1/refresh");
+      const response = yield* Effect.promise(() =>
+        fetch(url, {
+          method: "POST",
+          headers: {
+            cookie,
+          },
+        }),
+      );
+      const body = (yield* Effect.promise(() => response.json())) as {
+        readonly providerCount: number;
+      };
+
+      assert.equal(response.status, 200);
+      assert.equal(body.providerCount, 1);
     }).pipe(Effect.provide(NodeHttpServer.layerTest)),
   );
 

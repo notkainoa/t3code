@@ -2,6 +2,7 @@ import {
   DEFAULT_MODEL,
   DEFAULT_MODEL_BY_PROVIDER,
   defaultInstanceIdForDriver,
+  getProviderTaskExecution,
   ProviderDriverKind,
   type ModelCapabilities,
   type ProviderInstanceId,
@@ -63,6 +64,14 @@ export function isProviderEnabled(
   return getProviderSnapshot(providers, provider)?.enabled ?? false;
 }
 
+export function isProviderRunnableForTaskExecution(
+  providers: ReadonlyArray<ServerProvider>,
+  provider: ProviderDriverKind,
+): boolean {
+  const snapshot = getProviderSnapshot(providers, provider);
+  return snapshot ? getProviderTaskExecution(snapshot).runnable : provider === DEFAULT_DRIVER_KIND;
+}
+
 // Resolve an instance selection to the correlated live driver. If the
 // instance is absent, fall back to a live enabled provider instead of
 // inferring a driver from the missing instance id.
@@ -75,6 +84,17 @@ export function resolveSelectableProvider(
     return requestedEntry.driver;
   }
   return providers.find((candidate) => candidate.enabled)?.driver ?? DEFAULT_DRIVER_KIND;
+}
+
+export function resolveSelectableTaskExecutionProvider(
+  providers: ReadonlyArray<ServerProvider>,
+  provider: ProviderDriverKind | ProviderInstanceId | null | undefined,
+): ProviderDriverKind | undefined {
+  const requestedEntry = providers.find((candidate) => candidate.instanceId === provider);
+  if (requestedEntry && getProviderTaskExecution(requestedEntry).runnable) {
+    return requestedEntry.driver;
+  }
+  return providers.find((candidate) => getProviderTaskExecution(candidate).runnable)?.driver;
 }
 
 export function getProviderModelCapabilities(

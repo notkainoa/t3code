@@ -14,6 +14,7 @@
  */
 import {
   defaultInstanceIdForDriver,
+  getProviderTaskExecution,
   PROVIDER_DISPLAY_NAMES,
   type ProviderDriverKind,
   type ProviderInstanceId,
@@ -227,6 +228,28 @@ export function resolveSelectableProviderInstance(
     return instanceId;
   }
   return entries.find((entry) => entry.enabled && entry.isAvailable)?.instanceId;
+}
+
+export function resolveSelectableTaskExecutionProviderInstance(
+  providers: ReadonlyArray<ServerProvider>,
+  instanceId: ProviderInstanceId | undefined,
+): ProviderInstanceId | undefined {
+  const entries = deriveProviderInstanceEntries(providers);
+  if (instanceId !== undefined) {
+    const requested = entries.find((entry) => entry.instanceId === instanceId);
+    if (
+      requested &&
+      requested.enabled &&
+      requested.isAvailable &&
+      getProviderTaskExecution(requested.snapshot).runnable
+    ) {
+      return instanceId;
+    }
+  }
+  return entries.find(
+    (entry) =>
+      entry.enabled && entry.isAvailable && getProviderTaskExecution(entry.snapshot).runnable,
+  )?.instanceId;
 }
 
 /**

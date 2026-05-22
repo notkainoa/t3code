@@ -22,6 +22,9 @@ import { Route as SettingsConnectionsRouteImport } from './routes/settings.conne
 import { Route as SettingsArchivedRouteImport } from './routes/settings.archived'
 import { Route as ChatDraftDraftIdRouteImport } from './routes/_chat.draft.$draftId'
 import { Route as ChatEnvironmentIdThreadIdRouteImport } from './routes/_chat.$environmentId.$threadId'
+import { Route as ChatEnvironmentIdBoardProjectIdRouteImport } from './routes/_chat.$environmentId.board.$projectId'
+import { Route as ChatEnvironmentIdBoardProjectIdIndexRouteImport } from './routes/_chat.$environmentId.board.$projectId.index'
+import { Route as ChatEnvironmentIdBoardProjectIdTaskTaskIdRouteImport } from './routes/_chat.$environmentId.board.$projectId.task.$taskId'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -88,6 +91,24 @@ const ChatEnvironmentIdThreadIdRoute =
     path: '/$environmentId/$threadId',
     getParentRoute: () => ChatRoute,
   } as any)
+const ChatEnvironmentIdBoardProjectIdRoute =
+  ChatEnvironmentIdBoardProjectIdRouteImport.update({
+    id: '/$environmentId/board/$projectId',
+    path: '/$environmentId/board/$projectId',
+    getParentRoute: () => ChatRoute,
+  } as any)
+const ChatEnvironmentIdBoardProjectIdIndexRoute =
+  ChatEnvironmentIdBoardProjectIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ChatEnvironmentIdBoardProjectIdRoute,
+  } as any)
+const ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute =
+  ChatEnvironmentIdBoardProjectIdTaskTaskIdRouteImport.update({
+    id: '/task/$taskId',
+    path: '/task/$taskId',
+    getParentRoute: () => ChatEnvironmentIdBoardProjectIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ChatIndexRoute
@@ -102,6 +123,9 @@ export interface FileRoutesByFullPath {
   '/settings/source-control': typeof SettingsSourceControlRoute
   '/$environmentId/$threadId': typeof ChatEnvironmentIdThreadIdRoute
   '/draft/$draftId': typeof ChatDraftDraftIdRoute
+  '/$environmentId/board/$projectId': typeof ChatEnvironmentIdBoardProjectIdRouteWithChildren
+  '/$environmentId/board/$projectId/': typeof ChatEnvironmentIdBoardProjectIdIndexRoute
+  '/$environmentId/board/$projectId/task/$taskId': typeof ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute
 }
 export interface FileRoutesByTo {
   '/pair': typeof PairRoute
@@ -116,6 +140,8 @@ export interface FileRoutesByTo {
   '/': typeof ChatIndexRoute
   '/$environmentId/$threadId': typeof ChatEnvironmentIdThreadIdRoute
   '/draft/$draftId': typeof ChatDraftDraftIdRoute
+  '/$environmentId/board/$projectId': typeof ChatEnvironmentIdBoardProjectIdIndexRoute
+  '/$environmentId/board/$projectId/task/$taskId': typeof ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,6 +158,9 @@ export interface FileRoutesById {
   '/_chat/': typeof ChatIndexRoute
   '/_chat/$environmentId/$threadId': typeof ChatEnvironmentIdThreadIdRoute
   '/_chat/draft/$draftId': typeof ChatDraftDraftIdRoute
+  '/_chat/$environmentId/board/$projectId': typeof ChatEnvironmentIdBoardProjectIdRouteWithChildren
+  '/_chat/$environmentId/board/$projectId/': typeof ChatEnvironmentIdBoardProjectIdIndexRoute
+  '/_chat/$environmentId/board/$projectId/task/$taskId': typeof ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +177,9 @@ export interface FileRouteTypes {
     | '/settings/source-control'
     | '/$environmentId/$threadId'
     | '/draft/$draftId'
+    | '/$environmentId/board/$projectId'
+    | '/$environmentId/board/$projectId/'
+    | '/$environmentId/board/$projectId/task/$taskId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/pair'
@@ -162,6 +194,8 @@ export interface FileRouteTypes {
     | '/'
     | '/$environmentId/$threadId'
     | '/draft/$draftId'
+    | '/$environmentId/board/$projectId'
+    | '/$environmentId/board/$projectId/task/$taskId'
   id:
     | '__root__'
     | '/_chat'
@@ -177,6 +211,9 @@ export interface FileRouteTypes {
     | '/_chat/'
     | '/_chat/$environmentId/$threadId'
     | '/_chat/draft/$draftId'
+    | '/_chat/$environmentId/board/$projectId'
+    | '/_chat/$environmentId/board/$projectId/'
+    | '/_chat/$environmentId/board/$projectId/task/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -278,19 +315,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatEnvironmentIdThreadIdRouteImport
       parentRoute: typeof ChatRoute
     }
+    '/_chat/$environmentId/board/$projectId': {
+      id: '/_chat/$environmentId/board/$projectId'
+      path: '/$environmentId/board/$projectId'
+      fullPath: '/$environmentId/board/$projectId'
+      preLoaderRoute: typeof ChatEnvironmentIdBoardProjectIdRouteImport
+      parentRoute: typeof ChatRoute
+    }
+    '/_chat/$environmentId/board/$projectId/': {
+      id: '/_chat/$environmentId/board/$projectId/'
+      path: '/'
+      fullPath: '/$environmentId/board/$projectId/'
+      preLoaderRoute: typeof ChatEnvironmentIdBoardProjectIdIndexRouteImport
+      parentRoute: typeof ChatEnvironmentIdBoardProjectIdRoute
+    }
+    '/_chat/$environmentId/board/$projectId/task/$taskId': {
+      id: '/_chat/$environmentId/board/$projectId/task/$taskId'
+      path: '/task/$taskId'
+      fullPath: '/$environmentId/board/$projectId/task/$taskId'
+      preLoaderRoute: typeof ChatEnvironmentIdBoardProjectIdTaskTaskIdRouteImport
+      parentRoute: typeof ChatEnvironmentIdBoardProjectIdRoute
+    }
   }
 }
+
+interface ChatEnvironmentIdBoardProjectIdRouteChildren {
+  ChatEnvironmentIdBoardProjectIdIndexRoute: typeof ChatEnvironmentIdBoardProjectIdIndexRoute
+  ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute: typeof ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute
+}
+
+const ChatEnvironmentIdBoardProjectIdRouteChildren: ChatEnvironmentIdBoardProjectIdRouteChildren =
+  {
+    ChatEnvironmentIdBoardProjectIdIndexRoute:
+      ChatEnvironmentIdBoardProjectIdIndexRoute,
+    ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute:
+      ChatEnvironmentIdBoardProjectIdTaskTaskIdRoute,
+  }
+
+const ChatEnvironmentIdBoardProjectIdRouteWithChildren =
+  ChatEnvironmentIdBoardProjectIdRoute._addFileChildren(
+    ChatEnvironmentIdBoardProjectIdRouteChildren,
+  )
 
 interface ChatRouteChildren {
   ChatIndexRoute: typeof ChatIndexRoute
   ChatEnvironmentIdThreadIdRoute: typeof ChatEnvironmentIdThreadIdRoute
   ChatDraftDraftIdRoute: typeof ChatDraftDraftIdRoute
+  ChatEnvironmentIdBoardProjectIdRoute: typeof ChatEnvironmentIdBoardProjectIdRouteWithChildren
 }
 
 const ChatRouteChildren: ChatRouteChildren = {
   ChatIndexRoute: ChatIndexRoute,
   ChatEnvironmentIdThreadIdRoute: ChatEnvironmentIdThreadIdRoute,
   ChatDraftDraftIdRoute: ChatDraftDraftIdRoute,
+  ChatEnvironmentIdBoardProjectIdRoute:
+    ChatEnvironmentIdBoardProjectIdRouteWithChildren,
 }
 
 const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)

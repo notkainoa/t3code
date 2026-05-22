@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveProviderInstanceEntries,
   resolveSelectableProviderInstance,
+  resolveSelectableTaskExecutionProviderInstance,
   resolveProviderDriverKindForInstanceSelection,
 } from "./providerInstances";
 
@@ -12,6 +13,7 @@ function provider(input: {
   enabled?: boolean;
   availability?: ServerProvider["availability"];
   displayName?: string;
+  taskExecution?: ServerProvider["taskExecution"];
 }): ServerProvider {
   return {
     instanceId: ProviderInstanceId.make(input.instanceId),
@@ -22,6 +24,7 @@ function provider(input: {
     version: null,
     status: "ready",
     ...(input.availability ? { availability: input.availability } : {}),
+    ...(input.taskExecution ? { taskExecution: input.taskExecution } : {}),
     auth: { status: "authenticated" },
     checkedAt: "2026-01-01T00:00:00.000Z",
     models: [],
@@ -128,5 +131,52 @@ describe("resolveProviderDriverKindForInstanceSelection", () => {
         ProviderInstanceId.make("removed_instance"),
       ),
     ).toBeUndefined();
+  });
+});
+
+describe("resolveSelectableTaskExecutionProviderInstance", () => {
+  it("returns the requested instance only when it is runnable for task execution", () => {
+    const requested = ProviderInstanceId.make("codex");
+    const providers = [
+      provider({
+        provider: ProviderDriverKind.make("codex"),
+        instanceId: requested,
+        taskExecution: { status: "runnable" },
+      }),
+      provider({
+        provider: ProviderDriverKind.make("claudeAgent"),
+        instanceId: "claudeAgent",
+        taskExecution: {
+          status: "unavailable",
+          reason:
+            "Unavailable in service mode. Only Codex task execution ships in the first version.",
+        },
+      }),
+    ];
+
+    expect(resolveSelectableTaskExecutionProviderInstance(providers, requested)).toBe(requested);
+  });
+
+  it("falls back away from providers that are available for chat but blocked for task execution", () => {
+    const claude = ProviderInstanceId.make("claudeAgent");
+    const codex = ProviderInstanceId.make("codex");
+    const providers = [
+      provider({
+        provider: ProviderDriverKind.make("claudeAgent"),
+        instanceId: claude,
+        taskExecution: {
+          status: "unavailable",
+          reason:
+            "Unavailable in service mode. Only Codex task execution ships in the first version.",
+        },
+      }),
+      provider({
+        provider: ProviderDriverKind.make("codex"),
+        instanceId: codex,
+        taskExecution: { status: "runnable" },
+      }),
+    ];
+
+    expect(resolveSelectableTaskExecutionProviderInstance(providers, claude)).toBe(codex);
   });
 });

@@ -25,6 +25,23 @@ import type {
   ProjectWriteFileInput,
   ProjectWriteFileResult,
 } from "./project.ts";
+import type {
+  CreateProjectTaskInput,
+  GetProjectTaskBoardInput,
+  GetProjectTaskInput,
+  ListProjectTaskRunsInput,
+  MoveProjectTaskInput,
+  ProjectTaskAssistantRequest,
+  ProjectTaskAssistantResponse,
+  ProjectTask,
+  ProjectTaskBoardSnapshot,
+  ProjectTaskRun,
+  ReorderProjectTasksInput,
+  RetryProjectTaskRunInput,
+  StartProjectTaskRunInput,
+  StopProjectTaskRunInput,
+  UpdateProjectTaskInput,
+} from "./tasks.ts";
 import type { ProviderInstanceId } from "./providerInstance.ts";
 import type {
   ServerConfig,
@@ -506,6 +523,19 @@ export interface EnvironmentApi {
   projects: {
     searchEntries: (input: ProjectSearchEntriesInput) => Promise<ProjectSearchEntriesResult>;
     writeFile: (input: ProjectWriteFileInput) => Promise<ProjectWriteFileResult>;
+  };
+  projectTasks: {
+    getBoard: (input: GetProjectTaskBoardInput) => Promise<ProjectTaskBoardSnapshot>;
+    getTask: (input: GetProjectTaskInput) => Promise<ProjectTask>;
+    createTask: (input: CreateProjectTaskInput) => Promise<ProjectTask>;
+    updateTask: (input: UpdateProjectTaskInput) => Promise<ProjectTask>;
+    moveTask: (input: MoveProjectTaskInput) => Promise<ProjectTask>;
+    reorderTasks: (input: ReorderProjectTasksInput) => Promise<ReadonlyArray<ProjectTask>>;
+    listRuns: (input: ListProjectTaskRunsInput) => Promise<ReadonlyArray<ProjectTaskRun>>;
+    startRun: (input: StartProjectTaskRunInput) => Promise<ProjectTaskRun>;
+    stopRun: (input: StopProjectTaskRunInput) => Promise<ProjectTaskRun>;
+    retryRun: (input: RetryProjectTaskRunInput) => Promise<ProjectTaskRun>;
+    assistantRespond: (input: ProjectTaskAssistantRequest) => Promise<ProjectTaskAssistantResponse>;
   };
   filesystem: {
     browse: (input: FilesystemBrowseInput) => Promise<FilesystemBrowseResult>;

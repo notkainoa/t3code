@@ -70,6 +70,8 @@ import * as ProcessResourceMonitor from "./diagnostics/ProcessResourceMonitor.ts
 import * as TraceDiagnostics from "./diagnostics/TraceDiagnostics.ts";
 import * as SourceControlDiscoveryLayer from "./sourceControl/SourceControlDiscovery.ts";
 import { SourceControlRepositoryService } from "./sourceControl/SourceControlRepositoryService.ts";
+import { TaskBoard } from "./tasks/Services/TaskBoard.ts";
+import { TaskAssistant } from "./tasks/Services/TaskAssistant.ts";
 import * as AzureDevOpsCli from "./sourceControl/AzureDevOpsCli.ts";
 import * as BitbucketApi from "./sourceControl/BitbucketApi.ts";
 import * as GitHubCli from "./sourceControl/GitHubCli.ts";
@@ -191,6 +193,8 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
         ),
       );
       const sourceControlRepositories = yield* SourceControlRepositoryService;
+      const taskBoard = yield* TaskBoard;
+      const taskAssistant = yield* TaskAssistant;
       const bootstrapCredentials = yield* BootstrapCredentialService;
       const sessions = yield* SessionCredentialService;
       const processDiagnostics = yield* ProcessDiagnostics.ProcessDiagnostics;
@@ -979,6 +983,50 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
             ),
             { "rpc.aggregate": "workspace" },
           ),
+        [WS_METHODS.projectTasksGetBoard]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksGetBoard, taskBoard.getBoard(input.projectId), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksGetTask]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksGetTask, taskBoard.getTask(input.taskId), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksCreateTask]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksCreateTask, taskBoard.createTask(input), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksUpdateTask]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksUpdateTask, taskBoard.updateTask(input), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksMoveTask]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksMoveTask, taskBoard.moveTask(input), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksReorderTasks]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksReorderTasks, taskBoard.reorderTasks(input), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksListRuns]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksListRuns, taskBoard.listRuns(input.projectId), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksStartRun]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksStartRun, taskBoard.startRun(input), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksStopRun]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksStopRun, taskBoard.stopRun(input), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksRetryRun]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksRetryRun, taskBoard.retryRun(input), {
+            "rpc.aggregate": "tasks",
+          }),
+        [WS_METHODS.projectTasksAssistantRespond]: (input) =>
+          observeRpcEffect(WS_METHODS.projectTasksAssistantRespond, taskAssistant.respond(input), {
+            "rpc.aggregate": "tasks",
+          }),
         [WS_METHODS.shellOpenInEditor]: (input) =>
           observeRpcEffect(WS_METHODS.shellOpenInEditor, externalLauncher.launchEditor(input), {
             "rpc.aggregate": "workspace",

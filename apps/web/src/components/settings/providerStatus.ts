@@ -1,4 +1,8 @@
-import type { ServerProvider, ServerProviderVersionAdvisory } from "@t3tools/contracts";
+import {
+  getProviderTaskExecution,
+  type ServerProvider,
+  type ServerProviderVersionAdvisory,
+} from "@t3tools/contracts";
 
 /**
  * Visual treatment for each server-reported provider status. Centralized so
@@ -29,6 +33,12 @@ export type ProviderStatusKey = keyof typeof PROVIDER_STATUS_STYLES;
  * driver this build does not ship.
  */
 export function getProviderSummary(provider: ServerProvider | undefined) {
+  const taskExecutionDetail = provider
+    ? (() => {
+        const taskExecution = getProviderTaskExecution(provider);
+        return taskExecution.runnable ? null : taskExecution.reason;
+      })()
+    : null;
   if (!provider) {
     return {
       headline: "Checking provider status",
@@ -39,44 +49,51 @@ export function getProviderSummary(provider: ServerProvider | undefined) {
     return {
       headline: "Disabled",
       detail:
-        provider.message ?? "This provider is installed but disabled for new sessions in T3 Code.",
+        taskExecutionDetail ??
+        provider.message ??
+        "This provider is installed but disabled for new sessions in T3 Code.",
     };
   }
   if (!provider.installed) {
     return {
       headline: "Not found",
-      detail: provider.message ?? "CLI not detected on PATH.",
+      detail: taskExecutionDetail ?? provider.message ?? "CLI not detected on PATH.",
     };
   }
   if (provider.auth.status === "authenticated") {
     const authLabel = provider.auth.label ?? provider.auth.type;
     return {
       headline: authLabel ? `Authenticated · ${authLabel}` : "Authenticated",
-      detail: provider.message ?? null,
+      detail: taskExecutionDetail ?? provider.message ?? null,
     };
   }
   if (provider.auth.status === "unauthenticated") {
     return {
       headline: "Not authenticated",
-      detail: provider.message ?? null,
+      detail: taskExecutionDetail ?? provider.message ?? null,
     };
   }
   if (provider.status === "warning") {
     return {
       headline: "Needs attention",
       detail:
-        provider.message ?? "The provider is installed, but the server could not fully verify it.",
+        taskExecutionDetail ??
+        provider.message ??
+        "The provider is installed, but the server could not fully verify it.",
     };
   }
   if (provider.status === "error") {
     return {
       headline: "Unavailable",
-      detail: provider.message ?? "The provider failed its startup checks.",
+      detail: taskExecutionDetail ?? provider.message ?? "The provider failed its startup checks.",
     };
   }
   return {
     headline: "Available",
-    detail: provider.message ?? "Installed and ready, but authentication could not be verified.",
+    detail:
+      taskExecutionDetail ??
+      provider.message ??
+      "Installed and ready, but authentication could not be verified.",
   };
 }
 

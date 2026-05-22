@@ -1,7 +1,7 @@
 import * as Schema from "effect/Schema";
 import { describe, expect, it } from "vitest";
 
-import { ServerProvider } from "./server.ts";
+import { getProviderTaskExecution, ServerProvider } from "./server.ts";
 
 const decodeServerProvider = Schema.decodeUnknownSync(ServerProvider);
 
@@ -70,5 +70,52 @@ describe("ServerProvider", () => {
     });
 
     expect(parsed.continuation?.groupKey).toBe("codex:home:/Users/julius/.codex");
+  });
+
+  it("decodes task execution capability metadata", () => {
+    const parsed = decodeServerProvider({
+      instanceId: "claudeAgent",
+      driver: "claudeAgent",
+      enabled: true,
+      installed: true,
+      version: "1.0.0",
+      status: "ready",
+      auth: {
+        status: "authenticated",
+      },
+      checkedAt: "2026-04-10T00:00:00.000Z",
+      models: [],
+      taskExecution: {
+        status: "unavailable",
+        reason:
+          "Unavailable in service mode. Only Codex task execution ships in the first version.",
+      },
+    });
+
+    expect(getProviderTaskExecution(parsed)).toEqual({
+      runnable: false,
+      reason: "Unavailable in service mode. Only Codex task execution ships in the first version.",
+    });
+  });
+
+  it("falls back to codex-only task execution when older snapshots omit the field", () => {
+    const parsed = decodeServerProvider({
+      instanceId: "claudeAgent",
+      driver: "claudeAgent",
+      enabled: true,
+      installed: true,
+      version: "1.0.0",
+      status: "ready",
+      auth: {
+        status: "authenticated",
+      },
+      checkedAt: "2026-04-10T00:00:00.000Z",
+      models: [],
+    });
+
+    expect(getProviderTaskExecution(parsed)).toEqual({
+      runnable: false,
+      reason: "Unavailable in service mode. Only Codex task execution ships in the first version.",
+    });
   });
 });

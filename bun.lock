@@ -17,7 +17,7 @@
     },
     "apps/desktop": {
       "name": "@t3tools/desktop",
-      "version": "0.0.23",
+      "version": "0.0.24",
       "dependencies": {
         "@effect/platform-node": "catalog:",
         "@t3tools/contracts": "workspace:*",
@@ -50,7 +50,7 @@
     },
     "apps/server": {
       "name": "t3",
-      "version": "0.0.23",
+      "version": "0.0.24",
       "bin": {
         "t3": "./dist/bin.mjs",
       },
@@ -83,7 +83,7 @@
     },
     "apps/web": {
       "name": "@t3tools/web",
-      "version": "0.0.23",
+      "version": "0.0.24",
       "dependencies": {
         "@base-ui/react": "^1.4.1",
         "@dnd-kit/core": "^6.3.1",
@@ -91,6 +91,8 @@
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
         "@effect/atom-react": "catalog:",
+        "@fontsource-variable/geist-mono": "^5.2.7",
+        "@fontsource-variable/inter": "^5.2.8",
         "@formkit/auto-animate": "^0.9.0",
         "@legendapp/list": "3.0.0-beta.44",
         "@lexical/react": "^0.41.0",
@@ -165,7 +167,7 @@
     },
     "packages/contracts": {
       "name": "@t3tools/contracts",
-      "version": "0.0.23",
+      "version": "0.0.24",
       "dependencies": {
         "effect": "catalog:",
       },
@@ -483,6 +485,10 @@
     "@floating-ui/react-dom": ["@floating-ui/react-dom@2.1.8", "", { "dependencies": { "@floating-ui/dom": "^1.7.6" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-cC52bHwM/n/CxS87FH0yWdngEZrjdtLW/qVruo68qg+prK7ZQ4YGdut2GyDVpoGeAYe/h899rVeOVm6Oi40k2A=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
+
+    "@fontsource-variable/geist-mono": ["@fontsource-variable/geist-mono@5.2.8", "", {}, "sha512-KI5bj+hkkRiHttYHmccotUZ80ZuZyai+RwI1d7UId0clkx/jXxlo8qYK8j54WzmpBjtMoEMPyllV7faDcj+6RA=="],
+
+    "@fontsource-variable/inter": ["@fontsource-variable/inter@5.2.8", "", {}, "sha512-kOfP2D+ykbcX/P3IFnokOhVRNoTozo5/JxhAIVYLpea/UBmCQ/YWPBfWIDuBImXX/15KH+eKh4xpEUyS2sQQGQ=="],
 
     "@formkit/auto-animate": ["@formkit/auto-animate@0.9.0", "", {}, "sha512-VhP4zEAacXS3dfTpJpJ88QdLqMTcabMg0jwpOSxZ/VzfQVfl3GkZSCZThhGC5uhq/TxPHPzW0dzr4H9Bb1OgKA=="],
 

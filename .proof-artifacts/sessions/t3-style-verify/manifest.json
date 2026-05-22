@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "type": "start",
+      "at": "2026-05-21T21:24:02.155Z",
+      "container": "proof-artifacts-t3-style-verify",
+      "image": "ghcr.io/notkainoa/proof-artifacts-desktop:0.1.0-preview.0",
+      "imageSource": "local",
+      "noVncPort": 6082
+    },
+    {
+      "type": "novnc-ready",
+      "at": "2026-05-21T21:24:02.719Z",
+      "url": "http://127.0.0.1:6082/vnc.html"
+    },
+    {
+      "type": "open",
+      "at": "2026-05-21T21:24:10.434Z",
+      "url": "http://127.0.0.1:5833",
+      "fullscreen": true
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:24:15.204Z",
+      "label": "initial",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/initial.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:24:30.010Z",
+      "command": "sh -lc python3 - <<\"PY\"\nimport requests\nfor url in [\"http://127.0.0.1:5833\",\"http://127.0.0.1:5933\",\"http://127.0.0.1:14774\"]:\n    try:\n        r=requests.get(url,timeout=5,allow_redirects=False)\n        print(url, r.status_code, r.headers.get(\"location\"), r.text[:120].replace(\"\\n\",\" \"))\n    except Exception as e:\n        print(url, ERR, e)\nPY",
+      "stdin": false,
+      "status": 1,
+      "signal": null,
+      "failedAt": "2026-05-21T21:24:30.009Z"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:24:52.184Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:24:52.985Z",
+      "label": "error-details",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/error-details.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:25:31.100Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "open",
+      "at": "2026-05-21T21:26:11.203Z",
+      "url": "http://127.0.0.1:14776",
+      "fullscreen": true
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:26:11.223Z",
+      "label": "static-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/static-home.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:26:32.683Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:26:33.216Z",
+      "label": "manual-14776",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/manual-14776.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:26:58.977Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:26:59.499Z",
+      "label": "paired-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-home.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:27:18.661Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:27:19.204Z",
+      "label": "paired-app-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-app-home.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:29:29.010Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:29:29.564Z",
+      "label": "root-after-seed",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/root-after-seed.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:29:47.384Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:29:47.903Z",
+      "label": "paired-seeded-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-seeded-home.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:31:26.610Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:31:27.114Z",
+      "label": "paired-seeded-home-2",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-seeded-home-2.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:31:53.244Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:31:53.781Z",
+      "label": "board-light",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/board-light.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:32:25.563Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:32:26.156Z",
+      "label": "task-light",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/task-light.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:32:45.090Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:32:45.824Z",
+      "label": "task-dark",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/task-dark.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-21T21:33:06.667Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-21T21:33:07.381Z",
+      "label": "board-dark",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/board-dark.png"
+    },
+    {
+      "type": "stop",
+      "at": "2026-05-21T21:38:09.162Z",
+      "container": "proof-artifacts-t3-style-verify"
+    }
+  ],
+  "screenshots": [
+    {
+      "label": "initial",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/initial.png",
+      "capturedAt": "2026-05-21T21:24:15.204Z"
+    },
+    {
+      "label": "error-details",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/error-details.png",
+      "capturedAt": "2026-05-21T21:24:52.985Z"
+    },
+    {
+      "label": "static-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/static-home.png",
+      "capturedAt": "2026-05-21T21:26:11.223Z"
+    },
+    {
+      "label": "manual-14776",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/manual-14776.png",
+      "capturedAt": "2026-05-21T21:26:33.215Z"
+    },
+    {
+      "label": "paired-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-home.png",
+      "capturedAt": "2026-05-21T21:26:59.498Z"
+    },
+    {
+      "label": "paired-app-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-app-home.png",
+      "capturedAt": "2026-05-21T21:27:19.204Z"
+    },
+    {
+      "label": "root-after-seed",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/root-after-seed.png",
+      "capturedAt": "2026-05-21T21:29:29.564Z"
+    },
+    {
+      "label": "paired-seeded-home",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-seeded-home.png",
+      "capturedAt": "2026-05-21T21:29:47.903Z"
+    },
+    {
+      "label": "paired-seeded-home-2",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/paired-seeded-home-2.png",
+      "capturedAt": "2026-05-21T21:31:27.113Z"
+    },
+    {
+      "label": "board-light",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/board-light.png",
+      "capturedAt": "2026-05-21T21:31:53.781Z"
+    },
+    {
+      "label": "task-light",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/task-light.png",
+      "capturedAt": "2026-05-21T21:32:26.156Z"
+    },
+    {
+      "label": "task-dark",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/task-dark.png",
+      "capturedAt": "2026-05-21T21:32:45.824Z"
+    },
+    {
+      "label": "board-dark",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify/screenshots/board-dark.png",
+      "capturedAt": "2026-05-21T21:33:07.380Z"
+    }
+  ],
+  "recordings": [],
+  "name": "t3-style-verify",
+  "width": "1280",
+  "height": "800",
+  "project": "/home/ubuntu/github/t3code",
+  "artifacts": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3-style-verify",
+  "noVncUrl": "http://127.0.0.1:6082/vnc.html",
+  "noVncPort": 6082,
+  "noVncListen": "127.0.0.1",
+  "network": "host",
+  "targetUrl": "http://127.0.0.1:5833",
+  "networkInferredFromUrl": true,
+  "browserFullscreen": true,
+  "vncPort": 5902,
+  "container": "proof-artifacts-t3-style-verify",
+  "containerUser": "1001:1001",
+  "image": "ghcr.io/notkainoa/proof-artifacts-desktop:0.1.0-preview.0",
+  "imageId": "sha256:b814f6e5b304241d622324280d7ae559a79dc3d03b02c0d29ae6c339e2cf036c",
+  "requestedImage": "ghcr.io/notkainoa/proof-artifacts-desktop:0.1.0-preview.0",
+  "imageSource": "local",
+  "startedAt": "2026-05-21T21:24:02.152Z",
+  "stoppedAt": "2026-05-21T21:38:09.160Z"
+}

@@ -1142,6 +1142,46 @@ describe("GeneralSettingsPanel observability", () => {
     await expect.element(page.getByPlaceholder("Optional")).toBeInTheDocument();
   });
 
+  it("shows non-codex providers as unavailable for service-mode task execution", async () => {
+    setServerConfigSnapshot({
+      ...createBaseServerConfig(),
+      providers: [
+        {
+          instanceId: ProviderInstanceId.make("claudeAgent"),
+          driver: ProviderDriverKind.make("claudeAgent"),
+          enabled: true,
+          installed: true,
+          version: "1.0.0",
+          status: "ready",
+          auth: { status: "authenticated" },
+          checkedAt: "2026-05-20T00:00:00.000Z",
+          models: [],
+          slashCommands: [],
+          skills: [],
+          taskExecution: {
+            status: "unavailable",
+            reason:
+              "Unavailable in service mode. Only Codex task execution ships in the first version.",
+          },
+        },
+      ],
+    });
+
+    mounted = await render(
+      <AppAtomRegistryProvider>
+        <ProviderSettingsPanel />
+      </AppAtomRegistryProvider>,
+    );
+
+    await expect
+      .element(
+        page.getByText(
+          "Unavailable in service mode. Only Codex task execution ships in the first version.",
+        ),
+      )
+      .toBeInTheDocument();
+  });
+
   it("runs one-click provider updates from the provider card", async () => {
     const updateProvider = vi.fn<LocalApi["server"]["updateProvider"]>().mockResolvedValue({
       providers: [createOutdatedProvider("codex")],
