@@ -5,7 +5,9 @@ import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { resolveThreadStatusPill } from "../components/Sidebar.logic";
+import { useNewThreadHandler } from "../hooks/useHandleNewThread";
 import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
 import { SidebarInset, SidebarTrigger } from "../components/ui/sidebar";
 import { isLatestTurnSettled } from "../session-logic";
 import {
@@ -145,6 +147,7 @@ function ProjectBoardIndexRouteView() {
   const activeThreadCount = projectThreads.filter(
     (thread) => thread.session?.status === "running" || thread.session?.status === "connecting",
   ).length;
+  const { handleNewThread } = useNewThreadHandler();
 
   return (
     <SidebarInset className="h-svh min-h-0 overflow-hidden overscroll-y-none bg-background text-foreground md:h-dvh">
@@ -171,13 +174,11 @@ function ProjectBoardIndexRouteView() {
               key={column.key}
               className="flex min-h-[24rem] flex-col rounded-xl border bg-card p-3 shadow-sm"
             >
-              <div className="mb-3 flex items-center justify-between border-b px-1 pb-3">
-                <div>
-                  <h2 className="text-sm font-semibold tracking-wide text-foreground">
-                    {column.label}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">{column.threads.length} threads</p>
-                </div>
+              <div className="mb-3 flex items-center justify-between px-1">
+                <h2 className="text-sm font-semibold tracking-wide text-foreground">
+                  {column.label}
+                </h2>
+                <span className="text-xs text-muted-foreground">{column.threads.length}</span>
               </div>
 
               <div className="flex flex-1 flex-col gap-3">
@@ -191,6 +192,18 @@ function ProjectBoardIndexRouteView() {
                   ))
                 )}
               </div>
+
+              {column.key === "todo" && (
+                <Button
+                  variant="outline"
+                  className="mt-3 w-full justify-center text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    void handleNewThread(projectRef);
+                  }}
+                >
+                  + New Thread
+                </Button>
+              )}
             </section>
           ))}
         </section>
