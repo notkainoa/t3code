@@ -1,0 +1,471 @@
+{
+  "generatedAt": "2026-05-26T00:21:22.508Z",
+  "summary": {
+    "status": "running",
+    "startedAt": "2026-05-26T00:12:59.746Z",
+    "stoppedAt": null,
+    "elapsedMs": 502762,
+    "elapsedLabel": "8 min 23 s",
+    "targetUrl": "http://127.0.0.1:5734/",
+    "network": "host",
+    "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+    "project": "/home/ubuntu/github/t3code",
+    "browserFullscreen": true,
+    "counts": {
+      "screenshots": 11,
+      "recordings": 1,
+      "logs": 1,
+      "events": 30,
+      "failures": 1
+    },
+    "latest": {
+      "screenshot": {
+        "file": "final-11-root-after-cookie.png",
+        "relativePath": "screenshots/final-11-root-after-cookie.png",
+        "size": 104077,
+        "sizeLabel": "101.6 KB",
+        "mtimeMs": 1779754798080.4163,
+        "modifiedAt": "2026-05-26T00:19:58.080Z"
+      },
+      "recording": {
+        "file": "final-ui-flow.mp4",
+        "relativePath": "recordings/final-ui-flow.mp4",
+        "size": 5289471,
+        "sizeLabel": "5.0 MB",
+        "mtimeMs": 1779754879868.295,
+        "modifiedAt": "2026-05-26T00:21:19.868Z",
+        "durationSeconds": 489.466667,
+        "durationLabel": "8 min 10 s"
+      }
+    },
+    "activeRecording": null,
+    "lastEvent": {
+      "type": "record-stop",
+      "at": "2026-05-26T00:21:20.852Z",
+      "label": "final-ui-flow",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/recordings/final-ui-flow.mp4"
+    },
+    "failures": [
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:14:03.887Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 1,
+        "signal": null,
+        "failedAt": "2026-05-26T00:14:03.887Z"
+      }
+    ],
+    "eventCounts": {
+      "start": 1,
+      "novnc-ready": 1,
+      "open": 3,
+      "record-start": 1,
+      "screenshot": 11,
+      "exec": 12,
+      "record-stop": 1
+    }
+  },
+  "session": {
+    "schemaVersion": 1,
+    "events": [
+      {
+        "type": "start",
+        "at": "2026-05-26T00:12:59.750Z",
+        "container": "proof-artifacts-t3code-diffkit-final",
+        "image": "proof-artifacts/desktop:0.1.0",
+        "imageSource": "local",
+        "noVncPort": 6081
+      },
+      {
+        "type": "novnc-ready",
+        "at": "2026-05-26T00:13:00.400Z",
+        "url": "http://127.0.0.1:6081/vnc.html"
+      },
+      {
+        "type": "open",
+        "at": "2026-05-26T00:13:07.527Z",
+        "url": "http://127.0.0.1:5734/",
+        "fullscreen": true
+      },
+      {
+        "type": "record-start",
+        "at": "2026-05-26T00:13:07.899Z",
+        "label": "final-ui-flow",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/recordings/final-ui-flow.mp4"
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:13:15.315Z",
+        "label": "final-01-entry",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-01-entry.png"
+      },
+      {
+        "type": "open",
+        "at": "2026-05-26T00:13:45.392Z",
+        "url": "http://127.0.0.1:5734/pair#token=[redacted]",
+        "fullscreen": true
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:13:51.198Z",
+        "label": "final-02-paired",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-02-paired.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:14:03.887Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 1,
+        "signal": null,
+        "failedAt": "2026-05-26T00:14:03.887Z"
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:14:11.684Z",
+        "label": "final-03-after-token-attempt",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-03-after-token-attempt.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:14:30.317Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:14:39.926Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:14:46.358Z",
+        "label": "final-04-pair-manual",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-04-pair-manual.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:15:35.507Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:15:41.994Z",
+        "label": "final-05-paired-app",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-05-paired-app.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:16:04.923Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:16:08.723Z",
+        "label": "final-06-tab-pair",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-06-tab-pair.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:16:35.064Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:16:39.384Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:17:01.986Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:17:06.423Z",
+        "label": "final-07-js-pair",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-07-js-pair.png"
+      },
+      {
+        "type": "open",
+        "at": "2026-05-26T00:18:02.909Z",
+        "url": "http://127.0.0.1:5799/",
+        "fullscreen": true
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:18:07.024Z",
+        "label": "final-08-authenticated",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-08-authenticated.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:18:22.343Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:18:22.923Z",
+        "label": "final-09-cookie-redirect",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-09-cookie-redirect.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:18:58.803Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:18:59.366Z",
+        "label": "final-10-auth-cookie",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-10-auth-cookie.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:19:30.407Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T00:19:57.547Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T00:19:58.090Z",
+        "label": "final-11-root-after-cookie",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-11-root-after-cookie.png"
+      },
+      {
+        "type": "record-stop",
+        "at": "2026-05-26T00:21:20.852Z",
+        "label": "final-ui-flow",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/recordings/final-ui-flow.mp4"
+      }
+    ],
+    "screenshots": [
+      {
+        "label": "final-01-entry",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-01-entry.png",
+        "capturedAt": "2026-05-26T00:13:15.315Z"
+      },
+      {
+        "label": "final-02-paired",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-02-paired.png",
+        "capturedAt": "2026-05-26T00:13:51.198Z"
+      },
+      {
+        "label": "final-03-after-token-attempt",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-03-after-token-attempt.png",
+        "capturedAt": "2026-05-26T00:14:11.683Z"
+      },
+      {
+        "label": "final-04-pair-manual",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-04-pair-manual.png",
+        "capturedAt": "2026-05-26T00:14:46.358Z"
+      },
+      {
+        "label": "final-05-paired-app",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-05-paired-app.png",
+        "capturedAt": "2026-05-26T00:15:41.994Z"
+      },
+      {
+        "label": "final-06-tab-pair",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-06-tab-pair.png",
+        "capturedAt": "2026-05-26T00:16:08.723Z"
+      },
+      {
+        "label": "final-07-js-pair",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-07-js-pair.png",
+        "capturedAt": "2026-05-26T00:17:06.423Z"
+      },
+      {
+        "label": "final-08-authenticated",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-08-authenticated.png",
+        "capturedAt": "2026-05-26T00:18:07.024Z"
+      },
+      {
+        "label": "final-09-cookie-redirect",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-09-cookie-redirect.png",
+        "capturedAt": "2026-05-26T00:18:22.923Z"
+      },
+      {
+        "label": "final-10-auth-cookie",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-10-auth-cookie.png",
+        "capturedAt": "2026-05-26T00:18:59.366Z"
+      },
+      {
+        "label": "final-11-root-after-cookie",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/screenshots/final-11-root-after-cookie.png",
+        "capturedAt": "2026-05-26T00:19:58.090Z"
+      }
+    ],
+    "recordings": [
+      {
+        "label": "final-ui-flow",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final/recordings/final-ui-flow.mp4",
+        "startedAt": "2026-05-26T00:13:07.899Z",
+        "stoppedAt": "2026-05-26T00:21:20.852Z",
+        "durationMs": 492953
+      }
+    ],
+    "name": "t3code-diffkit-final",
+    "width": "1280",
+    "height": "800",
+    "project": "/home/ubuntu/github/t3code",
+    "artifacts": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final",
+    "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+    "noVncPort": 6081,
+    "noVncListen": "127.0.0.1",
+    "network": "host",
+    "targetUrl": "http://127.0.0.1:5734/",
+    "networkInferredFromUrl": true,
+    "browserFullscreen": true,
+    "vncPort": 5901,
+    "container": "proof-artifacts-t3code-diffkit-final",
+    "containerUser": "1001:1001",
+    "image": "proof-artifacts/desktop:0.1.0",
+    "imageId": "sha256:6785bf31c1950a4f9839eec9f077eb8de1422e17dfb9cfd723de7a1f567fbad5",
+    "requestedImage": "proof-artifacts/desktop:0.1.0",
+    "imageSource": "local",
+    "startedAt": "2026-05-26T00:12:59.746Z",
+    "stoppedAt": null
+  },
+  "artifacts": {
+    "root": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-diffkit-final",
+    "screenshots": [
+      {
+        "file": "final-01-entry.png",
+        "relativePath": "screenshots/final-01-entry.png",
+        "size": 102647,
+        "sizeLabel": "100.2 KB",
+        "mtimeMs": 1779754395279.5667,
+        "modifiedAt": "2026-05-26T00:13:15.280Z"
+      },
+      {
+        "file": "final-02-paired.png",
+        "relativePath": "screenshots/final-02-paired.png",
+        "size": 102647,
+        "sizeLabel": "100.2 KB",
+        "mtimeMs": 1779754431167.974,
+        "modifiedAt": "2026-05-26T00:13:51.168Z"
+      },
+      {
+        "file": "final-03-after-token-attempt.png",
+        "relativePath": "screenshots/final-03-after-token-attempt.png",
+        "size": 107280,
+        "sizeLabel": "104.8 KB",
+        "mtimeMs": 1779754451673.6116,
+        "modifiedAt": "2026-05-26T00:14:11.674Z"
+      },
+      {
+        "file": "final-04-pair-manual.png",
+        "relativePath": "screenshots/final-04-pair-manual.png",
+        "size": 107783,
+        "sizeLabel": "105.3 KB",
+        "mtimeMs": 1779754486348.004,
+        "modifiedAt": "2026-05-26T00:14:46.348Z"
+      },
+      {
+        "file": "final-05-paired-app.png",
+        "relativePath": "screenshots/final-05-paired-app.png",
+        "size": 104265,
+        "sizeLabel": "101.8 KB",
+        "mtimeMs": 1779754541980.9321,
+        "modifiedAt": "2026-05-26T00:15:41.981Z"
+      },
+      {
+        "file": "final-06-tab-pair.png",
+        "relativePath": "screenshots/final-06-tab-pair.png",
+        "size": 107724,
+        "sizeLabel": "105.2 KB",
+        "mtimeMs": 1779754568713.0627,
+        "modifiedAt": "2026-05-26T00:16:08.713Z"
+      },
+      {
+        "file": "final-07-js-pair.png",
+        "relativePath": "screenshots/final-07-js-pair.png",
+        "size": 104274,
+        "sizeLabel": "101.8 KB",
+        "mtimeMs": 1779754626413.1443,
+        "modifiedAt": "2026-05-26T00:17:06.413Z"
+      },
+      {
+        "file": "final-08-authenticated.png",
+        "relativePath": "screenshots/final-08-authenticated.png",
+        "size": 104274,
+        "sizeLabel": "101.8 KB",
+        "mtimeMs": 1779754687010.8655,
+        "modifiedAt": "2026-05-26T00:18:07.011Z"
+      },
+      {
+        "file": "final-09-cookie-redirect.png",
+        "relativePath": "screenshots/final-09-cookie-redirect.png",
+        "size": 103971,
+        "sizeLabel": "101.5 KB",
+        "mtimeMs": 1779754702911.95,
+        "modifiedAt": "2026-05-26T00:18:22.912Z"
+      },
+      {
+        "file": "final-10-auth-cookie.png",
+        "relativePath": "screenshots/final-10-auth-cookie.png",
+        "size": 102825,
+        "sizeLabel": "100.4 KB",
+        "mtimeMs": 1779754739350.569,
+        "modifiedAt": "2026-05-26T00:18:59.351Z"
+      },
+      {
+        "file": "final-11-root-after-cookie.png",
+        "relativePath": "screenshots/final-11-root-after-cookie.png",
+        "size": 104077,
+        "sizeLabel": "101.6 KB",
+        "mtimeMs": 1779754798080.4163,
+        "modifiedAt": "2026-05-26T00:19:58.080Z"
+      }
+    ],
+    "recordings": [
+      {
+        "file": "final-ui-flow.mp4",
+        "relativePath": "recordings/final-ui-flow.mp4",
+        "size": 5289471,
+        "sizeLabel": "5.0 MB",
+        "mtimeMs": 1779754879868.295,
+        "modifiedAt": "2026-05-26T00:21:19.868Z",
+        "durationSeconds": 489.466667,
+        "durationLabel": "8 min 10 s"
+      }
+    ],
+    "logs": [
+      {
+        "file": "final-ui-flow.log",
+        "relativePath": "recordings/final-ui-flow.log",
+        "size": 111012,
+        "sizeLabel": "108.4 KB",
+        "mtimeMs": 1779754879870.295,
+        "modifiedAt": "2026-05-26T00:21:19.870Z"
+      }
+    ]
+  }
+}

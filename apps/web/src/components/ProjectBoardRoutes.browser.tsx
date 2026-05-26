@@ -34,11 +34,13 @@ import { getServerConfig } from "../rpc/serverState";
 import { getWsConnectionStatus } from "../rpc/wsConnectionState";
 import { getRouter } from "../router";
 import { useStore } from "../store";
+import { useUiStateStore } from "../uiStateStore";
 import { BrowserWsRpcHarness } from "../../test/wsRpcHarness";
 import { createAuthenticatedSessionHandlers } from "../../test/authHttpHandlers";
 
 const LOCAL_ENVIRONMENT_ID = EnvironmentId.make("environment-local");
 const PROJECT_ID = "project-board" as ProjectId;
+const OTHER_PROJECT_ID = "project-other" as ProjectId;
 const NOW_ISO = "2026-05-20T12:00:00.000Z";
 const TASK_ID = TaskId.make("task-board-1");
 const BACKLOG_THREAD_ID = ThreadId.make("thread-backlog");
@@ -211,6 +213,16 @@ function createMinimalSnapshot(): OrchestrationReadModel {
         id: PROJECT_ID,
         title: "Project Board",
         workspaceRoot: "/repo/project",
+        defaultModelSelection: modelSelection,
+        scripts: [],
+        createdAt: NOW_ISO,
+        updatedAt: NOW_ISO,
+        deletedAt: null,
+      },
+      {
+        id: OTHER_PROJECT_ID,
+        title: "Other Project",
+        workspaceRoot: "/repo/other-project",
         defaultModelSelection: modelSelection,
         scripts: [],
         createdAt: NOW_ISO,
@@ -753,6 +765,7 @@ describe("Project board routes", () => {
       activeEnvironmentId: null,
       environmentStateById: {},
     });
+    useUiStateStore.setState({ threadLastVisitedAtById: {} });
   });
 
   afterEach(() => {
@@ -766,12 +779,28 @@ describe("Project board routes", () => {
       await expect
         .element(mounted.screen.getByText("Project Board", { exact: true }).first())
         .toBeInTheDocument();
-      await expect.element(mounted.screen.getByText("Backlog thread")).toBeInTheDocument();
-      await expect.element(mounted.screen.getByText("Todo thread")).toBeInTheDocument();
-      await expect.element(mounted.screen.getByText("Running thread")).toBeInTheDocument();
-      await expect.element(mounted.screen.getByText("Review thread")).toBeInTheDocument();
-      await expect.element(mounted.screen.getByText("Done thread")).toBeInTheDocument();
+      await expect
+        .element(mounted.screen.getByRole("link", { name: /Other Project/i }))
+        .toBeInTheDocument();
+      await expect
+        .element(mounted.screen.getByRole("heading", { name: "Backlog thread" }))
+        .toBeInTheDocument();
+      await expect
+        .element(mounted.screen.getByRole("heading", { name: "Todo thread" }))
+        .toBeInTheDocument();
+      await expect
+        .element(mounted.screen.getByRole("heading", { name: "Running thread" }))
+        .toBeInTheDocument();
+      await expect
+        .element(mounted.screen.getByRole("heading", { name: "Review thread" }))
+        .toBeInTheDocument();
+      await expect
+        .element(mounted.screen.getByRole("heading", { name: "Done thread" }))
+        .toBeInTheDocument();
       await expect.element(mounted.screen.getByText("1 active")).toBeInTheDocument();
+      await expect
+        .element(mounted.screen.getByRole("button", { name: "New Thread" }))
+        .toBeInTheDocument();
       await expect
         .element(mounted.screen.getByText("No threads in backlog."))
         .not.toBeInTheDocument();
@@ -790,9 +819,6 @@ describe("Project board routes", () => {
       await threadCard.click();
 
       await expect.element(mounted.screen.getByText("Work on Todo thread")).toBeInTheDocument();
-      await expect
-        .element(mounted.screen.getByText("Backlog thread", { exact: true }))
-        .not.toBeInTheDocument();
     } finally {
       await mounted.cleanup();
     }

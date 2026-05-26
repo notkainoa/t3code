@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proof Artifacts Report - t3code-ui-review</title>
+    <style>
+      body {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        margin: 32px;
+        color: #18181b;
+        background: #fafaf9;
+      }
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 32px;
+        margin-bottom: 4px;
+      }
+      h2 {
+        margin-top: 32px;
+        border-top: 1px solid #d6d3d1;
+        padding-top: 20px;
+      }
+      code,
+      pre {
+        background: #f5f5f4;
+        border: 1px solid #e7e5e4;
+        border-radius: 8px;
+      }
+      code {
+        padding: 2px 5px;
+      }
+      pre {
+        padding: 14px;
+        overflow: auto;
+      }
+      img {
+        max-width: 100%;
+        border: 1px solid #d6d3d1;
+        border-radius: 12px;
+        background: white;
+      }
+      video {
+        width: 100%;
+        border: 1px solid #d6d3d1;
+        border-radius: 12px;
+        background: #18181b;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+      .card {
+        background: white;
+        border: 1px solid #e7e5e4;
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .metric {
+        font-size: 28px;
+        font-weight: 750;
+        margin: 4px 0;
+      }
+      .muted {
+        color: #57534e;
+      }
+      .fail {
+        color: #991b1b;
+      }
+      .timeline {
+        list-style: none;
+        padding: 0;
+      }
+      .timeline li {
+        padding: 10px 0;
+        border-bottom: 1px solid #e7e5e4;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="muted">Generated 2026-05-24T03:08:01.343Z</p>
+      <h1>t3code-ui-review</h1>
+      <p><strong>Project:</strong> <code>/home/ubuntu/github/t3code</code></p>
+      <p><strong>noVNC:</strong> <code>http://127.0.0.1:6081/vnc.html</code></p>
+      <p>
+        <strong>Artifacts:</strong>
+        <code>/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review</code>
+      </p>
+
+      <h2>Summary</h2>
+      <div class="grid">
+        <div class="card">
+          <p class="muted">Status</p>
+          <p class="metric">running</p>
+          <p>22 min 57 s</p>
+        </div>
+        <div class="card">
+          <p class="muted">Screenshots</p>
+          <p class="metric">29</p>
+          <p>flow-desktop-04-thread-route-project-sidebar.png</p>
+        </div>
+        <div class="card">
+          <p class="muted">Recordings</p>
+          <p class="metric">1</p>
+          <p>ui-flow-review.mp4 · 16 min 29 s</p>
+        </div>
+        <div class="card">
+          <p class="muted">Failures</p>
+          <p class="metric fail">2</p>
+          <p>Last event: record-stop</p>
+        </div>
+      </div>
+
+      <h2>Failure Context</h2>
+      <ol class="timeline">
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:56:11.625Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:56:11.625Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:1,&quot;signal&quot;:null,&quot;failedAt&quot;:&quot;2026-05-24T02:56:11.625Z&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:56:43.639Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:56:43.640Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:1,&quot;signal&quot;:null,&quot;failedAt&quot;:&quot;2026-05-24T02:56:43.639Z&quot;}</code
+          >
+        </li>
+      </ol>
+
+      <h2>Screenshots</h2>
+      <div class="grid">
+        <figure class="card">
+          <img src="screenshots/01-paired-entry.png" alt="01-paired-entry.png" />
+          <figcaption>01-paired-entry.png · 88.6 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/02-after-pairing.png" alt="02-after-pairing.png" />
+          <figcaption>02-after-pairing.png · 109.6 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/03-paired-ui.png" alt="03-paired-ui.png" />
+          <figcaption>03-paired-ui.png · 99.4 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/04-paired-ui.png" alt="04-paired-ui.png" />
+          <figcaption>04-paired-ui.png · 106.8 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/05-pair-clean.png" alt="05-pair-clean.png" />
+          <figcaption>05-pair-clean.png · 99.6 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/06-clean-pair-page.png" alt="06-clean-pair-page.png" />
+          <figcaption>06-clean-pair-page.png · 99.6 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/07-pair-page-navigated.png" alt="07-pair-page-navigated.png" />
+          <figcaption>07-pair-page-navigated.png · 100.2 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/08-after-pairing.png" alt="08-after-pairing.png" />
+          <figcaption>08-after-pairing.png · 101.9 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/09-after-keyboard-pairing.png"
+            alt="09-after-keyboard-pairing.png"
+          />
+          <figcaption>09-after-keyboard-pairing.png · 100.2 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/10-token-typed-check.png" alt="10-token-typed-check.png" />
+          <figcaption>10-token-typed-check.png · 99.7 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/11-paired-app-entry.png" alt="11-paired-app-entry.png" />
+          <figcaption>11-paired-app-entry.png · 102.2 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/12-paired-correct-base-dir.png"
+            alt="12-paired-correct-base-dir.png"
+          />
+          <figcaption>12-paired-correct-base-dir.png · 100.3 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/13-correct-token-typed.png" alt="13-correct-token-typed.png" />
+          <figcaption>13-correct-token-typed.png · 99.4 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/14-app-after-successful-pair.png"
+            alt="14-app-after-successful-pair.png"
+          />
+          <figcaption>14-app-after-successful-pair.png · 102.0 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/15-paired-dev-url-token.png" alt="15-paired-dev-url-token.png" />
+          <figcaption>15-paired-dev-url-token.png · 100.2 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/16-auto-hash-pair.png" alt="16-auto-hash-pair.png" />
+          <figcaption>16-auto-hash-pair.png · 101.9 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/17-auto-hash-after-reload.png"
+            alt="17-auto-hash-after-reload.png"
+          />
+          <figcaption>17-auto-hash-after-reload.png · 99.9 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/18-paired-final.png" alt="18-paired-final.png" />
+          <figcaption>18-paired-final.png · 102.5 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/19-authenticated-entry.png" alt="19-authenticated-entry.png" />
+          <figcaption>19-authenticated-entry.png · 102.5 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/20-owner-token-auto.png" alt="20-owner-token-auto.png" />
+          <figcaption>20-owner-token-auto.png · 102.5 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/21-owner-token-manual-reload.png"
+            alt="21-owner-token-manual-reload.png"
+          />
+          <figcaption>21-owner-token-manual-reload.png · 103.1 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img src="screenshots/flow-01-project-board.png" alt="flow-01-project-board.png" />
+          <figcaption>flow-01-project-board.png · 18.2 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/flow-02-other-project-tab.png"
+            alt="flow-02-other-project-tab.png"
+          />
+          <figcaption>flow-02-other-project-tab.png · 13.8 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/flow-03-returned-project-board.png"
+            alt="flow-03-returned-project-board.png"
+          />
+          <figcaption>flow-03-returned-project-board.png · 18.3 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/flow-04-thread-route-project-sidebar.png"
+            alt="flow-04-thread-route-project-sidebar.png"
+          />
+          <figcaption>flow-04-thread-route-project-sidebar.png · 29.8 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/flow-desktop-01-project-board.png"
+            alt="flow-desktop-01-project-board.png"
+          />
+          <figcaption>flow-desktop-01-project-board.png · 37.4 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/flow-desktop-02-other-project-tab.png"
+            alt="flow-desktop-02-other-project-tab.png"
+          />
+          <figcaption>flow-desktop-02-other-project-tab.png · 25.3 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/flow-desktop-03-returned-project-board.png"
+            alt="flow-desktop-03-returned-project-board.png"
+          />
+          <figcaption>flow-desktop-03-returned-project-board.png · 37.6 KB</figcaption>
+        </figure>
+        <figure class="card">
+          <img
+            src="screenshots/flow-desktop-04-thread-route-project-sidebar.png"
+            alt="flow-desktop-04-thread-route-project-sidebar.png"
+          />
+          <figcaption>flow-desktop-04-thread-route-project-sidebar.png · 63.8 KB</figcaption>
+        </figure>
+      </div>
+
+      <h2>Recordings</h2>
+      <div class="grid">
+        <div class="card">
+          <video controls src="recordings/ui-flow-review.mp4"></video>
+          <p><a href="recordings/ui-flow-review.mp4">ui-flow-review.mp4</a> · 10.1 MB</p>
+        </div>
+      </div>
+
+      <h2>Timeline</h2>
+
+      <ol class="timeline">
+        <li>
+          <strong>start</strong> <span class="muted">2026-05-24T02:45:04.297Z</span><br /><code
+            >{&quot;type&quot;:&quot;start&quot;,&quot;at&quot;:&quot;2026-05-24T02:45:04.297Z&quot;,&quot;container&quot;:&quot;proof-artifacts-t3code-ui-review&quot;,&quot;image&quot;:&quot;proof-artifacts/desktop:0.1.0&quot;,&quot;imageSource&quot;:&quot;local&quot;,&quot;noVncPort&quot;:6081}</code
+          >
+        </li>
+        <li>
+          <strong>novnc-ready</strong> <span class="muted">2026-05-24T02:45:04.624Z</span
+          ><br /><code
+            >{&quot;type&quot;:&quot;novnc-ready&quot;,&quot;at&quot;:&quot;2026-05-24T02:45:04.624Z&quot;,&quot;url&quot;:&quot;http://127.0.0.1:6081/vnc.html&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>open</strong> <span class="muted">2026-05-24T02:45:05.385Z</span><br /><code
+            >{&quot;type&quot;:&quot;open&quot;,&quot;at&quot;:&quot;2026-05-24T02:45:05.385Z&quot;,&quot;url&quot;:&quot;http://127.0.0.1:5734/pair#token=[redacted]&quot;,&quot;fullscreen&quot;:true}</code
+          >
+        </li>
+        <li>
+          <strong>record-start</strong> <span class="muted">2026-05-24T02:45:05.722Z</span
+          ><br /><code
+            >{&quot;type&quot;:&quot;record-start&quot;,&quot;at&quot;:&quot;2026-05-24T02:45:05.722Z&quot;,&quot;label&quot;:&quot;ui-flow-review&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:45:19.992Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:45:19.992Z&quot;,&quot;label&quot;:&quot;01-paired-entry&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/01-paired-entry.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:45:37.591Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:45:37.591Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:45:38.147Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:45:38.147Z&quot;,&quot;label&quot;:&quot;02-after-pairing&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/02-after-pairing.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:46:03.472Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:46:03.472Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:46:04.156Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:46:04.156Z&quot;,&quot;label&quot;:&quot;03-paired-ui&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/03-paired-ui.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:46:44.624Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:46:44.624Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:46:45.180Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:46:45.180Z&quot;,&quot;label&quot;:&quot;04-paired-ui&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/04-paired-ui.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>open</strong> <span class="muted">2026-05-24T02:46:56.818Z</span><br /><code
+            >{&quot;type&quot;:&quot;open&quot;,&quot;at&quot;:&quot;2026-05-24T02:46:56.818Z&quot;,&quot;url&quot;:&quot;http://127.0.0.1:5734/pair&quot;,&quot;fullscreen&quot;:true}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:46:59.461Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:46:59.461Z&quot;,&quot;label&quot;:&quot;05-pair-clean&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/05-pair-clean.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:48:21.115Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:48:21.115Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:48:21.645Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:48:21.645Z&quot;,&quot;label&quot;:&quot;06-clean-pair-page&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/06-clean-pair-page.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:48:31.382Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:48:31.382Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:48:41.192Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:48:41.192Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:48:42.687Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:48:42.687Z&quot;,&quot;label&quot;:&quot;07-pair-page-navigated&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/07-pair-page-navigated.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:48:58.773Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:48:58.773Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:48:59.405Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:48:59.405Z&quot;,&quot;label&quot;:&quot;08-after-pairing&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/08-after-pairing.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:49:28.519Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:49:28.519Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:49:29.088Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:49:29.088Z&quot;,&quot;label&quot;:&quot;09-after-keyboard-pairing&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/09-after-keyboard-pairing.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:49:44.970Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:49:44.970Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:49:45.524Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:49:45.524Z&quot;,&quot;label&quot;:&quot;10-token-typed-check&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/10-token-typed-check.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:50:05.650Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:50:05.650Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:50:06.219Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:50:06.219Z&quot;,&quot;label&quot;:&quot;11-paired-app-entry&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/11-paired-app-entry.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:50:58.480Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:50:58.480Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:50:59.038Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:50:59.038Z&quot;,&quot;label&quot;:&quot;12-paired-correct-base-dir&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/12-paired-correct-base-dir.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:51:08.839Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:51:08.839Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:51:09.570Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:51:09.570Z&quot;,&quot;label&quot;:&quot;13-correct-token-typed&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/13-correct-token-typed.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:51:28.168Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:51:28.168Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:51:28.766Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:51:28.766Z&quot;,&quot;label&quot;:&quot;14-app-after-successful-pair&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/14-app-after-successful-pair.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:52:42.016Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:52:42.016Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:52:42.685Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:52:42.685Z&quot;,&quot;label&quot;:&quot;15-paired-dev-url-token&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/15-paired-dev-url-token.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:53:21.983Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:53:21.983Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:53:22.822Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:53:22.822Z&quot;,&quot;label&quot;:&quot;16-auto-hash-pair&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/16-auto-hash-pair.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:53:58.310Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:53:58.310Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:53:58.964Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:53:58.964Z&quot;,&quot;label&quot;:&quot;17-auto-hash-after-reload&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/17-auto-hash-after-reload.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:54:16.609Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:54:16.609Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:54:17.905Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:54:17.905Z&quot;,&quot;label&quot;:&quot;18-paired-final&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/18-paired-final.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:55:28.919Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:55:28.919Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:55:52.310Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:55:52.310Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:55:52.980Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:55:52.980Z&quot;,&quot;label&quot;:&quot;19-authenticated-entry&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/19-authenticated-entry.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:56:11.625Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:56:11.625Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:1,&quot;signal&quot;:null,&quot;failedAt&quot;:&quot;2026-05-24T02:56:11.625Z&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:56:17.135Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:56:17.135Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:56:43.640Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:56:43.640Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:1,&quot;signal&quot;:null,&quot;failedAt&quot;:&quot;2026-05-24T02:56:43.639Z&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:56:49.147Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:56:49.147Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:57:02.928Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:57:02.928Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>open</strong> <span class="muted">2026-05-24T02:57:31.216Z</span><br /><code
+            >{&quot;type&quot;:&quot;open&quot;,&quot;at&quot;:&quot;2026-05-24T02:57:31.216Z&quot;,&quot;url&quot;:&quot;http://127.0.0.1:5734/pair#token=[redacted]&quot;,&quot;fullscreen&quot;:true}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:57:36.853Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:57:36.853Z&quot;,&quot;label&quot;:&quot;20-owner-token-auto&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/20-owner-token-auto.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>exec</strong> <span class="muted">2026-05-24T02:57:58.477Z</span><br /><code
+            >{&quot;type&quot;:&quot;exec&quot;,&quot;at&quot;:&quot;2026-05-24T02:57:58.477Z&quot;,&quot;command&quot;:&quot;sh
+            -s&quot;,&quot;stdin&quot;:true,&quot;status&quot;:0}</code
+          >
+        </li>
+        <li>
+          <strong>screenshot</strong> <span class="muted">2026-05-24T02:57:59.077Z</span><br /><code
+            >{&quot;type&quot;:&quot;screenshot&quot;,&quot;at&quot;:&quot;2026-05-24T02:57:59.077Z&quot;,&quot;label&quot;:&quot;21-owner-token-manual-reload&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/21-owner-token-manual-reload.png&quot;}</code
+          >
+        </li>
+        <li>
+          <strong>record-stop</strong> <span class="muted">2026-05-24T03:01:35.482Z</span
+          ><br /><code
+            >{&quot;type&quot;:&quot;record-stop&quot;,&quot;at&quot;:&quot;2026-05-24T03:01:35.482Z&quot;,&quot;label&quot;:&quot;ui-flow-review&quot;,&quot;file&quot;:&quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4&quot;}</code
+          >
+        </li>
+      </ol>
+
+      <h2>Logs</h2>
+
+      <ul>
+        <li>
+          <a href="recordings/ui-flow-review.log">recordings/ui-flow-review.log</a> · 215.0 KB
+        </li>
+      </ul>
+
+      <h2>Manifest</h2>
+      <pre>
+{
+  &quot;schemaVersion&quot;: 1,
+  &quot;events&quot;: [
+    {
+      &quot;type&quot;: &quot;start&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:45:04.297Z&quot;,
+      &quot;container&quot;: &quot;proof-artifacts-t3code-ui-review&quot;,
+      &quot;image&quot;: &quot;proof-artifacts/desktop:0.1.0&quot;,
+      &quot;imageSource&quot;: &quot;local&quot;,
+      &quot;noVncPort&quot;: 6081
+    },
+    {
+      &quot;type&quot;: &quot;novnc-ready&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:45:04.624Z&quot;,
+      &quot;url&quot;: &quot;http://127.0.0.1:6081/vnc.html&quot;
+    },
+    {
+      &quot;type&quot;: &quot;open&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:45:05.385Z&quot;,
+      &quot;url&quot;: &quot;http://127.0.0.1:5734/pair#token=[redacted]&quot;,
+      &quot;fullscreen&quot;: true
+    },
+    {
+      &quot;type&quot;: &quot;record-start&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:45:05.722Z&quot;,
+      &quot;label&quot;: &quot;ui-flow-review&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4&quot;
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:45:19.992Z&quot;,
+      &quot;label&quot;: &quot;01-paired-entry&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/01-paired-entry.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:45:37.591Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:45:38.147Z&quot;,
+      &quot;label&quot;: &quot;02-after-pairing&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/02-after-pairing.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:46:03.472Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:46:04.156Z&quot;,
+      &quot;label&quot;: &quot;03-paired-ui&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/03-paired-ui.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:46:44.624Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:46:45.180Z&quot;,
+      &quot;label&quot;: &quot;04-paired-ui&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/04-paired-ui.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;open&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:46:56.818Z&quot;,
+      &quot;url&quot;: &quot;http://127.0.0.1:5734/pair&quot;,
+      &quot;fullscreen&quot;: true
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:46:59.461Z&quot;,
+      &quot;label&quot;: &quot;05-pair-clean&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/05-pair-clean.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:48:21.115Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:48:21.645Z&quot;,
+      &quot;label&quot;: &quot;06-clean-pair-page&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/06-clean-pair-page.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:48:31.382Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:48:41.192Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:48:42.687Z&quot;,
+      &quot;label&quot;: &quot;07-pair-page-navigated&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/07-pair-page-navigated.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:48:58.773Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:48:59.405Z&quot;,
+      &quot;label&quot;: &quot;08-after-pairing&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/08-after-pairing.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:49:28.519Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:49:29.088Z&quot;,
+      &quot;label&quot;: &quot;09-after-keyboard-pairing&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/09-after-keyboard-pairing.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:49:44.970Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:49:45.524Z&quot;,
+      &quot;label&quot;: &quot;10-token-typed-check&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/10-token-typed-check.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:50:05.650Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:50:06.219Z&quot;,
+      &quot;label&quot;: &quot;11-paired-app-entry&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/11-paired-app-entry.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:50:58.480Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:50:59.038Z&quot;,
+      &quot;label&quot;: &quot;12-paired-correct-base-dir&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/12-paired-correct-base-dir.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:51:08.839Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:51:09.570Z&quot;,
+      &quot;label&quot;: &quot;13-correct-token-typed&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/13-correct-token-typed.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:51:28.168Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:51:28.766Z&quot;,
+      &quot;label&quot;: &quot;14-app-after-successful-pair&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/14-app-after-successful-pair.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:52:42.016Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:52:42.685Z&quot;,
+      &quot;label&quot;: &quot;15-paired-dev-url-token&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/15-paired-dev-url-token.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:53:21.983Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:53:22.822Z&quot;,
+      &quot;label&quot;: &quot;16-auto-hash-pair&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/16-auto-hash-pair.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:53:58.310Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:53:58.964Z&quot;,
+      &quot;label&quot;: &quot;17-auto-hash-after-reload&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/17-auto-hash-after-reload.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:54:16.609Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:54:17.905Z&quot;,
+      &quot;label&quot;: &quot;18-paired-final&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/18-paired-final.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:55:28.919Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:55:52.310Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:55:52.980Z&quot;,
+      &quot;label&quot;: &quot;19-authenticated-entry&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/19-authenticated-entry.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:56:11.625Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 1,
+      &quot;signal&quot;: null,
+      &quot;failedAt&quot;: &quot;2026-05-24T02:56:11.625Z&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:56:17.135Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:56:43.640Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 1,
+      &quot;signal&quot;: null,
+      &quot;failedAt&quot;: &quot;2026-05-24T02:56:43.639Z&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:56:49.147Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:57:02.928Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;open&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:57:31.216Z&quot;,
+      &quot;url&quot;: &quot;http://127.0.0.1:5734/pair#token=[redacted]&quot;,
+      &quot;fullscreen&quot;: true
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:57:36.853Z&quot;,
+      &quot;label&quot;: &quot;20-owner-token-auto&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/20-owner-token-auto.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;exec&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:57:58.477Z&quot;,
+      &quot;command&quot;: &quot;sh -s&quot;,
+      &quot;stdin&quot;: true,
+      &quot;status&quot;: 0
+    },
+    {
+      &quot;type&quot;: &quot;screenshot&quot;,
+      &quot;at&quot;: &quot;2026-05-24T02:57:59.077Z&quot;,
+      &quot;label&quot;: &quot;21-owner-token-manual-reload&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/21-owner-token-manual-reload.png&quot;
+    },
+    {
+      &quot;type&quot;: &quot;record-stop&quot;,
+      &quot;at&quot;: &quot;2026-05-24T03:01:35.482Z&quot;,
+      &quot;label&quot;: &quot;ui-flow-review&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4&quot;
+    }
+  ],
+  &quot;screenshots&quot;: [
+    {
+      &quot;label&quot;: &quot;01-paired-entry&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/01-paired-entry.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:45:19.992Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;02-after-pairing&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/02-after-pairing.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:45:38.147Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;03-paired-ui&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/03-paired-ui.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:46:04.156Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;04-paired-ui&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/04-paired-ui.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:46:45.180Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;05-pair-clean&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/05-pair-clean.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:46:59.461Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;06-clean-pair-page&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/06-clean-pair-page.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:48:21.645Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;07-pair-page-navigated&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/07-pair-page-navigated.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:48:42.687Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;08-after-pairing&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/08-after-pairing.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:48:59.405Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;09-after-keyboard-pairing&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/09-after-keyboard-pairing.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:49:29.088Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;10-token-typed-check&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/10-token-typed-check.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:49:45.524Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;11-paired-app-entry&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/11-paired-app-entry.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:50:06.219Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;12-paired-correct-base-dir&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/12-paired-correct-base-dir.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:50:59.037Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;13-correct-token-typed&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/13-correct-token-typed.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:51:09.570Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;14-app-after-successful-pair&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/14-app-after-successful-pair.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:51:28.766Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;15-paired-dev-url-token&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/15-paired-dev-url-token.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:52:42.685Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;16-auto-hash-pair&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/16-auto-hash-pair.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:53:22.821Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;17-auto-hash-after-reload&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/17-auto-hash-after-reload.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:53:58.964Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;18-paired-final&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/18-paired-final.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:54:17.904Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;19-authenticated-entry&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/19-authenticated-entry.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:55:52.980Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;20-owner-token-auto&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/20-owner-token-auto.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:57:36.853Z&quot;
+    },
+    {
+      &quot;label&quot;: &quot;21-owner-token-manual-reload&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/21-owner-token-manual-reload.png&quot;,
+      &quot;capturedAt&quot;: &quot;2026-05-24T02:57:59.077Z&quot;
+    }
+  ],
+  &quot;recordings&quot;: [
+    {
+      &quot;label&quot;: &quot;ui-flow-review&quot;,
+      &quot;file&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4&quot;,
+      &quot;startedAt&quot;: &quot;2026-05-24T02:45:05.721Z&quot;,
+      &quot;stoppedAt&quot;: &quot;2026-05-24T03:01:35.482Z&quot;,
+      &quot;durationMs&quot;: 989761
+    }
+  ],
+  &quot;name&quot;: &quot;t3code-ui-review&quot;,
+  &quot;width&quot;: &quot;1280&quot;,
+  &quot;height&quot;: &quot;800&quot;,
+  &quot;project&quot;: &quot;/home/ubuntu/github/t3code&quot;,
+  &quot;artifacts&quot;: &quot;/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review&quot;,
+  &quot;noVncUrl&quot;: &quot;http://127.0.0.1:6081/vnc.html&quot;,
+  &quot;noVncPort&quot;: 6081,
+  &quot;noVncListen&quot;: &quot;127.0.0.1&quot;,
+  &quot;network&quot;: &quot;host&quot;,
+  &quot;targetUrl&quot;: null,
+  &quot;networkInferredFromUrl&quot;: false,
+  &quot;browserFullscreen&quot;: true,
+  &quot;vncPort&quot;: 5901,
+  &quot;container&quot;: &quot;proof-artifacts-t3code-ui-review&quot;,
+  &quot;containerUser&quot;: &quot;1001:1001&quot;,
+  &quot;image&quot;: &quot;proof-artifacts/desktop:0.1.0&quot;,
+  &quot;imageId&quot;: &quot;sha256:6785bf31c1950a4f9839eec9f077eb8de1422e17dfb9cfd723de7a1f567fbad5&quot;,
+  &quot;requestedImage&quot;: &quot;proof-artifacts/desktop:0.1.0&quot;,
+  &quot;imageSource&quot;: &quot;local&quot;,
+  &quot;startedAt&quot;: &quot;2026-05-24T02:45:04.290Z&quot;,
+  &quot;stoppedAt&quot;: null
+}</pre
+      >
+    </main>
+  </body>
+</html>

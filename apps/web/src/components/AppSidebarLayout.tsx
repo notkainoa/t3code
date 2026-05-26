@@ -1,16 +1,13 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
-import ThreadSidebar from "./Sidebar";
-import { Sidebar, SidebarProvider, SidebarRail } from "./ui/sidebar";
+import { ProjectTabs } from "./ProjectTabs";
+import { SidebarProvider } from "./ui/sidebar";
 import {
   clearShortcutModifierState,
   syncShortcutModifierStateFromKeyboardEvent,
 } from "../shortcutModifierState";
 
-const THREAD_SIDEBAR_WIDTH_STORAGE_KEY = "chat_thread_sidebar_width";
-const THREAD_SIDEBAR_MIN_WIDTH = 13 * 16;
-const THREAD_MAIN_CONTENT_MIN_WIDTH = 40 * 16;
 export function AppSidebarLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
@@ -54,22 +51,14 @@ export function AppSidebarLayout({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   return (
-    <SidebarProvider className="h-dvh! min-h-0!" defaultOpen>
-      <Sidebar
-        side="left"
-        collapsible="offcanvas"
-        className="border-r border-border bg-card text-foreground"
-        resizable={{
-          minWidth: THREAD_SIDEBAR_MIN_WIDTH,
-          shouldAcceptWidth: ({ nextWidth, wrapper }) =>
-            wrapper.clientWidth - nextWidth >= THREAD_MAIN_CONTENT_MIN_WIDTH,
-          storageKey: THREAD_SIDEBAR_WIDTH_STORAGE_KEY,
-        }}
-      >
-        <ThreadSidebar />
-        <SidebarRail />
-      </Sidebar>
-      {children}
+    <SidebarProvider
+      className="h-dvh! min-h-0! flex-col overflow-hidden bg-muted/55 px-2 pb-2 pt-1 text-foreground sm:px-3 sm:pb-3 sm:pt-2"
+      defaultOpen
+    >
+      <ProjectTabs />
+      <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-lg border border-border bg-card shadow-[0_18px_48px_-32px_color-mix(in_srgb,var(--foreground)_34%,transparent)]">
+        {children}
+      </div>
     </SidebarProvider>
   );
 }

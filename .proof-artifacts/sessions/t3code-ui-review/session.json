@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "type": "start",
+      "at": "2026-05-24T02:45:04.297Z",
+      "container": "proof-artifacts-t3code-ui-review",
+      "image": "proof-artifacts/desktop:0.1.0",
+      "imageSource": "local",
+      "noVncPort": 6081
+    },
+    {
+      "type": "novnc-ready",
+      "at": "2026-05-24T02:45:04.624Z",
+      "url": "http://127.0.0.1:6081/vnc.html"
+    },
+    {
+      "type": "open",
+      "at": "2026-05-24T02:45:05.385Z",
+      "url": "http://127.0.0.1:5734/pair#token=[redacted]",
+      "fullscreen": true
+    },
+    {
+      "type": "record-start",
+      "at": "2026-05-24T02:45:05.722Z",
+      "label": "ui-flow-review",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:45:19.992Z",
+      "label": "01-paired-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/01-paired-entry.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:45:37.591Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:45:38.147Z",
+      "label": "02-after-pairing",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/02-after-pairing.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:46:03.472Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:46:04.156Z",
+      "label": "03-paired-ui",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/03-paired-ui.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:46:44.624Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:46:45.180Z",
+      "label": "04-paired-ui",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/04-paired-ui.png"
+    },
+    {
+      "type": "open",
+      "at": "2026-05-24T02:46:56.818Z",
+      "url": "http://127.0.0.1:5734/pair",
+      "fullscreen": true
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:46:59.461Z",
+      "label": "05-pair-clean",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/05-pair-clean.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:48:21.115Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:48:21.645Z",
+      "label": "06-clean-pair-page",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/06-clean-pair-page.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:48:31.382Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:48:41.192Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:48:42.687Z",
+      "label": "07-pair-page-navigated",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/07-pair-page-navigated.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:48:58.773Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:48:59.405Z",
+      "label": "08-after-pairing",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/08-after-pairing.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:49:28.519Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:49:29.088Z",
+      "label": "09-after-keyboard-pairing",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/09-after-keyboard-pairing.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:49:44.970Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:49:45.524Z",
+      "label": "10-token-typed-check",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/10-token-typed-check.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:50:05.650Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:50:06.219Z",
+      "label": "11-paired-app-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/11-paired-app-entry.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:50:58.480Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:50:59.038Z",
+      "label": "12-paired-correct-base-dir",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/12-paired-correct-base-dir.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:51:08.839Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:51:09.570Z",
+      "label": "13-correct-token-typed",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/13-correct-token-typed.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:51:28.168Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:51:28.766Z",
+      "label": "14-app-after-successful-pair",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/14-app-after-successful-pair.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:52:42.016Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:52:42.685Z",
+      "label": "15-paired-dev-url-token",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/15-paired-dev-url-token.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:53:21.983Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:53:22.822Z",
+      "label": "16-auto-hash-pair",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/16-auto-hash-pair.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:53:58.310Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:53:58.964Z",
+      "label": "17-auto-hash-after-reload",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/17-auto-hash-after-reload.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:54:16.609Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:54:17.905Z",
+      "label": "18-paired-final",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/18-paired-final.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:55:28.919Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:55:52.310Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:55:52.980Z",
+      "label": "19-authenticated-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/19-authenticated-entry.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:56:11.625Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 1,
+      "signal": null,
+      "failedAt": "2026-05-24T02:56:11.625Z"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:56:17.135Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:56:43.640Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 1,
+      "signal": null,
+      "failedAt": "2026-05-24T02:56:43.639Z"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:56:49.147Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:57:02.928Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "open",
+      "at": "2026-05-24T02:57:31.216Z",
+      "url": "http://127.0.0.1:5734/pair#token=[redacted]",
+      "fullscreen": true
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:57:36.853Z",
+      "label": "20-owner-token-auto",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/20-owner-token-auto.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-24T02:57:58.477Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-24T02:57:59.077Z",
+      "label": "21-owner-token-manual-reload",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/21-owner-token-manual-reload.png"
+    },
+    {
+      "type": "record-stop",
+      "at": "2026-05-24T03:01:35.482Z",
+      "label": "ui-flow-review",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4"
+    },
+    {
+      "type": "stop",
+      "at": "2026-05-24T03:08:01.826Z",
+      "container": "proof-artifacts-t3code-ui-review"
+    }
+  ],
+  "screenshots": [
+    {
+      "label": "01-paired-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/01-paired-entry.png",
+      "capturedAt": "2026-05-24T02:45:19.992Z"
+    },
+    {
+      "label": "02-after-pairing",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/02-after-pairing.png",
+      "capturedAt": "2026-05-24T02:45:38.147Z"
+    },
+    {
+      "label": "03-paired-ui",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/03-paired-ui.png",
+      "capturedAt": "2026-05-24T02:46:04.156Z"
+    },
+    {
+      "label": "04-paired-ui",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/04-paired-ui.png",
+      "capturedAt": "2026-05-24T02:46:45.180Z"
+    },
+    {
+      "label": "05-pair-clean",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/05-pair-clean.png",
+      "capturedAt": "2026-05-24T02:46:59.461Z"
+    },
+    {
+      "label": "06-clean-pair-page",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/06-clean-pair-page.png",
+      "capturedAt": "2026-05-24T02:48:21.645Z"
+    },
+    {
+      "label": "07-pair-page-navigated",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/07-pair-page-navigated.png",
+      "capturedAt": "2026-05-24T02:48:42.687Z"
+    },
+    {
+      "label": "08-after-pairing",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/08-after-pairing.png",
+      "capturedAt": "2026-05-24T02:48:59.405Z"
+    },
+    {
+      "label": "09-after-keyboard-pairing",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/09-after-keyboard-pairing.png",
+      "capturedAt": "2026-05-24T02:49:29.088Z"
+    },
+    {
+      "label": "10-token-typed-check",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/10-token-typed-check.png",
+      "capturedAt": "2026-05-24T02:49:45.524Z"
+    },
+    {
+      "label": "11-paired-app-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/11-paired-app-entry.png",
+      "capturedAt": "2026-05-24T02:50:06.219Z"
+    },
+    {
+      "label": "12-paired-correct-base-dir",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/12-paired-correct-base-dir.png",
+      "capturedAt": "2026-05-24T02:50:59.037Z"
+    },
+    {
+      "label": "13-correct-token-typed",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/13-correct-token-typed.png",
+      "capturedAt": "2026-05-24T02:51:09.570Z"
+    },
+    {
+      "label": "14-app-after-successful-pair",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/14-app-after-successful-pair.png",
+      "capturedAt": "2026-05-24T02:51:28.766Z"
+    },
+    {
+      "label": "15-paired-dev-url-token",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/15-paired-dev-url-token.png",
+      "capturedAt": "2026-05-24T02:52:42.685Z"
+    },
+    {
+      "label": "16-auto-hash-pair",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/16-auto-hash-pair.png",
+      "capturedAt": "2026-05-24T02:53:22.821Z"
+    },
+    {
+      "label": "17-auto-hash-after-reload",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/17-auto-hash-after-reload.png",
+      "capturedAt": "2026-05-24T02:53:58.964Z"
+    },
+    {
+      "label": "18-paired-final",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/18-paired-final.png",
+      "capturedAt": "2026-05-24T02:54:17.904Z"
+    },
+    {
+      "label": "19-authenticated-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/19-authenticated-entry.png",
+      "capturedAt": "2026-05-24T02:55:52.980Z"
+    },
+    {
+      "label": "20-owner-token-auto",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/20-owner-token-auto.png",
+      "capturedAt": "2026-05-24T02:57:36.853Z"
+    },
+    {
+      "label": "21-owner-token-manual-reload",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/screenshots/21-owner-token-manual-reload.png",
+      "capturedAt": "2026-05-24T02:57:59.077Z"
+    }
+  ],
+  "recordings": [
+    {
+      "label": "ui-flow-review",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review/recordings/ui-flow-review.mp4",
+      "startedAt": "2026-05-24T02:45:05.721Z",
+      "stoppedAt": "2026-05-24T03:01:35.482Z",
+      "durationMs": 989761
+    }
+  ],
+  "name": "t3code-ui-review",
+  "width": "1280",
+  "height": "800",
+  "project": "/home/ubuntu/github/t3code",
+  "artifacts": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-ui-review",
+  "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+  "noVncPort": 6081,
+  "noVncListen": "127.0.0.1",
+  "network": "host",
+  "targetUrl": null,
+  "networkInferredFromUrl": false,
+  "browserFullscreen": true,
+  "vncPort": 5901,
+  "container": "proof-artifacts-t3code-ui-review",
+  "containerUser": "1001:1001",
+  "image": "proof-artifacts/desktop:0.1.0",
+  "imageId": "sha256:6785bf31c1950a4f9839eec9f077eb8de1422e17dfb9cfd723de7a1f567fbad5",
+  "requestedImage": "proof-artifacts/desktop:0.1.0",
+  "imageSource": "local",
+  "startedAt": "2026-05-24T02:45:04.290Z",
+  "stoppedAt": "2026-05-24T03:08:01.826Z"
+}
