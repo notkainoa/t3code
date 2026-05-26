@@ -6,7 +6,6 @@ import { useShallow } from "zustand/react/shallow";
 
 import { resolveThreadStatusPill } from "../components/Sidebar.logic";
 import { useNewThreadHandler } from "../hooks/useHandleNewThread";
-import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { SidebarInset } from "../components/ui/sidebar";
 import {
@@ -15,11 +14,7 @@ import {
   startRouteViewTransition,
 } from "../lib/viewTransition";
 import { groupProjectThreadsForBoard } from "../projectThreadBoard";
-import {
-  selectProjectsForEnvironment,
-  selectSidebarThreadsForProjectRefs,
-  useStore,
-} from "../store";
+import { selectSidebarThreadsForProjectRefs, useStore } from "../store";
 import { formatRelativeTimeLabel } from "../timestampFormat";
 import type { SidebarThreadSummary } from "../types";
 
@@ -96,9 +91,6 @@ function ProjectBoardIndexRouteView() {
   const params = Route.useParams();
   const environmentId = EnvironmentId.make(params.environmentId);
   const projectId = ProjectId.make(params.projectId);
-  const projects = useStore(
-    useShallow((state) => selectProjectsForEnvironment(state, environmentId)),
-  );
   const projectRef = useMemo(
     () => scopeProjectRef(environmentId, projectId),
     [environmentId, projectId],
@@ -110,36 +102,13 @@ function ProjectBoardIndexRouteView() {
       ),
     ),
   );
-  const activeProject = projects.find((project) => project.id === projectId) ?? null;
   const columns = useMemo(() => groupProjectThreadsForBoard(projectThreads), [projectThreads]);
-  const activeThreadCount = projectThreads.filter(
-    (thread) => thread.session?.status === "running" || thread.session?.status === "connecting",
-  ).length;
   const { handleNewThread } = useNewThreadHandler();
 
   return (
     <SidebarInset className="h-full min-h-0 overflow-hidden overscroll-y-none bg-card text-foreground">
       <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-card">
-        <header className="flex min-h-12 items-center gap-2 border-b border-border bg-card px-3 py-2 sm:px-5">
-          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-3">
-            <h2 className="shrink truncate text-sm font-semibold text-foreground">Kanban</h2>
-            {activeProject && (
-              <Badge variant="outline" className="min-w-0 shrink overflow-hidden">
-                <span className="min-w-0 truncate">{activeProject.name}</span>
-              </Badge>
-            )}
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="rounded-md border bg-background px-2 py-0.5">
-              {projectThreads.length} threads
-            </span>
-            <span className="rounded-md border bg-background px-2 py-0.5">
-              {activeThreadCount} active
-            </span>
-          </div>
-        </header>
-
-        <section className="grid min-h-0 min-w-0 flex-1 gap-4 overflow-x-auto bg-muted/30 p-4 [grid-template-columns:repeat(4,minmax(17rem,1fr))] sm:p-5">
+        <section className="grid min-h-0 min-w-0 flex-1 gap-4 overflow-x-auto bg-muted/30 p-3 sm:p-5 [grid-template-columns:repeat(4,minmax(17rem,1fr))]">
           {columns.map((column) => (
             <section
               key={column.key}
