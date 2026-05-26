@@ -1,7 +1,13 @@
 import { scopedThreadKey, scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime";
-import { EnvironmentId, ProjectId, ThreadId } from "@t3tools/contracts";
-import { Link, useLocation, useParams } from "@tanstack/react-router";
-import { FolderKanbanIcon, MessageSquareIcon, PlusIcon, SettingsIcon } from "lucide-react";
+import {
+  type ContextMenuItem,
+  EnvironmentId,
+  ProjectId,
+  type SidebarProjectGroupingMode,
+  ThreadId,
+} from "@t3tools/contracts";
+import { Link, useCanGoBack, useLocation, useNavigate, useParams } from "@tanstack/react-router";
+import { ArrowLeftIcon, PlusIcon, RotateCcwIcon, SettingsIcon, SquarePenIcon } from "lucide-react";
 import { useMemo, useRef, useCallback, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -13,13 +19,54 @@ import {
   useStore,
 } from "../store";
 import { useUiStateStore } from "../uiStateStore";
-import { getProjectOrderKey } from "../logicalProject";
-import { orderItemsByPreferredIds } from "./Sidebar.logic";
+import {
+  deriveProjectGroupingOverrideKey,
+  getProjectOrderKey,
+  selectProjectGroupingSettings,
+} from "../logicalProject";
+import {
+  orderItemsByPreferredIds,
+  resolveSidebarNewThreadEnvMode,
+  resolveSidebarNewThreadSeedContext,
+} from "./Sidebar.logic";
 import { ProjectFavicon } from "./ProjectFavicon";
-import { cn } from "../lib/utils";
+import { cn, newCommandId } from "../lib/utils";
+import { readLocalApi } from "../localApi";
+import { readEnvironmentApi } from "../environmentApi";
+import { useComposerDraftStore } from "../composerDraftStore";
+import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
+import { useHandleNewThread } from "../hooks/useHandleNewThread";
+import { useSettings, useUpdateSettings } from "../hooks/useSettings";
+import { ThreadTabStatusIcon } from "./ThreadStatusIndicators";
+import { dispatchSettingsRestoredEvent } from "./settings/settingsEvents";
+import { SETTINGS_NAV_ITEMS } from "./settings/settingsNav";
+import { useSettingsRestore } from "./settings/SettingsPanels";
+import type { Project } from "../types";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogPopup,
+  DialogTitle,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Select, SelectItem, SelectPopup, SelectTrigger, SelectValue } from "./ui/select";
+import { stackedThreadToast, toastManager } from "./ui/toast";
 
 const RECENT_THREAD_TAB_LIMIT = 6;
 const RECENT_THREAD_TABS_STORAGE_KEY = "t3code:recent-thread-tabs:v1";
+const topBarTabBaseClassName =
+  "group relative flex h-8 shrink-0 items-center gap-1.5 rounded-md px-3 text-[13px] font-medium text-muted-foreground outline-hidden ring-ring transition-colors hover:bg-surface-1 hover:text-foreground focus-visible:ring-2";
+const topBarIconButtonBaseClassName =
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-hidden ring-ring transition-colors hover:bg-surface-1 hover:text-foreground focus-visible:ring-2";
+const PROJECT_GROUPING_MODE_LABELS: Record<SidebarProjectGroupingMode, string> = {
+  repository: "Group by repository",
+  repository_path: "Group by repository path",
+  separate: "Keep separate",
+};
 
 function readRecentThreadTabKeys(): string[] {
   if (typeof window === "undefined") return [];
@@ -36,6 +83,17 @@ function readRecentThreadTabKeys(): string[] {
 function writeRecentThreadTabKeys(keys: readonly string[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(RECENT_THREAD_TABS_STORAGE_KEY, JSON.stringify(keys));
+}
+
+function projectGroupingModeDescription(mode: SidebarProjectGroupingMode): string {
+  switch (mode) {
+    case "repository":
+      return "Projects from the same repository share one sidebar row.";
+    case "repository_path":
+      return "Projects group only when both the repository and repo-relative path match.";
+    case "separate":
+      return "This project always appears as its own row.";
+  }
 }
 
 function useScrollShadows(tabCount: number) {
@@ -94,6 +152,100 @@ function T3Wordmark() {
   );
 }
 
+function RestoreDefaultsButton() {
+  const { changedSettingLabels, restoreDefaults } = useSettingsRestore(
+    dispatchSettingsRestoredEvent,
+  );
+
+  return (
+    <Button
+      size="xs"
+      variant="outline"
+      disabled={changedSettingLabels.length === 0}
+      onClick={() => void restoreDefaults()}
+    >
+      <RotateCcwIcon className="size-3.5" />
+      Restore defaults
+    </Button>
+  );
+}
+
+function SettingsTopBar({ pathname }: { pathname: string }) {
+  const navigate = useNavigate();
+  const canGoBack = useCanGoBack();
+  const scroll = useScrollShadows(SETTINGS_NAV_ITEMS.length);
+
+  const navigateBackWithinApp = useCallback(() => {
+    if (canGoBack) {
+      window.history.back();
+      return;
+    }
+    void navigate({ to: "/" });
+  }, [canGoBack, navigate]);
+
+  return (
+    <div className="relative z-10 flex h-11 min-w-0 items-center gap-2 px-1 text-foreground">
+      <div className="inline-flex min-w-0 shrink-0 items-center gap-1.5 rounded-md px-1 py-1">
+        <button
+          type="button"
+          className={topBarIconButtonBaseClassName}
+          aria-label="Back"
+          onClick={navigateBackWithinApp}
+        >
+          <ArrowLeftIcon className="size-4" />
+        </button>
+        <span className="truncate text-sm font-medium tracking-tight text-foreground">
+          Settings
+        </span>
+      </div>
+
+      <div className="hidden h-4 shrink-0 border-l border-border/70 md:block" />
+
+      <div className="relative min-w-0 flex-1 overflow-hidden">
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-y-0 left-0 z-10 w-7 bg-gradient-to-r from-muted to-transparent transition-opacity",
+            scroll.canScrollLeft ? "opacity-100" : "opacity-0",
+          )}
+        />
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-y-0 right-0 z-10 w-7 bg-gradient-to-l from-muted to-transparent transition-opacity",
+            scroll.canScrollRight ? "opacity-100" : "opacity-0",
+          )}
+        />
+        <div
+          ref={scroll.scrollRef}
+          onScroll={scroll.updateScrollState}
+          onWheel={scroll.handleWheel}
+          onMouseEnter={scroll.updateScrollState}
+          className="flex min-w-full items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {SETTINGS_NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                replace
+                className={cn(topBarTabBaseClassName, active && "bg-surface-1 text-foreground")}
+              >
+                <Icon className="size-3.5 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="shrink-0">
+        <RestoreDefaultsButton />
+      </div>
+    </div>
+  );
+}
+
 export function ProjectTabs() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const params = useParams({ strict: false });
@@ -102,6 +254,18 @@ export function ProjectTabs() {
   const projectOrder = useUiStateStore((store) => store.projectOrder);
   const [recentThreadKeys, setRecentThreadKeys] = useState(readRecentThreadTabKeys);
   const openAddProject = useCommandPaletteStore((store) => store.openAddProject);
+  const projectGroupingSettings = useSettings(selectProjectGroupingSettings);
+  const defaultThreadEnvMode = useSettings((settings) => settings.defaultThreadEnvMode);
+  const { updateSettings } = useUpdateSettings();
+  const { copyToClipboard: copyPathToClipboard } = useCopyToClipboard<{ path: string }>();
+  const [projectRenameTarget, setProjectRenameTarget] = useState<Project | null>(null);
+  const [projectRenameTitle, setProjectRenameTitle] = useState("");
+  const [projectGroupingTarget, setProjectGroupingTarget] = useState<Project | null>(null);
+  const [projectGroupingSelection, setProjectGroupingSelection] = useState<
+    SidebarProjectGroupingMode | "inherit"
+  >("inherit");
+  const { activeDraftThread, activeThread, defaultProjectRef, handleNewThread } =
+    useHandleNewThread();
   const orderedProjects = useMemo(
     () =>
       orderItemsByPreferredIds({
@@ -145,6 +309,14 @@ export function ProjectTabs() {
     [recentThreadKeys, threads],
   );
   const recentThreadsForDisplay = useMemo(() => recentThreads.toReversed(), [recentThreads]);
+  const threadCountByProjectKey = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const thread of threads) {
+      const key = `${thread.environmentId}:${thread.projectId}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+  }, [threads]);
   useEffect(() => {
     if (!activeThreadKey) return;
     setRecentThreadKeys((current) => {
@@ -161,135 +333,524 @@ export function ProjectTabs() {
   }, [activeThreadKey]);
   const projectScroll = useScrollShadows(orderedProjects.length);
   const recentScroll = useScrollShadows(recentThreadsForDisplay.length);
-  const showProjectTabs = !pathname.startsWith("/settings") && !pathname.startsWith("/pair");
+  const showSettingsTabs = pathname.startsWith("/settings");
+  const showProjectTabs = !showSettingsTabs && !pathname.startsWith("/pair");
+  const handleTopBarTabKeyDown = useCallback((event: React.KeyboardEvent<HTMLAnchorElement>) => {
+    if (event.key === "Escape") {
+      event.currentTarget.blur();
+    }
+  }, []);
+
+  const closeProjectRenameDialog = useCallback(() => {
+    setProjectRenameTarget(null);
+    setProjectRenameTitle("");
+  }, []);
+
+  const submitProjectRename = useCallback(async () => {
+    if (!projectRenameTarget) {
+      return;
+    }
+
+    const trimmed = projectRenameTitle.trim();
+    if (trimmed.length === 0) {
+      toastManager.add({
+        type: "warning",
+        title: "Project title cannot be empty",
+      });
+      return;
+    }
+
+    if (trimmed === projectRenameTarget.name) {
+      closeProjectRenameDialog();
+      return;
+    }
+
+    const api = readEnvironmentApi(projectRenameTarget.environmentId);
+    if (!api) {
+      toastManager.add(
+        stackedThreadToast({
+          type: "error",
+          title: "Failed to rename project",
+          description: "Project API unavailable.",
+        }),
+      );
+      return;
+    }
+
+    try {
+      await api.orchestration.dispatchCommand({
+        type: "project.meta.update",
+        commandId: newCommandId(),
+        projectId: projectRenameTarget.id,
+        title: trimmed,
+      });
+      closeProjectRenameDialog();
+    } catch (error) {
+      toastManager.add(
+        stackedThreadToast({
+          type: "error",
+          title: "Failed to rename project",
+          description: error instanceof Error ? error.message : "An error occurred.",
+        }),
+      );
+    }
+  }, [closeProjectRenameDialog, projectRenameTarget, projectRenameTitle]);
+
+  const openProjectGroupingDialog = useCallback(
+    (project: Project) => {
+      const overrideKey = deriveProjectGroupingOverrideKey(project);
+      setProjectGroupingTarget(project);
+      setProjectGroupingSelection(
+        projectGroupingSettings.sidebarProjectGroupingOverrides?.[overrideKey] ?? "inherit",
+      );
+    },
+    [projectGroupingSettings.sidebarProjectGroupingOverrides],
+  );
+
+  const closeProjectGroupingDialog = useCallback(() => {
+    setProjectGroupingTarget(null);
+    setProjectGroupingSelection("inherit");
+  }, []);
+
+  const saveProjectGroupingPreference = useCallback(() => {
+    if (!projectGroupingTarget) {
+      return;
+    }
+
+    const overrideKey = deriveProjectGroupingOverrideKey(projectGroupingTarget);
+    const nextOverrides = {
+      ...projectGroupingSettings.sidebarProjectGroupingOverrides,
+    };
+    if (projectGroupingSelection === "inherit") {
+      delete nextOverrides[overrideKey];
+    } else {
+      nextOverrides[overrideKey] = projectGroupingSelection;
+    }
+    updateSettings({
+      sidebarProjectGroupingOverrides: nextOverrides,
+    });
+    closeProjectGroupingDialog();
+  }, [
+    closeProjectGroupingDialog,
+    projectGroupingSelection,
+    projectGroupingSettings.sidebarProjectGroupingOverrides,
+    projectGroupingTarget,
+    updateSettings,
+  ]);
+
+  const removeProject = useCallback(async (project: Project, options: { force?: boolean } = {}) => {
+    const projectRef = scopeProjectRef(project.environmentId, project.id);
+    const draftStore = useComposerDraftStore.getState();
+    const projectDraftThread = draftStore.getDraftThreadByProjectRef(projectRef);
+    if (projectDraftThread) {
+      draftStore.clearDraftThread(projectDraftThread.draftId);
+    }
+    draftStore.clearProjectDraftThreadId(projectRef);
+
+    const api = readEnvironmentApi(project.environmentId);
+    if (!api) {
+      throw new Error("Project API unavailable.");
+    }
+
+    await api.orchestration.dispatchCommand({
+      type: "project.delete",
+      commandId: newCommandId(),
+      projectId: project.id,
+      ...(options.force === true ? { force: true } : {}),
+    });
+  }, []);
+
+  const handleRemoveProject = useCallback(
+    async (project: Project) => {
+      const api = readLocalApi();
+      if (!api) {
+        return;
+      }
+
+      const threadCount =
+        threadCountByProjectKey.get(`${project.environmentId}:${project.id}`) ?? 0;
+      if (threadCount > 0) {
+        toastManager.add(
+          stackedThreadToast({
+            type: "warning",
+            title: "Project is not empty",
+            description: "Delete all threads in this project before removing it.",
+          }),
+        );
+        return;
+      }
+
+      const confirmed = await api.dialogs.confirm(
+        [`Remove project "${project.name}"?`, `Path: ${project.cwd}`].join("\n"),
+      );
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        await removeProject(project);
+      } catch (error) {
+        toastManager.add(
+          stackedThreadToast({
+            type: "error",
+            title: `Failed to remove "${project.name}"`,
+            description: error instanceof Error ? error.message : "Unknown error removing project.",
+          }),
+        );
+      }
+    },
+    [removeProject, threadCountByProjectKey],
+  );
+
+  const handleProjectTabContextMenu = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>, project: Project) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      void (async () => {
+        const api = readLocalApi();
+        if (!api) return;
+
+        const actionHandlers = new Map<string, () => Promise<void> | void>([
+          [
+            "rename",
+            () => {
+              setProjectRenameTarget(project);
+              setProjectRenameTitle(project.name);
+            },
+          ],
+          ["grouping", () => openProjectGroupingDialog(project)],
+          ["copy-path", () => copyPathToClipboard(project.cwd, { path: project.cwd })],
+          ["delete", () => handleRemoveProject(project)],
+        ]);
+
+        const clicked = await api.contextMenu.show(
+          [
+            { id: "rename", label: "Rename project" },
+            { id: "grouping", label: "Project grouping..." },
+            { id: "copy-path", label: "Copy Project Path" },
+            { id: "delete", label: "Remove project", destructive: true },
+          ] satisfies ContextMenuItem<string>[],
+          {
+            x: event.clientX,
+            y: event.clientY,
+          },
+        );
+
+        if (!clicked) {
+          return;
+        }
+
+        await actionHandlers.get(clicked)?.();
+      })();
+    },
+    [copyPathToClipboard, handleRemoveProject, openProjectGroupingDialog],
+  );
+
+  const handleCreateThread = useCallback(() => {
+    const targetProjectRef =
+      activeProjectRef ??
+      (activeThread ? scopeProjectRef(activeThread.environmentId, activeThread.projectId) : null) ??
+      (activeDraftThread
+        ? scopeProjectRef(activeDraftThread.environmentId, activeDraftThread.projectId)
+        : null) ??
+      defaultProjectRef;
+    if (!targetProjectRef) {
+      return;
+    }
+
+    const seedContext = resolveSidebarNewThreadSeedContext({
+      projectId: targetProjectRef.projectId,
+      defaultEnvMode: resolveSidebarNewThreadEnvMode({
+        defaultEnvMode: defaultThreadEnvMode,
+      }),
+      activeThread: activeThread
+        ? {
+            projectId: activeThread.projectId,
+            branch: activeThread.branch,
+            worktreePath: activeThread.worktreePath,
+          }
+        : null,
+      activeDraftThread: activeDraftThread
+        ? {
+            projectId: activeDraftThread.projectId,
+            branch: activeDraftThread.branch,
+            worktreePath: activeDraftThread.worktreePath,
+            envMode: activeDraftThread.envMode,
+          }
+        : null,
+    });
+
+    void handleNewThread(targetProjectRef, {
+      ...(seedContext.branch !== undefined ? { branch: seedContext.branch } : {}),
+      ...(seedContext.worktreePath !== undefined ? { worktreePath: seedContext.worktreePath } : {}),
+      envMode: seedContext.envMode,
+    });
+  }, [
+    activeDraftThread,
+    activeThread,
+    activeProjectRef,
+    defaultThreadEnvMode,
+    defaultProjectRef,
+    handleNewThread,
+  ]);
+
+  if (showSettingsTabs) {
+    return <SettingsTopBar pathname={pathname} />;
+  }
 
   if (!showProjectTabs) {
     return null;
   }
 
   return (
-    <div className="relative z-10 flex h-11 min-w-0 items-center gap-2 px-1 text-foreground">
-      <Link
-        to="/"
-        className="inline-flex min-w-0 shrink-0 items-center gap-1 rounded-md px-1.5 py-1 outline-hidden ring-ring transition-colors hover:text-foreground focus-visible:ring-2"
-        aria-label={APP_DISPLAY_NAME}
-        title={`Version ${APP_VERSION}`}
-      >
-        <T3Wordmark />
-        <span className="truncate text-sm font-medium tracking-tight text-muted-foreground">
-          Code
-        </span>
-        <span className="rounded-full bg-muted/50 px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground/60">
-          {APP_STAGE_LABEL}
-        </span>
-      </Link>
+    <>
+      <div className="relative z-10 flex h-11 min-w-0 items-center gap-2 px-1 text-foreground">
+        <Link
+          to="/"
+          className="inline-flex min-w-0 shrink-0 items-center gap-1 rounded-md px-1.5 py-1 outline-hidden ring-ring transition-colors hover:text-foreground focus-visible:ring-2"
+          aria-label={APP_DISPLAY_NAME}
+          title={`Version ${APP_VERSION}`}
+        >
+          <T3Wordmark />
+          <span className="truncate text-sm font-medium tracking-tight text-muted-foreground">
+            Code
+          </span>
+          <span className="rounded-full bg-muted/50 px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.18em] text-muted-foreground/60">
+            {APP_STAGE_LABEL}
+          </span>
+        </Link>
 
-      <div className="flex min-w-0 max-w-[55%] flex-[0_1_auto] items-center gap-1 overflow-hidden">
-        <div className="relative min-w-0 overflow-hidden">
+        <div className="flex min-w-0 max-w-[55%] flex-[0_1_auto] items-center gap-1 overflow-hidden">
+          <div className="relative min-w-0 overflow-hidden">
+            <div
+              className={cn(
+                "pointer-events-none absolute inset-y-0 left-0 z-10 w-7 bg-gradient-to-r from-muted to-transparent transition-opacity",
+                projectScroll.canScrollLeft ? "opacity-100" : "opacity-0",
+              )}
+            />
+            <div
+              className={cn(
+                "pointer-events-none absolute inset-y-0 right-0 z-10 w-7 bg-gradient-to-l from-muted to-transparent transition-opacity",
+                projectScroll.canScrollRight ? "opacity-100" : "opacity-0",
+              )}
+            />
+            <div
+              ref={projectScroll.scrollRef}
+              onScroll={projectScroll.updateScrollState}
+              onWheel={projectScroll.handleWheel}
+              onMouseEnter={projectScroll.updateScrollState}
+              className="flex items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {orderedProjects.map((project) => {
+                const active =
+                  activeProjectRef?.environmentId === project.environmentId &&
+                  activeProjectRef.projectId === project.id;
+                return (
+                  <Link
+                    key={`${project.environmentId}:${project.id}`}
+                    to="/$environmentId/board/$projectId"
+                    params={{ environmentId: project.environmentId, projectId: project.id }}
+                    onKeyDown={handleTopBarTabKeyDown}
+                    onContextMenu={(event) => handleProjectTabContextMenu(event, project)}
+                    className={cn(
+                      topBarTabBaseClassName,
+                      "max-w-56",
+                      active && "bg-surface-1 text-foreground",
+                    )}
+                  >
+                    <ProjectFavicon environmentId={project.environmentId} cwd={project.cwd} />
+                    <span className="truncate">{project.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+          <button
+            type="button"
+            className={topBarIconButtonBaseClassName}
+            aria-label="Add project"
+            onClick={openAddProject}
+          >
+            <PlusIcon className="size-4" />
+          </button>
+        </div>
+
+        <div className="hidden h-4 shrink-0 border-l border-border/70 md:block" />
+
+        <div className="relative hidden min-w-0 flex-1 overflow-hidden md:block">
           <div
             className={cn(
               "pointer-events-none absolute inset-y-0 left-0 z-10 w-7 bg-gradient-to-r from-muted to-transparent transition-opacity",
-              projectScroll.canScrollLeft ? "opacity-100" : "opacity-0",
+              recentScroll.canScrollLeft ? "opacity-100" : "opacity-0",
             )}
           />
           <div
             className={cn(
               "pointer-events-none absolute inset-y-0 right-0 z-10 w-7 bg-gradient-to-l from-muted to-transparent transition-opacity",
-              projectScroll.canScrollRight ? "opacity-100" : "opacity-0",
+              recentScroll.canScrollRight ? "opacity-100" : "opacity-0",
             )}
           />
           <div
-            ref={projectScroll.scrollRef}
-            onScroll={projectScroll.updateScrollState}
-            onWheel={projectScroll.handleWheel}
-            onMouseEnter={projectScroll.updateScrollState}
-            className="flex items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            ref={recentScroll.scrollRef}
+            onScroll={recentScroll.updateScrollState}
+            onWheel={recentScroll.handleWheel}
+            onMouseEnter={recentScroll.updateScrollState}
+            className="flex min-w-full items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {orderedProjects.map((project) => {
-              const active =
-                activeProjectRef?.environmentId === project.environmentId &&
-                activeProjectRef.projectId === project.id;
+            {recentThreadsForDisplay.map((thread) => {
+              const key = scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id));
+              const active = key === activeThreadKey;
               return (
                 <Link
-                  key={`${project.environmentId}:${project.id}`}
-                  to="/$environmentId/board/$projectId"
-                  params={{ environmentId: project.environmentId, projectId: project.id }}
+                  key={key}
+                  to="/$environmentId/$threadId"
+                  params={{ environmentId: thread.environmentId, threadId: thread.id }}
+                  onKeyDown={handleTopBarTabKeyDown}
                   className={cn(
-                    "group relative flex h-8 max-w-56 shrink-0 items-center gap-1.5 rounded-md px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-surface-1 hover:text-foreground",
+                    topBarTabBaseClassName,
+                    "max-w-52",
                     active && "bg-surface-1 text-foreground",
                   )}
                 >
-                  <ProjectFavicon environmentId={project.environmentId} cwd={project.cwd} />
-                  <span className="truncate">{project.name}</span>
+                  <ThreadTabStatusIcon thread={thread} />
+                  <span className="truncate">{thread.title}</span>
                 </Link>
               );
             })}
           </div>
         </div>
-        <button
-          type="button"
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-card hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Add project"
-          onClick={openAddProject}
-        >
-          {orderedProjects.length === 0 ? (
-            <FolderKanbanIcon className="size-4" />
-          ) : (
-            <PlusIcon className="size-4" />
-          )}
-        </button>
-      </div>
 
-      <div className="hidden h-4 shrink-0 border-l border-border/70 md:block" />
-
-      <div className="relative hidden min-w-0 flex-1 overflow-hidden md:block">
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-y-0 left-0 z-10 w-7 bg-gradient-to-r from-muted to-transparent transition-opacity",
-            recentScroll.canScrollLeft ? "opacity-100" : "opacity-0",
-          )}
-        />
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-y-0 right-0 z-10 w-7 bg-gradient-to-l from-muted to-transparent transition-opacity",
-            recentScroll.canScrollRight ? "opacity-100" : "opacity-0",
-          )}
-        />
-        <div
-          ref={recentScroll.scrollRef}
-          onScroll={recentScroll.updateScrollState}
-          onWheel={recentScroll.handleWheel}
-          onMouseEnter={recentScroll.updateScrollState}
-          className="flex min-w-full items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {recentThreadsForDisplay.map((thread) => {
-            const key = scopedThreadKey(scopeThreadRef(thread.environmentId, thread.id));
-            const active = key === activeThreadKey;
-            return (
-              <Link
-                key={key}
-                to="/$environmentId/$threadId"
-                params={{ environmentId: thread.environmentId, threadId: thread.id }}
-                className={cn(
-                  "group relative flex h-8 max-w-52 shrink-0 items-center gap-1.5 rounded-md px-3 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-surface-1 hover:text-foreground",
-                  active && "bg-surface-1 text-foreground",
-                )}
-              >
-                <MessageSquareIcon className="size-3.5 shrink-0" />
-                <span className="truncate">{thread.title}</span>
-              </Link>
-            );
-          })}
+        <div className="flex shrink-0 items-center gap-0.5">
+          <button
+            type="button"
+            className={topBarIconButtonBaseClassName}
+            aria-label="New thread"
+            disabled={
+              !activeProjectRef && !activeThread && !activeDraftThread && !defaultProjectRef
+            }
+            onClick={handleCreateThread}
+          >
+            <SquarePenIcon className="size-4" />
+          </button>
+          <Link to="/settings" className={topBarIconButtonBaseClassName} aria-label="Settings">
+            <SettingsIcon className="size-4" />
+          </Link>
         </div>
       </div>
 
-      <Link
-        to="/settings"
-        className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-card hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Settings"
+      <Dialog
+        open={projectRenameTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeProjectRenameDialog();
+          }
+        }}
       >
-        <SettingsIcon className="size-4" />
-      </Link>
-    </div>
+        <DialogPopup className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Rename project</DialogTitle>
+            <DialogDescription>
+              {projectRenameTarget
+                ? `Update the title for ${projectRenameTarget.cwd}.`
+                : "Update the project title."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogPanel className="space-y-4">
+            <div className="grid gap-1.5">
+              <span className="text-xs font-medium text-foreground">Project title</span>
+              <Input
+                aria-label="Project title"
+                value={projectRenameTitle}
+                onChange={(event) => setProjectRenameTitle(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void submitProjectRename();
+                  }
+                }}
+              />
+            </div>
+          </DialogPanel>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeProjectRenameDialog}>
+              Cancel
+            </Button>
+            <Button onClick={() => void submitProjectRename()}>Save</Button>
+          </DialogFooter>
+        </DialogPopup>
+      </Dialog>
+
+      <Dialog
+        open={projectGroupingTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeProjectGroupingDialog();
+          }
+        }}
+      >
+        <DialogPopup className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Project grouping</DialogTitle>
+            <DialogDescription>
+              {projectGroupingTarget
+                ? `Choose how ${projectGroupingTarget.cwd} should be grouped in the sidebar.`
+                : "Choose how this project should be grouped in the sidebar."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogPanel className="space-y-4">
+            <div className="grid gap-1.5">
+              <span className="text-xs font-medium text-foreground">Grouping rule</span>
+              <Select
+                value={projectGroupingSelection}
+                onValueChange={(value) => {
+                  if (
+                    value === "inherit" ||
+                    value === "repository" ||
+                    value === "repository_path" ||
+                    value === "separate"
+                  ) {
+                    setProjectGroupingSelection(value);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full" aria-label="Project grouping rule">
+                  <SelectValue>
+                    {projectGroupingSelection === "inherit"
+                      ? `Use global default (${PROJECT_GROUPING_MODE_LABELS[projectGroupingSettings.sidebarProjectGroupingMode]})`
+                      : PROJECT_GROUPING_MODE_LABELS[projectGroupingSelection]}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectPopup align="end" alignItemWithTrigger={false}>
+                  <SelectItem hideIndicator value="inherit">
+                    Use global default
+                  </SelectItem>
+                  <SelectItem hideIndicator value="repository">
+                    {PROJECT_GROUPING_MODE_LABELS.repository}
+                  </SelectItem>
+                  <SelectItem hideIndicator value="repository_path">
+                    {PROJECT_GROUPING_MODE_LABELS.repository_path}
+                  </SelectItem>
+                  <SelectItem hideIndicator value="separate">
+                    {PROJECT_GROUPING_MODE_LABELS.separate}
+                  </SelectItem>
+                </SelectPopup>
+              </Select>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {projectGroupingSelection === "inherit"
+                ? projectGroupingModeDescription(projectGroupingSettings.sidebarProjectGroupingMode)
+                : projectGroupingModeDescription(projectGroupingSelection)}
+            </p>
+          </DialogPanel>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeProjectGroupingDialog}>
+              Cancel
+            </Button>
+            <Button onClick={saveProjectGroupingPreference}>Save</Button>
+          </DialogFooter>
+        </DialogPopup>
+      </Dialog>
+    </>
   );
 }

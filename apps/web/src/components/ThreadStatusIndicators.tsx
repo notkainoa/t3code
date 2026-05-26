@@ -1,6 +1,15 @@
 import { scopeProjectRef, scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime";
-import type { VcsStatusResult } from "@t3tools/contracts";
-import { CloudIcon, GitPullRequestIcon, TerminalIcon } from "lucide-react";
+import type { ProviderInteractionMode, VcsStatusResult } from "@t3tools/contracts";
+import {
+  CircleDotIcon,
+  CircleHelpIcon,
+  ClipboardListIcon,
+  CloudIcon,
+  GitPullRequestIcon,
+  MessageSquareIcon,
+  ShieldQuestionIcon,
+  TerminalIcon,
+} from "lucide-react";
 import { useMemo } from "react";
 import { usePrimaryEnvironmentId } from "../environments/primary";
 import {
@@ -11,6 +20,7 @@ import { useGitStatus } from "../lib/gitStatusState";
 import { type AppState, selectProjectByRef, useStore } from "../store";
 import { selectThreadTerminalState, useTerminalStateStore } from "../terminalStateStore";
 import { useUiStateStore } from "../uiStateStore";
+import { cn } from "../lib/utils";
 import { resolveChangeRequestPresentation } from "../sourceControlPresentation";
 import { resolveThreadStatusPill, type ThreadStatusPill } from "./Sidebar.logic";
 import type { SidebarThreadSummary } from "../types";
@@ -30,6 +40,125 @@ export interface TerminalStatusIndicator {
 }
 
 export type ThreadPr = VcsStatusResult["pr"];
+export type ThreadTabIconKind =
+  | "normal"
+  | "working"
+  | "pending-approval"
+  | "awaiting-input"
+  | "plan-ready"
+  | "unread";
+
+export interface ThreadTabIconState {
+  kind: ThreadTabIconKind;
+  label: string;
+  colorClass: string;
+}
+
+const PLAN_READY_COLOR_CLASS = "text-violet-600 dark:text-violet-300/90";
+
+export function resolveThreadTabIconState(input: {
+  status: ThreadStatusPill | null;
+  interactionMode: ProviderInteractionMode;
+}): ThreadTabIconState {
+  const { interactionMode, status } = input;
+
+  if (!status) {
+    return {
+      kind: "normal",
+      label: "Thread",
+      colorClass: "text-muted-foreground",
+    };
+  }
+
+  if (status.label === "Pending Approval") {
+    return {
+      kind: "pending-approval",
+      label: status.label,
+      colorClass: status.colorClass,
+    };
+  }
+
+  if (status.label === "Awaiting Input") {
+    return {
+      kind: "awaiting-input",
+      label: status.label,
+      colorClass: status.colorClass,
+    };
+  }
+
+  if (status.label === "Working" || status.label === "Connecting") {
+    return {
+      kind: "working",
+      label: status.label,
+      colorClass: interactionMode === "plan" ? PLAN_READY_COLOR_CLASS : status.colorClass,
+    };
+  }
+
+  if (status.label === "Plan Ready") {
+    return {
+      kind: "plan-ready",
+      label: status.label,
+      colorClass: status.colorClass,
+    };
+  }
+
+  return {
+    kind: "unread",
+    label: "Unread updates",
+    colorClass: status.colorClass,
+  };
+}
+
+export function ThreadTabStatusIcon({ thread }: { thread: SidebarThreadSummary }) {
+  const threadRef = scopeThreadRef(thread.environmentId, thread.id);
+  const lastVisitedAt = useUiStateStore(
+    (state) => state.threadLastVisitedAtById[scopedThreadKey(threadRef)],
+  );
+  const status = resolveThreadStatusPill({
+    thread: {
+      ...thread,
+      lastVisitedAt,
+    },
+  });
+  const icon = resolveThreadTabIconState({
+    status,
+    interactionMode: thread.interactionMode,
+  });
+  const className = cn("size-3.5 shrink-0", icon.colorClass);
+
+  if (icon.kind === "working") {
+    return (
+      <span
+        title={icon.label}
+        className={cn(
+          "inline-block size-3.5 shrink-0 rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none",
+          icon.colorClass,
+          "animate-spin",
+        )}
+      >
+        <span className="sr-only">{icon.label}</span>
+      </span>
+    );
+  }
+
+  if (icon.kind === "pending-approval") {
+    return <ShieldQuestionIcon aria-label={icon.label} className={className} />;
+  }
+
+  if (icon.kind === "awaiting-input") {
+    return <CircleHelpIcon aria-label={icon.label} className={className} />;
+  }
+
+  if (icon.kind === "plan-ready") {
+    return <ClipboardListIcon aria-label={icon.label} className={className} />;
+  }
+
+  if (icon.kind === "unread") {
+    return <CircleDotIcon aria-label={icon.label} className={className} />;
+  }
+
+  return <MessageSquareIcon aria-label={icon.label} className={className} />;
+}
 
 export function prStatusIndicator(
   pr: ThreadPr,

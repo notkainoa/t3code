@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "events": [
+    {
+      "type": "start",
+      "at": "2026-05-26T05:24:47.872Z",
+      "container": "proof-artifacts-t3code-folder-plus",
+      "image": "proof-artifacts/desktop:0.1.0",
+      "imageSource": "local",
+      "noVncPort": 6081
+    },
+    {
+      "type": "novnc-ready",
+      "at": "2026-05-26T05:24:48.006Z",
+      "url": "http://127.0.0.1:6081/vnc.html"
+    },
+    {
+      "type": "open",
+      "at": "2026-05-26T05:24:48.838Z",
+      "url": "http://localhost:5737/pair#token=[redacted]",
+      "fullscreen": true
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-26T05:25:00.362Z",
+      "label": "host-network-paired",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-folder-plus/screenshots/host-network-paired.png"
+    },
+    {
+      "type": "exec",
+      "at": "2026-05-26T05:25:11.590Z",
+      "command": "sh -s",
+      "stdin": true,
+      "status": 0
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-26T05:25:17.182Z",
+      "label": "paired-after-token-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-folder-plus/screenshots/paired-after-token-entry.png"
+    },
+    {
+      "type": "stop",
+      "at": "2026-05-26T05:28:55.813Z",
+      "container": "proof-artifacts-t3code-folder-plus"
+    }
+  ],
+  "screenshots": [
+    {
+      "label": "host-network-paired",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-folder-plus/screenshots/host-network-paired.png",
+      "capturedAt": "2026-05-26T05:25:00.362Z"
+    },
+    {
+      "label": "paired-after-token-entry",
+      "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-folder-plus/screenshots/paired-after-token-entry.png",
+      "capturedAt": "2026-05-26T05:25:17.182Z"
+    }
+  ],
+  "recordings": [],
+  "name": "t3code-folder-plus",
+  "width": "1280",
+  "height": "800",
+  "project": "/home/ubuntu/github/t3code",
+  "artifacts": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-folder-plus",
+  "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+  "noVncPort": 6081,
+  "noVncListen": "127.0.0.1",
+  "network": "host",
+  "targetUrl": null,
+  "networkInferredFromUrl": false,
+  "browserFullscreen": true,
+  "vncPort": 5901,
+  "container": "proof-artifacts-t3code-folder-plus",
+  "containerUser": "1001:1001",
+  "image": "proof-artifacts/desktop:0.1.0",
+  "imageId": "sha256:6785bf31c1950a4f9839eec9f077eb8de1422e17dfb9cfd723de7a1f567fbad5",
+  "requestedImage": "proof-artifacts/desktop:0.1.0",
+  "imageSource": "local",
+  "startedAt": "2026-05-26T05:24:47.862Z",
+  "stoppedAt": "2026-05-26T05:28:55.812Z"
+}

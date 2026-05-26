@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2026-05-26T17:38:55.826Z",
+  "summary": {
+    "status": "stopped",
+    "startedAt": "2026-05-26T17:36:21.653Z",
+    "stoppedAt": "2026-05-26T17:37:07.491Z",
+    "elapsedMs": 45838,
+    "elapsedLabel": "45.8 s",
+    "targetUrl": "http://127.0.0.1:5734",
+    "network": "host",
+    "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+    "project": "/home/ubuntu/github/t3code",
+    "browserFullscreen": true,
+    "counts": {
+      "screenshots": 2,
+      "recordings": 0,
+      "logs": 0,
+      "events": 7,
+      "failures": 0
+    },
+    "latest": {
+      "screenshot": {
+        "file": "paired-app-after-token.png",
+        "relativePath": "screenshots/paired-app-after-token.png",
+        "size": 96948,
+        "sizeLabel": "94.7 KB",
+        "mtimeMs": 1779817013892.8315,
+        "modifiedAt": "2026-05-26T17:36:53.893Z"
+      },
+      "recording": null
+    },
+    "activeRecording": null,
+    "lastEvent": {
+      "type": "stop",
+      "at": "2026-05-26T17:37:07.491Z",
+      "container": "proof-artifacts-t3code-thread-tab-icons"
+    },
+    "failures": [],
+    "eventCounts": {
+      "start": 1,
+      "novnc-ready": 1,
+      "open": 1,
+      "screenshot": 2,
+      "exec": 1,
+      "stop": 1
+    },
+    "endedAt": "2026-05-26T17:37:07.491Z"
+  },
+  "session": {
+    "schemaVersion": 1,
+    "events": [
+      {
+        "type": "start",
+        "at": "2026-05-26T17:36:21.656Z",
+        "container": "proof-artifacts-t3code-thread-tab-icons",
+        "image": "proof-artifacts/desktop:0.1.0",
+        "imageSource": "local",
+        "noVncPort": 6081
+      },
+      {
+        "type": "novnc-ready",
+        "at": "2026-05-26T17:36:21.971Z",
+        "url": "http://127.0.0.1:6081/vnc.html"
+      },
+      {
+        "type": "open",
+        "at": "2026-05-26T17:36:25.879Z",
+        "url": "http://127.0.0.1:5734/pair#token=[redacted]",
+        "fullscreen": true
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T17:36:31.394Z",
+        "label": "paired-app-initial",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-thread-tab-icons/screenshots/paired-app-initial.png"
+      },
+      {
+        "type": "exec",
+        "at": "2026-05-26T17:36:47.241Z",
+        "command": "sh -s",
+        "stdin": true,
+        "status": 0
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T17:36:53.906Z",
+        "label": "paired-app-after-token",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-thread-tab-icons/screenshots/paired-app-after-token.png"
+      },
+      {
+        "type": "stop",
+        "at": "2026-05-26T17:37:07.491Z",
+        "container": "proof-artifacts-t3code-thread-tab-icons"
+      }
+    ],
+    "screenshots": [
+      {
+        "label": "paired-app-initial",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-thread-tab-icons/screenshots/paired-app-initial.png",
+        "capturedAt": "2026-05-26T17:36:31.394Z"
+      },
+      {
+        "label": "paired-app-after-token",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-thread-tab-icons/screenshots/paired-app-after-token.png",
+        "capturedAt": "2026-05-26T17:36:53.906Z"
+      }
+    ],
+    "recordings": [],
+    "name": "t3code-thread-tab-icons",
+    "width": "1280",
+    "height": "800",
+    "project": "/home/ubuntu/github/t3code",
+    "artifacts": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-thread-tab-icons",
+    "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+    "noVncPort": 6081,
+    "noVncListen": "127.0.0.1",
+    "network": "host",
+    "targetUrl": "http://127.0.0.1:5734",
+    "networkInferredFromUrl": true,
+    "browserFullscreen": true,
+    "vncPort": 5901,
+    "container": "proof-artifacts-t3code-thread-tab-icons",
+    "containerUser": "1001:1001",
+    "image": "proof-artifacts/desktop:0.1.0",
+    "imageId": "sha256:6785bf31c1950a4f9839eec9f077eb8de1422e17dfb9cfd723de7a1f567fbad5",
+    "requestedImage": "proof-artifacts/desktop:0.1.0",
+    "imageSource": "local",
+    "startedAt": "2026-05-26T17:36:21.653Z",
+    "stoppedAt": "2026-05-26T17:37:07.491Z"
+  },
+  "artifacts": {
+    "root": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-thread-tab-icons",
+    "screenshots": [
+      {
+        "file": "paired-app-after-token.png",
+        "relativePath": "screenshots/paired-app-after-token.png",
+        "size": 96948,
+        "sizeLabel": "94.7 KB",
+        "mtimeMs": 1779817013892.8315,
+        "modifiedAt": "2026-05-26T17:36:53.893Z"
+      },
+      {
+        "file": "paired-app-initial.png",
+        "relativePath": "screenshots/paired-app-initial.png",
+        "size": 90833,
+        "sizeLabel": "88.7 KB",
+        "mtimeMs": 1779816991385.5325,
+        "modifiedAt": "2026-05-26T17:36:31.386Z"
+      }
+    ],
+    "recordings": [],
+    "logs": []
+  }
+}
