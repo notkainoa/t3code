@@ -7,6 +7,8 @@ import pkg from "./package.json" with { type: "json" };
 
 const port = Number(process.env.PORT ?? 5733);
 const host = process.env.HOST?.trim() || "localhost";
+const hmrHost = process.env.VITE_HMR_HOST?.trim() || host;
+const hmrClientPort = Number(process.env.VITE_HMR_CLIENT_PORT ?? port);
 const configuredWsUrl = process.env.VITE_WS_URL?.trim();
 const configuredDevProxyTarget = process.env.VITE_DEV_PROXY_TARGET?.trim();
 const configuredHostedAppChannel = process.env.VITE_HOSTED_APP_CHANNEL?.trim() || "";
@@ -55,6 +57,28 @@ function resolveDevProxyTarget(wsUrl: string | undefined): string | undefined {
 }
 
 const devProxyTarget = configuredDevProxyTarget || resolveDevProxyTarget(configuredWsUrl);
+const devProxy = devProxyTarget
+  ? {
+      "/.well-known": {
+        target: devProxyTarget,
+        changeOrigin: true,
+      },
+      "/api": {
+        target: devProxyTarget,
+        changeOrigin: true,
+      },
+      "/attachments": {
+        target: devProxyTarget,
+        changeOrigin: true,
+      },
+      "/ws": {
+        target: devProxyTarget,
+        changeOrigin: true,
+        ws: true,
+      },
+    }
+  : undefined;
+const previewProxy = devProxy ? { proxy: devProxy } : {};
 
 export default defineConfig({
   plugins: [
@@ -93,35 +117,14 @@ export default defineConfig({
     host,
     port,
     strictPort: true,
-    ...(devProxyTarget
-      ? {
-          proxy: {
-            "/.well-known": {
-              target: devProxyTarget,
-              changeOrigin: true,
-            },
-            "/api": {
-              target: devProxyTarget,
-              changeOrigin: true,
-            },
-            "/attachments": {
-              target: devProxyTarget,
-              changeOrigin: true,
-            },
-            "/ws": {
-              target: devProxyTarget,
-              changeOrigin: true,
-              ws: true,
-            },
-          },
-        }
-      : {}),
+    ...(devProxy ? { proxy: devProxy } : {}),
     hmr: {
       // Explicit config so Vite's HMR WebSocket connects reliably
       // inside Electron's BrowserWindow. Vite 8 uses console.debug for
       // connection logs — enable "Verbose" in DevTools to see them.
       protocol: "ws",
-      host,
+      host: hmrHost,
+      clientPort: hmrClientPort,
     },
   },
   build: {
@@ -129,4 +132,5 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: buildSourcemap,
   },
+  preview: previewProxy,
 });

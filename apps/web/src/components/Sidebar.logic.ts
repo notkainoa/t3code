@@ -23,6 +23,12 @@ type SidebarProject = {
   updatedAt?: string | undefined;
 };
 
+export type SidebarProjectMemberLabelInput = {
+  name: string;
+  cwd: string;
+  environmentLabel: string | null;
+};
+
 export type ThreadTraversalDirection = "previous" | "next";
 
 export interface ThreadStatusPill {
@@ -211,6 +217,17 @@ export function resolveSidebarNewThreadSeedContext(input: {
   return {
     envMode: input.defaultEnvMode,
   };
+}
+
+export function formatProjectMemberActionLabel(
+  member: SidebarProjectMemberLabelInput,
+  groupedProjectCount: number,
+): string {
+  if (groupedProjectCount <= 1) {
+    return member.name;
+  }
+
+  return member.environmentLabel ? `${member.environmentLabel} — ${member.cwd}` : member.cwd;
 }
 
 export function orderItemsByPreferredIds<TItem, TId>(input: {

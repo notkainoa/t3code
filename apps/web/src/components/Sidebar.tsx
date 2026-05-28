@@ -4,6 +4,7 @@ import {
   ChevronRightIcon,
   CloudIcon,
   FolderPlusIcon,
+  KanbanIcon,
   SearchIcon,
   SettingsIcon,
   SquarePenIcon,
@@ -159,6 +160,7 @@ import { useThreadSelectionStore } from "../threadSelectionStore";
 import { useCommandPaletteStore } from "../commandPaletteStore";
 import {
   getSidebarThreadIdsToPrewarm,
+  formatProjectMemberActionLabel,
   resolveAdjacentThreadId,
   isContextMenuPointerDown,
   resolveProjectStatusIndicator,
@@ -222,17 +224,6 @@ function clampSidebarThreadPreviewCount(value: number): SidebarThreadPreviewCoun
     MAX_SIDEBAR_THREAD_PREVIEW_COUNT,
     Math.max(MIN_SIDEBAR_THREAD_PREVIEW_COUNT, value),
   ) as SidebarThreadPreviewCount;
-}
-
-function formatProjectMemberActionLabel(
-  member: SidebarProjectGroupMember,
-  groupedProjectCount: number,
-): string {
-  if (groupedProjectCount <= 1) {
-    return member.name;
-  }
-
-  return member.environmentLabel ? `${member.environmentLabel} — ${member.cwd}` : member.cwd;
 }
 
 function projectGroupingModeDescription(mode: SidebarProjectGroupingMode): string {
@@ -1742,6 +1733,23 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
     [createThreadForProjectMember, project.groupedProjectCount, project.memberProjects],
   );
 
+  const handleOpenProjectBoardClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (isMobile) {
+        setOpenMobile(false);
+      }
+      void router.navigate({
+        to: "/project",
+        search: {
+          projectKey: project.projectKey,
+        },
+      });
+    },
+    [isMobile, project.projectKey, router, setOpenMobile],
+  );
+
   const attemptArchiveThread = useCallback(
     async (threadRef: ScopedThreadRef) => {
       try {
@@ -1982,7 +1990,7 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
         <SidebarMenuButton
           ref={isManualProjectSorting ? dragHandleProps?.setActivatorNodeRef : undefined}
           size="sm"
-          className={`gap-2 px-2 py-1.5 pr-8 text-left hover:bg-accent group-hover/project-header:bg-accent group-hover/project-header:text-sidebar-accent-foreground max-sm:pr-14 ${
+          className={`gap-2 px-2 py-1.5 pr-14 text-left hover:bg-accent group-hover/project-header:bg-accent group-hover/project-header:text-sidebar-accent-foreground max-sm:pr-20 ${
             isManualProjectSorting ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
           }`}
           {...(isManualProjectSorting && dragHandleProps ? dragHandleProps.attributes : {})}
@@ -2019,41 +2027,44 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
             <span className="truncate text-xs font-medium text-foreground/90">
               {project.displayName}
             </span>
-            {project.groupedProjectCount > 1 ? (
-              <span className="shrink-0 text-[10px] text-muted-foreground/60">
-                {project.groupedProjectCount} projects
-              </span>
-            ) : null}
           </span>
         </SidebarMenuButton>
-        {/* Environment badge – visible by default, crossfades with the
-            "new thread" button on hover using the same pointer-events +
-            opacity pattern as the thread row archive/timestamp swap. */}
-        {project.environmentPresence === "remote-only" && (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <span
-                  aria-label={
-                    project.environmentPresence === "remote-only"
-                      ? "Remote project"
-                      : "Available in multiple environments"
+        {project.groupedProjectCount > 1 || project.environmentPresence === "remote-only" ? (
+          <span className="pointer-events-none absolute top-1/2 right-1 flex h-5 -translate-y-1/2 items-center justify-end gap-1 text-[10px] text-muted-foreground/60 transition-opacity duration-150 max-sm:pr-12 group-hover/project-header:opacity-0 group-focus-within/project-header:opacity-0">
+            {project.environmentPresence === "remote-only" && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <span
+                      aria-label="Remote project"
+                      className="inline-flex size-5 items-center justify-center rounded-md"
+                    />
                   }
-                  className="pointer-events-none absolute top-1 right-1.5 inline-flex size-5 items-center justify-center rounded-md text-muted-foreground/60 transition-opacity duration-150 max-sm:right-7 group-hover/project-header:opacity-0 group-focus-within/project-header:opacity-0 max-sm:group-hover/project-header:opacity-100 max-sm:group-focus-within/project-header:opacity-100"
-                />
-              }
-            >
-              <CloudIcon className="size-3" />
-            </TooltipTrigger>
-            <TooltipPopup side="top">
-              Remote environment: {project.remoteEnvironmentLabels.join(", ")}
-            </TooltipPopup>
-          </Tooltip>
-        )}
+                >
+                  <CloudIcon className="size-3" />
+                </TooltipTrigger>
+                <TooltipPopup side="top">
+                  Remote environment: {project.remoteEnvironmentLabels.join(", ")}
+                </TooltipPopup>
+              </Tooltip>
+            )}
+            {project.groupedProjectCount > 1 ? (
+              <span>{project.groupedProjectCount} projects</span>
+            ) : null}
+          </span>
+        ) : null}
         <Tooltip>
           <TooltipTrigger
             render={
-              <div className="pointer-events-none absolute top-1 right-1.5 opacity-0 transition-opacity duration-150 max-sm:pointer-events-auto max-sm:opacity-100 group-hover/project-header:pointer-events-auto group-hover/project-header:opacity-100 group-focus-within/project-header:pointer-events-auto group-focus-within/project-header:opacity-100">
+              <div className="pointer-events-none absolute top-1 right-1 flex items-center gap-0.5 opacity-0 transition-opacity duration-150 max-sm:pointer-events-auto max-sm:opacity-100 group-hover/project-header:pointer-events-auto group-hover/project-header:opacity-100 group-focus-within/project-header:pointer-events-auto group-focus-within/project-header:opacity-100">
+                <button
+                  type="button"
+                  aria-label={`Open board for ${project.displayName}`}
+                  className="inline-flex size-5 cursor-pointer items-center justify-center rounded-md text-muted-foreground/60 hover:bg-secondary hover:text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={handleOpenProjectBoardClick}
+                >
+                  <KanbanIcon className="size-3.5" />
+                </button>
                 <button
                   type="button"
                   aria-label={`Create new thread in ${project.displayName}`}
@@ -2067,7 +2078,9 @@ const SidebarProjectItem = memo(function SidebarProjectItem(props: SidebarProjec
             }
           />
           <TooltipPopup side="top">
-            {newThreadShortcutLabel ? `New thread (${newThreadShortcutLabel})` : "New thread"}
+            {newThreadShortcutLabel
+              ? `Board / new thread (${newThreadShortcutLabel})`
+              : "Board / new thread"}
           </TooltipPopup>
         </Tooltip>
       </div>
