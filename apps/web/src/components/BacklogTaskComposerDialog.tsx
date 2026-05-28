@@ -301,6 +301,8 @@ export function BacklogTaskComposerDialog({
       <Dialog open={open} onOpenChange={(nextOpen) => (!nextOpen ? onCancel() : undefined)}>
         <DialogPopup
           showCloseButton={false}
+          bottomStickOnMobile={false}
+          viewportClassName="grid-rows-[1fr_auto_1fr]"
           className="max-w-none border-0 bg-transparent p-0 shadow-none"
         >
           <DialogTitle className="sr-only">Save backlog task</DialogTitle>

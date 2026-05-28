@@ -49,10 +49,12 @@ function DialogViewport({ className, ...props }: DialogPrimitive.Viewport.Props)
 function DialogPopup({
   className,
   children,
+  viewportClassName,
   showCloseButton = true,
   bottomStickOnMobile = true,
   ...props
 }: DialogPrimitive.Popup.Props & {
+  viewportClassName?: string;
   showCloseButton?: boolean;
   bottomStickOnMobile?: boolean;
 }) {
@@ -60,7 +62,10 @@ function DialogPopup({
     <DialogPortal>
       <DialogBackdrop />
       <DialogViewport
-        className={cn(bottomStickOnMobile && "max-sm:grid-rows-[1fr_auto] max-sm:p-0 max-sm:pt-12")}
+        className={cn(
+          bottomStickOnMobile && "max-sm:grid-rows-[1fr_auto] max-sm:p-0 max-sm:pt-12",
+          viewportClassName,
+        )}
       >
         <DialogPrimitive.Popup
           className={cn(
