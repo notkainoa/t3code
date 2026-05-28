@@ -83,18 +83,18 @@ function BacklogTaskCard({
 
 function EmptyBacklogColumnPrompt() {
   return (
-    <div className="flex h-full min-h-56 flex-col items-center justify-center px-4 py-5 text-center">
+    <div className="flex h-full min-h-56 flex-col items-center justify-end px-4 pb-1 pt-16 text-center">
       <div className="rounded-md border border-border/55 bg-background/55 px-3 py-2 shadow-xs/5">
         <p className="text-sm font-medium text-foreground/80">Save tasks here for later.</p>
         <p className="mt-1 text-xs text-muted-foreground/65">They won't run yet.</p>
       </div>
       <svg
         aria-hidden="true"
-        viewBox="0 0 88 116"
-        className="mt-3 h-28 w-22 overflow-visible text-muted-foreground/50"
+        viewBox="0 0 96 152"
+        className="mt-2 h-36 w-24 overflow-visible text-muted-foreground/50"
       >
         <path
-          d="M39 3C72 25 74 65 45 98"
+          d="M38 4C78 30 80 92 48 139"
           fill="none"
           stroke="currentColor"
           strokeDasharray="5 7"
@@ -102,7 +102,7 @@ function EmptyBacklogColumnPrompt() {
           strokeWidth="2"
         />
         <path
-          d="M45 98L35 88M45 98L57 91"
+          d="M48 139L39 127M48 139L62 134"
           fill="none"
           stroke="currentColor"
           strokeLinecap="round"
