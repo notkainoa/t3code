@@ -302,104 +302,102 @@ export function BacklogTaskComposerDialog({
         <DialogPopup
           showCloseButton={false}
           bottomStickOnMobile={false}
-          viewportClassName="grid-rows-[1fr_auto_1fr]"
-          className="max-w-none border-0 bg-transparent p-0 shadow-none"
+          viewportClassName="grid-rows-[1fr_auto_1fr] bg-black/20 backdrop-blur-[2px]"
+          className="w-[min(56rem,calc(100vw-2rem))] max-w-none overflow-visible bg-popover/96 p-3 shadow-[0_24px_80px_-36px_rgba(15,23,42,0.5)] max-sm:w-[calc(100vw-1rem)] sm:p-4"
         >
           <DialogTitle className="sr-only">Save backlog task</DialogTitle>
-          <div className="w-[min(56rem,calc(100vw-2rem))] max-sm:w-[calc(100vw-1rem)]">
-            <div className="relative isolate">
-              <div className="relative z-10">
-                <ChatComposer
-                  formClassName="max-w-none"
-                  composerRef={composerRef}
-                  composerDraftTarget={draftId}
+          <div className="relative isolate">
+            <div className="relative z-10">
+              <ChatComposer
+                formClassName="max-w-none"
+                composerRef={composerRef}
+                composerDraftTarget={draftId}
+                environmentId={draftSession.environmentId}
+                routeKind="draft"
+                routeThreadRef={threadRef}
+                draftId={draftId}
+                activeThreadId={localDraftThread.id}
+                activeThreadEnvironmentId={localDraftThread.environmentId}
+                activeThread={localDraftThread}
+                isServerThread={false}
+                isLocalDraftThread
+                phase="disconnected"
+                isConnecting={false}
+                isSendBusy={false}
+                isPreparingWorktree={false}
+                environmentUnavailable={null}
+                activePendingApproval={null}
+                pendingApprovals={[]}
+                pendingUserInputs={[]}
+                activePendingProgress={null}
+                activePendingResolvedAnswers={null}
+                activePendingIsResponding={false}
+                activePendingDraftAnswers={{}}
+                activePendingQuestionIndex={0}
+                respondingRequestIds={[]}
+                showPlanFollowUpPrompt={false}
+                activeProposedPlan={null}
+                activePlan={null}
+                sidebarProposedPlan={null}
+                planSidebarLabel="Tasks"
+                planSidebarOpen={false}
+                runtimeMode={runtimeMode}
+                interactionMode={interactionMode}
+                lockedProvider={null}
+                providerStatuses={providerStatuses as ServerProvider[]}
+                activeProjectDefaultModelSelection={activeProject.defaultModelSelection}
+                activeThreadModelSelection={localDraftThread.modelSelection}
+                activeThreadActivities={EMPTY_THREAD_ACTIVITIES}
+                idleSubmitLabel="Save"
+                idleSubmitBusyLabel="Saving..."
+                idleSubmitIcon="check"
+                idleSubmitRequiresPrompt
+                resolvedTheme={resolvedTheme}
+                settings={settings}
+                keybindings={keybindings}
+                terminalOpen={false}
+                gitCwd={gitCwd}
+                promptRef={promptRef}
+                composerImagesRef={composerImagesRef}
+                composerTerminalContextsRef={composerTerminalContextsRef}
+                shouldAutoScrollRef={shouldAutoScrollRef}
+                scheduleStickToBottom={() => undefined}
+                onSend={onSave}
+                onInterrupt={() => undefined}
+                onImplementPlanInNewThread={() => undefined}
+                onRespondToApproval={async (
+                  _requestId: ApprovalRequestId,
+                  _decision: ProviderApprovalDecision,
+                ) => undefined}
+                onSelectActivePendingUserInputOption={() => undefined}
+                onAdvanceActivePendingUserInput={() => undefined}
+                onPreviousActivePendingUserInputQuestion={() => undefined}
+                onChangeActivePendingUserInputCustomAnswer={() => undefined}
+                onProviderModelSelect={handleProviderModelSelect}
+                toggleInteractionMode={toggleInteractionMode}
+                handleRuntimeModeChange={handleRuntimeModeChange}
+                handleInteractionModeChange={handleInteractionModeChange}
+                togglePlanSidebar={() => undefined}
+                focusComposer={scheduleComposerFocus}
+                scheduleComposerFocus={scheduleComposerFocus}
+                setThreadError={setThreadError}
+                onExpandImage={setExpandedImage}
+              />
+            </div>
+            {isGitRepo ? (
+              <div className="relative z-0 -mt-4 mx-auto w-[calc(100%-2rem)] max-w-208 rounded-b-[20px] border border-border bg-card/80 pt-4 shadow-sm">
+                <BranchToolbar
                   environmentId={draftSession.environmentId}
-                  routeKind="draft"
-                  routeThreadRef={threadRef}
+                  threadId={draftSession.threadId}
                   draftId={draftId}
-                  activeThreadId={localDraftThread.id}
-                  activeThreadEnvironmentId={localDraftThread.environmentId}
-                  activeThread={localDraftThread}
-                  isServerThread={false}
-                  isLocalDraftThread
-                  phase="disconnected"
-                  isConnecting={false}
-                  isSendBusy={false}
-                  isPreparingWorktree={false}
-                  environmentUnavailable={null}
-                  activePendingApproval={null}
-                  pendingApprovals={[]}
-                  pendingUserInputs={[]}
-                  activePendingProgress={null}
-                  activePendingResolvedAnswers={null}
-                  activePendingIsResponding={false}
-                  activePendingDraftAnswers={{}}
-                  activePendingQuestionIndex={0}
-                  respondingRequestIds={[]}
-                  showPlanFollowUpPrompt={false}
-                  activeProposedPlan={null}
-                  activePlan={null}
-                  sidebarProposedPlan={null}
-                  planSidebarLabel="Tasks"
-                  planSidebarOpen={false}
-                  runtimeMode={runtimeMode}
-                  interactionMode={interactionMode}
-                  lockedProvider={null}
-                  providerStatuses={providerStatuses as ServerProvider[]}
-                  activeProjectDefaultModelSelection={activeProject.defaultModelSelection}
-                  activeThreadModelSelection={localDraftThread.modelSelection}
-                  activeThreadActivities={EMPTY_THREAD_ACTIVITIES}
-                  idleSubmitLabel="Save"
-                  idleSubmitBusyLabel="Saving..."
-                  idleSubmitIcon="check"
-                  idleSubmitRequiresPrompt
-                  resolvedTheme={resolvedTheme}
-                  settings={settings}
-                  keybindings={keybindings}
-                  terminalOpen={false}
-                  gitCwd={gitCwd}
-                  promptRef={promptRef}
-                  composerImagesRef={composerImagesRef}
-                  composerTerminalContextsRef={composerTerminalContextsRef}
-                  shouldAutoScrollRef={shouldAutoScrollRef}
-                  scheduleStickToBottom={() => undefined}
-                  onSend={onSave}
-                  onInterrupt={() => undefined}
-                  onImplementPlanInNewThread={() => undefined}
-                  onRespondToApproval={async (
-                    _requestId: ApprovalRequestId,
-                    _decision: ProviderApprovalDecision,
-                  ) => undefined}
-                  onSelectActivePendingUserInputOption={() => undefined}
-                  onAdvanceActivePendingUserInput={() => undefined}
-                  onPreviousActivePendingUserInputQuestion={() => undefined}
-                  onChangeActivePendingUserInputCustomAnswer={() => undefined}
-                  onProviderModelSelect={handleProviderModelSelect}
-                  toggleInteractionMode={toggleInteractionMode}
-                  handleRuntimeModeChange={handleRuntimeModeChange}
-                  handleInteractionModeChange={handleInteractionModeChange}
-                  togglePlanSidebar={() => undefined}
-                  focusComposer={scheduleComposerFocus}
-                  scheduleComposerFocus={scheduleComposerFocus}
-                  setThreadError={setThreadError}
-                  onExpandImage={setExpandedImage}
+                  onEnvModeChange={onEnvModeChange}
+                  envLocked={false}
+                  onComposerFocusRequest={scheduleComposerFocus}
+                  availableEnvironments={availableEnvironments}
+                  onEnvironmentChange={onEnvironmentChange}
                 />
               </div>
-              {isGitRepo ? (
-                <div className="relative z-0 -mt-4 mx-auto w-[calc(100%-2rem)] max-w-208 rounded-b-[20px] border border-border bg-card/80 pt-4 shadow-sm">
-                  <BranchToolbar
-                    environmentId={draftSession.environmentId}
-                    threadId={draftSession.threadId}
-                    draftId={draftId}
-                    onEnvModeChange={onEnvModeChange}
-                    envLocked={false}
-                    onComposerFocusRequest={scheduleComposerFocus}
-                    availableEnvironments={availableEnvironments}
-                    onEnvironmentChange={onEnvironmentChange}
-                  />
-                </div>
-              ) : null}
-            </div>
+            ) : null}
           </div>
         </DialogPopup>
       </Dialog>

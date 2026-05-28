@@ -81,6 +81,39 @@ function BacklogTaskCard({
   );
 }
 
+function EmptyBacklogColumnPrompt() {
+  return (
+    <div className="flex h-full min-h-56 flex-col items-center justify-center px-4 py-5 text-center">
+      <div className="rounded-md border border-border/55 bg-background/55 px-3 py-2 shadow-xs/5">
+        <p className="text-sm font-medium text-foreground/80">Save tasks here for later.</p>
+        <p className="mt-1 text-xs text-muted-foreground/65">They won't run yet.</p>
+      </div>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 88 116"
+        className="mt-3 h-28 w-22 overflow-visible text-muted-foreground/50"
+      >
+        <path
+          d="M39 3C72 25 74 65 45 98"
+          fill="none"
+          stroke="currentColor"
+          strokeDasharray="5 7"
+          strokeLinecap="round"
+          strokeWidth="2"
+        />
+        <path
+          d="M45 98L35 88M45 98L57 91"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+        />
+      </svg>
+    </div>
+  );
+}
+
 export function KanbanBoard({ project, threads, todoColumnVisible }: KanbanBoardProps) {
   const navigate = useNavigate();
   const sidebarThreadSortOrder = useSettings((settings) => settings.sidebarThreadSortOrder);
@@ -343,7 +376,12 @@ export function KanbanBoard({ project, threads, todoColumnVisible }: KanbanBoard
                 </div>
                 <div className="min-h-0 flex-1 rounded-lg border border-border/55 bg-muted/15 p-2">
                   <div className="flex h-full min-h-0 flex-col gap-2">
-                    <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+                    <div
+                      className={cn(
+                        "min-h-0 flex-1 overflow-y-auto",
+                        itemCount === 0 ? "h-full" : "space-y-2",
+                      )}
+                    >
                       {sectionBacklogTasks.map((task) => (
                         <BacklogTaskCard
                           key={task.id}
@@ -373,9 +411,13 @@ export function KanbanBoard({ project, threads, todoColumnVisible }: KanbanBoard
                         </button>
                       ))}
                       {itemCount === 0 ? (
-                        <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed border-border/55 text-xs text-muted-foreground/45">
-                          {section.id === "todo" ? "No backlog tasks" : "No threads"}
-                        </div>
+                        section.id === "todo" ? (
+                          <EmptyBacklogColumnPrompt />
+                        ) : (
+                          <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed border-border/55 text-xs text-muted-foreground/45">
+                            No threads
+                          </div>
+                        )
                       ) : null}
                     </div>
                     {section.id === "todo" ? (
