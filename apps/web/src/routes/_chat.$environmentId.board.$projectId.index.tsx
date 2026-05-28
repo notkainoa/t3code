@@ -55,7 +55,7 @@ function BoardThreadCard({ thread }: { thread: SidebarThreadSummary }) {
           threadId: thread.id,
         }),
       }}
-      className="rounded-md border border-border/85 bg-card p-3 text-left shadow-xs transition-[background-color,border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-border hover:bg-background hover:shadow-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+      className="rounded-md border border-border/85 bg-card p-3 text-left shadow-xs transition-[background-color,border-color,box-shadow] hover:border-border hover:bg-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -132,7 +132,7 @@ function ProjectBoardIndexRouteView() {
 
               <div className="flex flex-1 flex-col gap-3">
                 {column.threads.length === 0 ? (
-                  <div className="rounded-lg border border-dashed bg-muted/45 px-3 py-6 text-center text-sm text-muted-foreground">
+                  <div className="rounded-md border border-dashed bg-muted/45 px-3 py-6 text-center text-sm text-muted-foreground">
                     No threads in {column.label.toLowerCase()}.
                   </div>
                 ) : (

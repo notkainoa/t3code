@@ -113,7 +113,7 @@ function ProjectTaskDetailRouteView() {
   return (
     <main className="min-h-dvh overflow-hidden bg-background text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-[1650px] flex-col px-4 py-4 sm:px-6">
-        <header className="rounded-xl border bg-card px-4 py-4 shadow-sm sm:px-5">
+        <header className="rounded-md border bg-card px-4 py-4 shadow-xs sm:px-5">
           <div className="flex flex-wrap items-center gap-2">
             {projects.map((project) => {
               const isActive = project.id === projectId;
@@ -160,7 +160,7 @@ function ProjectTaskDetailRouteView() {
         </header>
 
         <div className="mt-4 grid min-h-0 flex-1 gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-          <aside className="min-h-0 overflow-y-auto rounded-xl border bg-card p-3 shadow-sm">
+          <aside className="min-h-0 overflow-y-auto rounded-md border bg-card p-3 shadow-xs">
             <div className="mb-3 border-b px-1 pb-3">
               <h2 className="text-sm font-semibold tracking-wide">Project Tasks</h2>
               <p className="text-xs text-muted-foreground">Grouped by kanban column</p>
@@ -187,7 +187,7 @@ function ProjectTaskDetailRouteView() {
                             taskId: entry.id,
                           }}
                           className={[
-                            "w-full rounded-lg border px-3 py-2 text-left transition-colors",
+                            "w-full rounded-md border px-3 py-2 text-left transition-colors",
                             isActive
                               ? "border-primary bg-primary text-primary-foreground"
                               : "border-input bg-background hover:bg-accent/60",
@@ -211,7 +211,7 @@ function ProjectTaskDetailRouteView() {
             </div>
           </aside>
 
-          <section className="min-h-0 overflow-y-auto rounded-xl border bg-card p-4 shadow-sm sm:p-5">
+          <section className="min-h-0 overflow-y-auto rounded-md border bg-card p-4 shadow-xs sm:p-5">
             {taskQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">Loading task details…</p>
             ) : taskQuery.isError ? (
@@ -222,7 +222,7 @@ function ProjectTaskDetailRouteView() {
               </p>
             ) : task ? (
               <div className="space-y-6">
-                <section className="rounded-xl border bg-background p-4">
+                <section className="rounded-md border bg-background p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
@@ -285,7 +285,7 @@ function ProjectTaskDetailRouteView() {
                 </section>
 
                 <section className="grid gap-4 xl:grid-cols-2">
-                  <div className="rounded-xl border bg-background p-4">
+                  <div className="rounded-md border bg-background p-4">
                     <h3 className="text-sm font-semibold">Task Status</h3>
                     <dl className="mt-3 space-y-3 text-sm">
                       <div className="flex items-start justify-between gap-4">
@@ -317,7 +317,7 @@ function ProjectTaskDetailRouteView() {
                     </dl>
                   </div>
 
-                  <div className="rounded-xl border bg-background p-4">
+                  <div className="rounded-md border bg-background p-4">
                     <h3 className="text-sm font-semibold">Runs</h3>
                     <div className="mt-3 space-y-3">
                       {runsQuery.isLoading ? (
@@ -326,7 +326,7 @@ function ProjectTaskDetailRouteView() {
                         <p className="text-sm text-muted-foreground">No runs recorded yet.</p>
                       ) : (
                         taskRuns.map((run) => (
-                          <article key={run.id} className="rounded-lg border bg-muted/30 p-3">
+                          <article key={run.id} className="rounded-md border bg-muted/30 p-3">
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className="text-xs font-medium text-muted-foreground">
@@ -374,7 +374,7 @@ function ProjectTaskDetailRouteView() {
                               </div>
                             </dl>
                             {run.verification ? (
-                              <div className="mt-3 rounded-lg border bg-background p-3">
+                              <div className="mt-3 rounded-md border bg-background p-3">
                                 <div className="flex items-center justify-between gap-3">
                                   <h4 className="text-xs font-semibold tracking-[0.14em] uppercase">
                                     Verification
@@ -414,7 +414,7 @@ function ProjectTaskDetailRouteView() {
                               </div>
                             ) : null}
                             {run.artifacts.length > 0 ? (
-                              <div className="mt-3 rounded-lg border bg-background p-3">
+                              <div className="mt-3 rounded-md border bg-background p-3">
                                 <div className="flex items-center justify-between gap-3">
                                   <h4 className="text-xs font-semibold tracking-[0.14em] uppercase">
                                     Artifacts
