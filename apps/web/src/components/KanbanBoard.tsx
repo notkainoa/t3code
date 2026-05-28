@@ -83,7 +83,7 @@ function BacklogTaskCard({
 
 function EmptyBacklogColumnPrompt() {
   return (
-    <div className="flex h-full min-h-56 flex-col items-center justify-end px-4 pb-1 pt-16 text-center">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-end px-4 pb-1 pt-8 text-center">
       <div className="rounded-md border border-border/55 bg-background/55 px-3 py-2 shadow-xs/5">
         <p className="text-sm font-medium text-foreground/80">Save tasks here for later.</p>
         <p className="mt-1 text-xs text-muted-foreground/65">They won't run yet.</p>
@@ -412,7 +412,12 @@ export function KanbanBoard({ project, threads, todoColumnVisible }: KanbanBoard
                       ))}
                       {itemCount === 0 ? (
                         section.id === "todo" ? (
-                          <EmptyBacklogColumnPrompt />
+                          <div className="flex h-full min-h-0 flex-col">
+                            <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed border-border/55 text-xs text-muted-foreground/45">
+                              No backlog tasks
+                            </div>
+                            <EmptyBacklogColumnPrompt />
+                          </div>
                         ) : (
                           <div className="flex min-h-28 items-center justify-center rounded-md border border-dashed border-border/55 text-xs text-muted-foreground/45">
                             No threads
