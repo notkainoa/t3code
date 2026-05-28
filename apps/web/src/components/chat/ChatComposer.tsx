@@ -302,6 +302,9 @@ const ComposerFooterPrimaryActions = memo(function ComposerFooterPrimaryActions(
   isConnecting: boolean;
   isEnvironmentUnavailable: boolean;
   hasSendableContent: boolean;
+  idleSubmitLabel?: string;
+  idleSubmitBusyLabel?: string;
+  idleSubmitIcon?: "check" | "send";
   preserveComposerFocusOnPointerDown?: boolean;
   onPreviousPendingQuestion: () => void;
   onInterrupt: () => void;
@@ -324,6 +327,9 @@ const ComposerFooterPrimaryActions = memo(function ComposerFooterPrimaryActions(
         isEnvironmentUnavailable={props.isEnvironmentUnavailable}
         isPreparingWorktree={props.isPreparingWorktree}
         hasSendableContent={props.hasSendableContent}
+        {...(props.idleSubmitLabel ? { idleSubmitLabel: props.idleSubmitLabel } : {})}
+        {...(props.idleSubmitBusyLabel ? { idleSubmitBusyLabel: props.idleSubmitBusyLabel } : {})}
+        {...(props.idleSubmitIcon ? { idleSubmitIcon: props.idleSubmitIcon } : {})}
         preserveComposerFocusOnPointerDown={props.preserveComposerFocusOnPointerDown ?? false}
         onPreviousPendingQuestion={props.onPreviousPendingQuestion}
         onInterrupt={props.onInterrupt}
@@ -376,6 +382,7 @@ export interface ChatComposerHandle {
 // --------------------------------------------------------------------------
 
 export interface ChatComposerProps {
+  formClassName?: string;
   composerDraftTarget: ScopedThreadRef | DraftId;
   environmentId: EnvironmentId;
   routeKind: "server" | "draft";
@@ -438,6 +445,10 @@ export interface ChatComposerProps {
   activeThreadActivities: Thread["activities"] | undefined;
 
   // Misc
+  idleSubmitLabel?: string;
+  idleSubmitBusyLabel?: string;
+  idleSubmitIcon?: "check" | "send";
+  idleSubmitRequiresPrompt?: boolean;
   resolvedTheme: "light" | "dark";
   settings: UnifiedSettings;
   keybindings: ResolvedKeybindingsConfig;
@@ -492,6 +503,7 @@ export interface ChatComposerProps {
 export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps) {
   const {
     composerDraftTarget,
+    formClassName,
     environmentId,
     routeKind,
     routeThreadRef,
@@ -531,6 +543,10 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     resolvedTheme,
     settings,
     keybindings,
+    idleSubmitLabel,
+    idleSubmitBusyLabel,
+    idleSubmitIcon,
+    idleSubmitRequiresPrompt = false,
     terminalOpen,
     gitCwd,
     promptRef,
@@ -826,6 +842,9 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
       }),
     [composerImages.length, composerTerminalContexts, prompt],
   );
+  const idleSubmitHasRequiredContent = idleSubmitRequiresPrompt
+    ? composerSendState.trimmedPrompt.length > 0
+    : composerSendState.hasSendableContent;
 
   // ------------------------------------------------------------------
   // Derived: composer trigger / menu
@@ -970,12 +989,13 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     if (showPlanFollowUpPrompt) {
       return prompt.trim().length > 0 ? "plan:refine" : "plan:implement";
     }
-    return `idle:${composerSendState.hasSendableContent}:${isSendBusy}:${isConnecting}:${isPreparingWorktree}`;
+    return `idle:${idleSubmitHasRequiredContent}:${isSendBusy}:${isConnecting}:${isPreparingWorktree}:${idleSubmitLabel ?? ""}`;
   }, [
     activePendingIsResponding,
     activePendingProgress,
-    composerSendState.hasSendableContent,
+    idleSubmitHasRequiredContent,
     isConnecting,
+    idleSubmitLabel,
     isPreparingWorktree,
     isSendBusy,
     phase,
@@ -1050,8 +1070,8 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     [activePendingIsResponding, activePendingProgress, activePendingResolvedAnswers],
   );
   const collapsedComposerPrimaryActionDisabled =
-    phase === "running" || isSendBusy || isConnecting || !composerSendState.hasSendableContent;
-  const collapsedComposerPrimaryActionLabel = "Send message";
+    phase === "running" || isSendBusy || isConnecting || !idleSubmitHasRequiredContent;
+  const collapsedComposerPrimaryActionLabel = idleSubmitLabel ?? "Send message";
   const showMobilePendingAnswerActions =
     isMobileViewport && !isComposerCollapsedMobile && pendingPrimaryAction !== null;
 
@@ -1942,7 +1962,7 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     <form
       ref={composerFormRef}
       onSubmit={submitComposer}
-      className="mx-auto w-full min-w-0 max-w-208"
+      className={cn("mx-auto w-full min-w-0 max-w-208", formClassName)}
       data-chat-composer-form="true"
     >
       <div
@@ -2076,6 +2096,9 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                       isEnvironmentUnavailable={environmentUnavailable !== null}
                       isPreparingWorktree={false}
                       hasSendableContent={false}
+                      {...(idleSubmitLabel ? { idleSubmitLabel } : {})}
+                      {...(idleSubmitBusyLabel ? { idleSubmitBusyLabel } : {})}
+                      {...(idleSubmitIcon ? { idleSubmitIcon } : {})}
                       preserveComposerFocusOnPointerDown
                       onPreviousPendingQuestion={onPreviousActivePendingUserInputQuestion}
                       onInterrupt={handleInterruptPrimaryAction}
@@ -2285,6 +2308,9 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                     isEnvironmentUnavailable={environmentUnavailable !== null}
                     isPreparingWorktree={false}
                     hasSendableContent={false}
+                    {...(idleSubmitLabel ? { idleSubmitLabel } : {})}
+                    {...(idleSubmitBusyLabel ? { idleSubmitBusyLabel } : {})}
+                    {...(idleSubmitIcon ? { idleSubmitIcon } : {})}
                     preserveComposerFocusOnPointerDown
                     onPreviousPendingQuestion={onPreviousActivePendingUserInputQuestion}
                     onInterrupt={handleInterruptPrimaryAction}
@@ -2392,7 +2418,10 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
                   isConnecting={isConnecting}
                   isEnvironmentUnavailable={environmentUnavailable !== null}
                   isPreparingWorktree={isPreparingWorktree}
-                  hasSendableContent={composerSendState.hasSendableContent}
+                  hasSendableContent={idleSubmitHasRequiredContent}
+                  {...(idleSubmitLabel ? { idleSubmitLabel } : {})}
+                  {...(idleSubmitBusyLabel ? { idleSubmitBusyLabel } : {})}
+                  {...(idleSubmitIcon ? { idleSubmitIcon } : {})}
                   preserveComposerFocusOnPointerDown={isMobileViewport}
                   onPreviousPendingQuestion={onPreviousActivePendingUserInputQuestion}
                   onInterrupt={handleInterruptPrimaryAction}

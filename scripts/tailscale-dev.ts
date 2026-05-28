@@ -5,11 +5,14 @@ import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import * as NodeNet from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const WEB_PORT = Number(process.env.T3CODE_TAILSCALE_WEB_PORT ?? "5734");
-const SERVER_PORT = Number(process.env.T3CODE_TAILSCALE_SERVER_PORT ?? "13774");
+const MAX_PORT = 65_535;
+const PREFERRED_WEB_PORT = readPreferredPort("T3CODE_TAILSCALE_WEB_PORT", 5_734);
+const PREFERRED_SERVER_PORT = readPreferredPort("T3CODE_TAILSCALE_SERVER_PORT", 13_774);
+const PORT_PROBE_HOSTS = ["127.0.0.1", "0.0.0.0", "::1", "::"] as const;
 const PAIRING_TTL = process.env.T3CODE_TAILSCALE_PAIRING_TTL ?? "30m";
 const WEB_MODE =
   process.env.T3CODE_TAILSCALE_WEB_MODE?.trim().toLowerCase() === "preview" ? "preview" : "dev";
@@ -40,6 +43,15 @@ function log(message: string) {
 function fail(message: string): never {
   process.stderr.write(`[tailscale-dev] ${message}\n`);
   process.exit(1);
+}
+
+function readPreferredPort(name: string, fallback: number) {
+  const raw = process.env[name]?.trim();
+  const port = raw ? Number(raw) : fallback;
+  if (!Number.isInteger(port) || port < 1 || port > MAX_PORT) {
+    fail(`${name} must be an integer port between 1 and ${MAX_PORT}. Received: ${raw ?? port}`);
+  }
+  return port;
 }
 
 function run(
@@ -136,21 +148,7 @@ function removeRunState() {
   }
 }
 
-function stopPid(pid: number, label: string) {
-  if (pid === process.pid || !isProcessRunning(pid)) {
-    return;
-  }
-
-  const command = processCommand(pid);
-  log(`Stopping previous ${label} pid=${pid}${command ? ` command=${command}` : ""}`);
-  try {
-    process.kill(pid, "SIGTERM");
-  } catch {
-    // Process already exited.
-  }
-}
-
-function stopPreviousRunForRepo() {
+function removeStaleRunStateForRepo() {
   const state = readRunState();
   if (!state) {
     return;
@@ -159,37 +157,7 @@ function stopPreviousRunForRepo() {
   const trackedPids = new Set([state.pid, ...state.childPids]);
   if ([...trackedPids].every((pid) => !isProcessRunning(pid))) {
     rmSync(RUN_STATE_PATH, { force: true });
-    return;
   }
-
-  log(`Replacing previous Tailscale dev server for ${REPO_ROOT}`);
-  for (const pid of state.childPids) {
-    stopPid(pid, "child");
-  }
-  stopPid(state.pid, "runner");
-
-  const deadline = Date.now() + 5_000;
-  while (Date.now() < deadline) {
-    if ([...trackedPids].every((pid) => !isProcessRunning(pid))) {
-      rmSync(RUN_STATE_PATH, { force: true });
-      return;
-    }
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
-  }
-
-  for (const pid of trackedPids) {
-    if (pid === process.pid || !isProcessRunning(pid)) {
-      continue;
-    }
-    log(`Force stopping previous run pid=${pid}`);
-    try {
-      process.kill(pid, "SIGKILL");
-    } catch {
-      // Process already exited.
-    }
-  }
-
-  rmSync(RUN_STATE_PATH, { force: true });
 }
 
 function readTailscaleIp() {
@@ -204,64 +172,73 @@ function readTailscaleIp() {
   return ip;
 }
 
-function processCommand(pid: number) {
-  const result = spawnSync("ps", ["-p", String(pid), "-o", "command="], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
+function isErrnoExceptionWithCode(cause: unknown): cause is { readonly code: string } {
+  return (
+    typeof cause === "object" && cause !== null && "code" in cause && typeof cause.code === "string"
+  );
+}
+
+function canListenOnHost(port: number, host: string) {
+  return new Promise<boolean>((resolve) => {
+    const server = NodeNet.createServer();
+    let settled = false;
+
+    const settle = (available: boolean) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      resolve(available);
+    };
+
+    server.unref();
+    server.once("error", (cause) => {
+      if (isErrnoExceptionWithCode(cause) && cause.code === "EADDRNOTAVAIL") {
+        settle(true);
+        return;
+      }
+      settle(false);
+    });
+    server.once("listening", () => {
+      server.close(() => settle(true));
+    });
+    try {
+      server.listen({ host, port });
+    } catch {
+      settle(false);
+    }
   });
-  return result.status === 0 ? (result.stdout ?? "").trim() : "";
 }
 
-function parseListeningPids(port: number) {
-  const output = runQuiet("ss", ["-ltnp"]);
-  const pids = new Set<number>();
-  for (const line of output.split("\n")) {
-    if (!line.includes(`:${port} `) && !line.includes(`:${port}\t`)) {
-      continue;
-    }
-    for (const match of line.matchAll(/pid=(\d+)/g)) {
-      pids.add(Number(match[1]));
+async function isPortAvailable(port: number) {
+  for (const host of PORT_PROBE_HOSTS) {
+    if (!(await canListenOnHost(port, host))) {
+      return false;
     }
   }
-  return [...pids];
+  return true;
 }
 
-function stopDefaultPortListeners() {
-  const pids = new Set([...parseListeningPids(WEB_PORT), ...parseListeningPids(SERVER_PORT)]);
-  if (pids.size === 0) {
-    return;
-  }
+async function findAvailableTailPorts() {
+  for (let offset = 0; ; offset += 1) {
+    const webPort = PREFERRED_WEB_PORT + offset;
+    const serverPort = PREFERRED_SERVER_PORT + offset;
+    if (webPort > MAX_PORT || serverPort > MAX_PORT) {
+      break;
+    }
 
-  for (const pid of pids) {
-    const command = processCommand(pid);
-    log(`Stopping existing listener pid=${pid} command=${command}`);
-    try {
-      process.kill(pid, "SIGTERM");
-    } catch {
-      // Process already exited.
+    const [webAvailable, serverAvailable] = await Promise.all([
+      isPortAvailable(webPort),
+      isPortAvailable(serverPort),
+    ]);
+    if (webAvailable && serverAvailable) {
+      return { webPort, serverPort };
     }
   }
 
-  const deadline = Date.now() + 5_000;
-  while (Date.now() < deadline) {
-    const remaining = [...parseListeningPids(WEB_PORT), ...parseListeningPids(SERVER_PORT)];
-    if (remaining.length === 0) {
-      return;
-    }
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
-  }
-
-  for (const pid of new Set([
-    ...parseListeningPids(WEB_PORT),
-    ...parseListeningPids(SERVER_PORT),
-  ])) {
-    log(`Force stopping existing listener pid=${pid}`);
-    try {
-      process.kill(pid, "SIGKILL");
-    } catch {
-      // Process already exited.
-    }
-  }
+  fail(
+    `No available Tailscale dev port pair found from web=${PREFERRED_WEB_PORT} server=${PREFERRED_SERVER_PORT}`,
+  );
 }
 
 function startChild(
@@ -328,7 +305,7 @@ function waitForUrl(url: string, description: string) {
   fail(`Timed out waiting for ${description}: ${String(lastError)}`);
 }
 
-function createPairingToken(tailscaleIp: string) {
+function createPairingToken(tailscaleIp: string, webPort: number) {
   const output = runQuiet("node", [
     "apps/server/src/bin.ts",
     "auth",
@@ -337,9 +314,9 @@ function createPairingToken(tailscaleIp: string) {
     "--base-dir",
     T3CODE_HOME,
     "--dev-url",
-    `http://${tailscaleIp}:${WEB_PORT}`,
+    `http://${tailscaleIp}:${webPort}`,
     "--base-url",
-    `http://${tailscaleIp}:${WEB_PORT}`,
+    `http://${tailscaleIp}:${webPort}`,
     "--ttl",
     PAIRING_TTL,
     "--json",
@@ -378,26 +355,27 @@ function shutdown(reason: string, exitCode = 0) {
 }
 
 async function main() {
-  stopPreviousRunForRepo();
+  removeStaleRunStateForRepo();
   writeRunState();
 
   const tailscaleIp = readTailscaleIp();
-  const webUrl = `http://${tailscaleIp}:${WEB_PORT}`;
-  const backendUrl = `http://${tailscaleIp}:${SERVER_PORT}`;
+  const { webPort, serverPort } = await findAvailableTailPorts();
+  const webUrl = `http://${tailscaleIp}:${webPort}`;
+  const backendUrl = `http://${tailscaleIp}:${serverPort}`;
 
   log(`Tailscale IP: ${tailscaleIp}`);
-  stopDefaultPortListeners();
+  log(`Selected ports: web=${webPort} server=${serverPort}`);
 
   const webEnv = {
     ...process.env,
     HOST: "0.0.0.0",
-    PORT: String(WEB_PORT),
+    PORT: String(webPort),
     VITE_DEV_PROXY_TARGET: backendUrl,
     VITE_DEV_SERVER_URL: webUrl,
-    VITE_HMR_CLIENT_PORT: String(WEB_PORT),
+    VITE_HMR_CLIENT_PORT: String(webPort),
     VITE_HMR_HOST: tailscaleIp,
     VITE_HTTP_URL: webUrl,
-    VITE_WS_URL: `ws://${tailscaleIp}:${WEB_PORT}`,
+    VITE_WS_URL: `ws://${tailscaleIp}:${webPort}`,
   };
   if (WEB_MODE === "preview") {
     log("Building web bundle for Tailscale URLs...");
@@ -411,7 +389,7 @@ async function main() {
     T3CODE_HOME,
     T3CODE_MODE: "web",
     T3CODE_HOST: "0.0.0.0",
-    T3CODE_PORT: String(SERVER_PORT),
+    T3CODE_PORT: String(serverPort),
     VITE_DEV_SERVER_URL: webUrl,
     T3CODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD: "1",
   };
@@ -429,7 +407,7 @@ async function main() {
       "--host",
       "0.0.0.0",
       "--port",
-      String(WEB_PORT),
+      String(webPort),
       "--strictPort",
     ],
     {
@@ -441,7 +419,7 @@ async function main() {
   waitForUrl(webUrl, "web UI over Tailscale");
   waitForUrl(`${backendUrl}/api/auth/session`, "backend over Tailscale");
 
-  const pairing = createPairingToken(tailscaleIp);
+  const pairing = createPairingToken(tailscaleIp, webPort);
   process.stdout.write(`
 T3 Code is running over Tailscale.
 

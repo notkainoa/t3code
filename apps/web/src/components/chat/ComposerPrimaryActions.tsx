@@ -1,5 +1,5 @@
 import { memo, type PointerEventHandler } from "react";
-import { ChevronDownIcon, ChevronLeftIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, ChevronLeftIcon } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Button } from "../ui/button";
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from "../ui/menu";
@@ -23,6 +23,9 @@ interface ComposerPrimaryActionsProps {
   isEnvironmentUnavailable: boolean;
   isPreparingWorktree: boolean;
   hasSendableContent: boolean;
+  idleSubmitLabel?: string;
+  idleSubmitBusyLabel?: string;
+  idleSubmitIcon?: "check" | "send";
   preserveComposerFocusOnPointerDown?: boolean;
   onPreviousPendingQuestion: () => void;
   onInterrupt: () => void;
@@ -62,6 +65,9 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
   isEnvironmentUnavailable,
   isPreparingWorktree,
   hasSendableContent,
+  idleSubmitLabel,
+  idleSubmitBusyLabel,
+  idleSubmitIcon = "send",
   preserveComposerFocusOnPointerDown = false,
   onPreviousPendingQuestion,
   onInterrupt,
@@ -192,23 +198,63 @@ export const ComposerPrimaryActions = memo(function ComposerPrimaryActions({
     );
   }
 
+  const idleSubmitDisabled =
+    isSendBusy || isConnecting || isEnvironmentUnavailable || !hasSendableContent;
+  const idleSubmitAriaLabel = isEnvironmentUnavailable
+    ? "Environment disconnected"
+    : isConnecting
+      ? "Connecting"
+      : isPreparingWorktree
+        ? "Preparing worktree"
+        : isSendBusy
+          ? (idleSubmitBusyLabel ?? "Sending")
+          : (idleSubmitLabel ?? "Send message");
+
+  if (idleSubmitLabel) {
+    const showSpinner = isConnecting || isSendBusy;
+    return (
+      <Button
+        type="submit"
+        size="sm"
+        className={cn("rounded-full", compact ? "h-9 px-3 sm:h-8" : "h-9 px-4 sm:h-8")}
+        {...pointerFocusProps}
+        disabled={idleSubmitDisabled}
+        aria-label={idleSubmitAriaLabel}
+      >
+        {showSpinner ? (
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            className="animate-spin"
+            aria-hidden="true"
+          >
+            <circle
+              cx="7"
+              cy="7"
+              r="5.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray="20 12"
+            />
+          </svg>
+        ) : idleSubmitIcon === "check" ? (
+          <CheckIcon className="size-3.5" />
+        ) : null}
+        {showSpinner ? (idleSubmitBusyLabel ?? "Saving...") : idleSubmitLabel}
+      </Button>
+    );
+  }
+
   return (
     <button
       type="submit"
       className="flex h-9 w-9 enabled:cursor-pointer items-center justify-center rounded-full bg-primary/90 text-primary-foreground transition-all duration-150 hover:bg-primary hover:scale-105 disabled:pointer-events-none disabled:opacity-30 disabled:hover:scale-100 sm:h-8 sm:w-8"
       {...pointerFocusProps}
-      disabled={isSendBusy || isConnecting || isEnvironmentUnavailable || !hasSendableContent}
-      aria-label={
-        isEnvironmentUnavailable
-          ? "Environment disconnected"
-          : isConnecting
-            ? "Connecting"
-            : isPreparingWorktree
-              ? "Preparing worktree"
-              : isSendBusy
-                ? "Sending"
-                : "Send message"
-      }
+      disabled={idleSubmitDisabled}
+      aria-label={idleSubmitAriaLabel}
     >
       {isConnecting || isSendBusy ? (
         <svg

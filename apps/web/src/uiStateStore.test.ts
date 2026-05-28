@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearThreadUi,
   hydratePersistedProjectState,
+  markThreadCompletionUnread,
   markThreadVisited,
   markThreadUnread,
   PERSISTED_STATE_KEY,
@@ -11,6 +12,7 @@ import {
   persistState,
   reorderProjects,
   setDefaultAdvertisedEndpointKey,
+  setKanbanTodoColumnVisible,
   setProjectExpanded,
   setThreadChangedFilesExpanded,
   syncProjects,
@@ -25,6 +27,7 @@ function makeUiState(overrides: Partial<UiState> = {}): UiState {
     threadLastVisitedAtById: {},
     threadChangedFilesExpandedById: {},
     defaultAdvertisedEndpointKey: null,
+    kanbanTodoColumnVisible: true,
     ...overrides,
   };
 }
@@ -79,6 +82,32 @@ describe("uiStateStore pure functions", () => {
     expect(next).toBe(initialState);
   });
 
+  it("markThreadCompletionUnread does not move a read completion backwards", () => {
+    const threadId = ThreadId.make("thread-1");
+    const initialState = makeUiState({
+      threadLastVisitedAtById: {
+        [threadId]: "2026-02-25T12:35:00.000Z",
+      },
+    });
+
+    const next = markThreadCompletionUnread(initialState, threadId, "2026-02-25T12:30:00.000Z");
+
+    expect(next).toBe(initialState);
+  });
+
+  it("markThreadCompletionUnread marks newly completed unseen work unread", () => {
+    const threadId = ThreadId.make("thread-1");
+    const initialState = makeUiState({
+      threadLastVisitedAtById: {
+        [threadId]: "2026-02-25T12:25:00.000Z",
+      },
+    });
+
+    const next = markThreadCompletionUnread(initialState, threadId, "2026-02-25T12:30:00.000Z");
+
+    expect(next.threadLastVisitedAtById[threadId]).toBe("2026-02-25T12:29:59.999Z");
+  });
+
   it("reorderProjects moves a project to a target index", () => {
     const project1 = ProjectId.make("project-1");
     const project2 = ProjectId.make("project-2");
@@ -113,6 +142,18 @@ describe("uiStateStore pure functions", () => {
     expect(setDefaultAdvertisedEndpointKey(next, "desktop-core:lan:http")).toBe(next);
     expect(setDefaultAdvertisedEndpointKey(next, "")).toMatchObject({
       defaultAdvertisedEndpointKey: null,
+    });
+  });
+
+  it("setKanbanTodoColumnVisible stores the board todo column preference", () => {
+    const initialState = makeUiState();
+
+    const next = setKanbanTodoColumnVisible(initialState, false);
+
+    expect(next.kanbanTodoColumnVisible).toBe(false);
+    expect(setKanbanTodoColumnVisible(next, false)).toBe(next);
+    expect(setKanbanTodoColumnVisible(next, true)).toMatchObject({
+      kanbanTodoColumnVisible: true,
     });
   });
 
@@ -382,6 +423,26 @@ describe("uiStateStore pure functions", () => {
     });
   });
 
+  it("syncThreads does not overwrite existing visit state with a newer snapshot seed", () => {
+    const thread1 = ThreadId.make("thread-1");
+    const initialState = makeUiState({
+      threadLastVisitedAtById: {
+        [thread1]: "2026-02-25T12:29:59.999Z",
+      },
+    });
+
+    const next = syncThreads(initialState, [
+      {
+        key: thread1,
+        seedVisitedAt: "2026-02-25T12:35:00.000Z",
+      },
+    ]);
+
+    expect(next.threadLastVisitedAtById).toEqual({
+      [thread1]: "2026-02-25T12:29:59.999Z",
+    });
+  });
+
   it("setProjectExpanded updates expansion without touching order", () => {
     const project1 = ProjectId.make("project-1");
     const initialState = makeUiState({
@@ -577,6 +638,35 @@ describe("uiStateStore persistence round-trip", () => {
       localStorageStub.getItem(PERSISTED_STATE_KEY) ?? "{}",
     ) as PersistedUiState;
     expect(persisted.defaultAdvertisedEndpointKey).toBe("desktop-core:lan:http");
+  });
+
+  it("persists thread visit timestamps across restart", () => {
+    const threadId = ThreadId.make("thread-1");
+    const state = makeUiState({
+      threadLastVisitedAtById: {
+        [threadId]: "2026-02-25T12:29:59.999Z",
+      },
+    });
+
+    persistState(state);
+
+    const persisted = JSON.parse(
+      localStorageStub.getItem(PERSISTED_STATE_KEY) ?? "{}",
+    ) as PersistedUiState;
+    expect(persisted.threadLastVisitedAtById).toEqual({
+      [threadId]: "2026-02-25T12:29:59.999Z",
+    });
+  });
+
+  it("persists the kanban todo column preference", () => {
+    const state = setKanbanTodoColumnVisible(makeUiState(), false);
+
+    persistState(state);
+
+    const persisted = JSON.parse(
+      localStorageStub.getItem(PERSISTED_STATE_KEY) ?? "{}",
+    ) as PersistedUiState;
+    expect(persisted.kanbanTodoColumnVisible).toBe(false);
   });
 
   it("preserves expand state across restart when project's logical key changes", () => {

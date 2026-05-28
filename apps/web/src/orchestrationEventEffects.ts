@@ -4,6 +4,10 @@ export interface OrchestrationBatchEffects {
   promoteDraftThreadIds: ThreadId[];
   clearDeletedThreadIds: ThreadId[];
   removeTerminalStateThreadIds: ThreadId[];
+  markUnreadTurnCompletions: Array<{
+    threadId: ThreadId;
+    completedAt: string;
+  }>;
   needsProviderInvalidation: boolean;
 }
 
@@ -18,11 +22,17 @@ export function deriveOrchestrationBatchEffects(
       removeTerminalState: boolean;
     }
   >();
+  const unreadCompletionByThreadId = new Map<ThreadId, string>();
   let needsProviderInvalidation = false;
 
   for (const event of events) {
     switch (event.type) {
-      case "thread.turn-diff-completed":
+      case "thread.turn-diff-completed": {
+        unreadCompletionByThreadId.set(event.payload.threadId, event.payload.completedAt);
+        needsProviderInvalidation = true;
+        break;
+      }
+
       case "thread.reverted": {
         needsProviderInvalidation = true;
         break;
@@ -38,6 +48,7 @@ export function deriveOrchestrationBatchEffects(
       }
 
       case "thread.deleted": {
+        unreadCompletionByThreadId.delete(event.payload.threadId);
         threadLifecycleEffects.set(event.payload.threadId, {
           clearPromotedDraft: false,
           clearDeletedThread: true,
@@ -89,6 +100,10 @@ export function deriveOrchestrationBatchEffects(
     promoteDraftThreadIds,
     clearDeletedThreadIds,
     removeTerminalStateThreadIds,
+    markUnreadTurnCompletions: [...unreadCompletionByThreadId].map(([threadId, completedAt]) => ({
+      threadId,
+      completedAt,
+    })),
     needsProviderInvalidation,
   };
 }

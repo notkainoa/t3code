@@ -53,7 +53,7 @@ describe("buildThreadSections", () => {
   it("funnels thread statuses into the kanban columns", () => {
     const sections = buildThreadSections({
       threads: [
-        makeThread("todo", {
+        makeThread("plan-ready", {
           interactionMode: "plan",
           latestTurn: makeLatestTurn(),
           hasActionableProposedPlan: true,
@@ -85,6 +85,10 @@ describe("buildThreadSections", () => {
       ],
       lastVisitedAtByThreadKey: new Map([
         [
+          scopedThreadKey(scopeThreadRef(environmentId, ThreadId.make("plan-ready"))),
+          "2026-03-09T10:06:00.000Z",
+        ],
+        [
           scopedThreadKey(scopeThreadRef(environmentId, ThreadId.make("unread"))),
           "2026-03-09T10:04:00.000Z",
         ],
@@ -93,18 +97,49 @@ describe("buildThreadSections", () => {
     }).sections;
 
     expect(sections.map((section) => [section.id, section.label])).toEqual([
-      ["todo", "Todo"],
+      ["todo", "Backlog"],
       ["in-progress", "In Progress"],
       ["needs-input", "Needs Input"],
       ["unread", "Unread"],
       ["done", "Done"],
     ]);
     expect(sections.map((section) => section.threads.map((thread) => thread.title))).toEqual([
-      ["todo"],
+      [],
       ["in-progress"],
-      ["needs-input"],
+      ["plan-ready", "needs-input"],
       ["unread"],
       ["done"],
     ]);
+  });
+
+  it("prioritizes unread over plan-ready when the latest completion has not been seen", () => {
+    const sections = buildThreadSections({
+      threads: [
+        makeThread("plan-unread", {
+          interactionMode: "plan",
+          latestTurn: makeLatestTurn(),
+          hasActionableProposedPlan: true,
+          session: {
+            provider: ProviderDriverKind.make("codex"),
+            status: "ready",
+            createdAt: "2026-03-09T10:00:00.000Z",
+            updatedAt: "2026-03-09T10:00:00.000Z",
+            orchestrationStatus: "ready",
+          },
+        }),
+      ],
+      lastVisitedAtByThreadKey: new Map([
+        [
+          scopedThreadKey(scopeThreadRef(environmentId, ThreadId.make("plan-unread"))),
+          "2026-03-09T10:04:00.000Z",
+        ],
+      ]),
+      sortOrder: "created_at",
+    }).sections;
+
+    expect(sections.find((section) => section.id === "todo")?.threads).toEqual([]);
+    expect(
+      sections.find((section) => section.id === "unread")?.threads.map((thread) => thread.id),
+    ).toEqual([ThreadId.make("plan-unread")]);
   });
 });

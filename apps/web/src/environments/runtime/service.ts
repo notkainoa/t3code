@@ -1001,6 +1001,14 @@ function applyRecoveredEventBatch(
       })),
     );
   }
+  for (const completion of batchEffects.markUnreadTurnCompletions) {
+    useUiStateStore
+      .getState()
+      .markThreadCompletionUnread(
+        scopedThreadKey(scopeThreadRef(environmentId, completion.threadId)),
+        completion.completedAt,
+      );
+  }
 
   const draftStore = useComposerDraftStore.getState();
   for (const threadId of batchEffects.promoteDraftThreadIds) {

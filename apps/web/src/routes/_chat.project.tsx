@@ -1,10 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ChevronDownIcon, SlidersHorizontalIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { KanbanBoard } from "../components/KanbanBoard";
 import { NoActiveThreadState } from "../components/NoActiveThreadState";
 import { ProjectFavicon } from "../components/ProjectFavicon";
+import { Button } from "../components/ui/button";
+import {
+  Menu,
+  MenuCheckboxItem,
+  MenuGroup,
+  MenuGroupLabel,
+  MenuPopup,
+  MenuTrigger,
+} from "../components/ui/menu";
 import { SidebarInset, SidebarTrigger } from "../components/ui/sidebar";
 import { usePrimaryEnvironmentId } from "../environments/primary";
 import {
@@ -26,10 +36,60 @@ type ProjectRouteSearch = {
   projectKey?: string | undefined;
 };
 
+function KanbanViewSettingsMenu({
+  todoColumnVisible,
+  onTodoColumnVisibleChange,
+}: {
+  todoColumnVisible: boolean;
+  onTodoColumnVisibleChange: (visible: boolean) => void;
+}) {
+  return (
+    <Menu>
+      <MenuTrigger
+        render={<Button variant="outline" size="xs" />}
+        className="h-7 shrink-0 px-2 text-muted-foreground hover:text-foreground"
+        aria-label={`Customize board view. Backlog column ${
+          todoColumnVisible ? "shown" : "hidden"
+        }.`}
+        title="Customize board view"
+      >
+        <SlidersHorizontalIcon className="size-3.5" />
+        <span className="hidden sm:inline">View</span>
+        {!todoColumnVisible ? (
+          <span className="hidden rounded-sm border border-border/70 bg-muted/65 px-1.5 py-0.5 text-[10px] font-medium leading-none text-muted-foreground sm:inline-flex">
+            Backlog hidden
+          </span>
+        ) : null}
+        <ChevronDownIcon className="size-3 opacity-55" />
+      </MenuTrigger>
+      <MenuPopup align="end" className="w-64">
+        <MenuGroup>
+          <MenuGroupLabel>Customize board</MenuGroupLabel>
+          <MenuCheckboxItem
+            checked={todoColumnVisible}
+            className="min-h-11 py-2"
+            variant="switch"
+            onCheckedChange={onTodoColumnVisibleChange}
+          >
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="font-medium">Backlog column</span>
+              <span className="text-xs text-muted-foreground/70">
+                Show backlog tasks on the board
+              </span>
+            </span>
+          </MenuCheckboxItem>
+        </MenuGroup>
+      </MenuPopup>
+    </Menu>
+  );
+}
+
 function ChatProjectRouteView() {
   const search = Route.useSearch();
   const projects = useStore(useShallow(selectProjectsAcrossEnvironments));
   const projectOrder = useUiStateStore((store) => store.projectOrder);
+  const kanbanTodoColumnVisible = useUiStateStore((store) => store.kanbanTodoColumnVisible);
+  const setKanbanTodoColumnVisible = useUiStateStore((store) => store.setKanbanTodoColumnVisible);
   const projectGroupingSettings = useSettings(selectProjectGroupingSettings);
   const primaryEnvironmentId = usePrimaryEnvironmentId();
   const savedEnvironmentRegistry = useSavedEnvironmentRegistryStore((store) => store.byId);
@@ -91,8 +151,16 @@ function ChatProjectRouteView() {
               {project.displayName}
             </h1>
           </div>
+          <KanbanViewSettingsMenu
+            todoColumnVisible={kanbanTodoColumnVisible}
+            onTodoColumnVisibleChange={setKanbanTodoColumnVisible}
+          />
         </header>
-        <KanbanBoard project={project} threads={threads} />
+        <KanbanBoard
+          project={project}
+          threads={threads}
+          todoColumnVisible={kanbanTodoColumnVisible}
+        />
       </div>
     </SidebarInset>
   );

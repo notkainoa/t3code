@@ -99,8 +99,11 @@ vi.mock("~/lib/terminalStateCleanup", () => ({
 
 vi.mock("~/orchestrationEventEffects", () => ({
   deriveOrchestrationBatchEffects: vi.fn(() => ({
-    promotedThreadRefs: [],
-    invalidatedProviderState: false,
+    promoteDraftThreadIds: [],
+    clearDeletedThreadIds: [],
+    removeTerminalStateThreadIds: [],
+    markUnreadTurnCompletions: [],
+    needsProviderInvalidation: false,
   })),
 }));
 

@@ -72,6 +72,7 @@ describe("deriveOrchestrationBatchEffects", () => {
     expect(effects.promoteDraftThreadIds).toEqual([createdThreadId]);
     expect(effects.clearDeletedThreadIds).toEqual([deletedThreadId]);
     expect(effects.removeTerminalStateThreadIds).toEqual([deletedThreadId, archivedThreadId]);
+    expect(effects.markUnreadTurnCompletions).toEqual([]);
     expect(effects.needsProviderInvalidation).toBe(false);
   });
 
@@ -110,6 +111,12 @@ describe("deriveOrchestrationBatchEffects", () => {
     expect(effects.promoteDraftThreadIds).toEqual([threadId]);
     expect(effects.clearDeletedThreadIds).toEqual([]);
     expect(effects.removeTerminalStateThreadIds).toEqual([]);
+    expect(effects.markUnreadTurnCompletions).toEqual([
+      {
+        threadId,
+        completedAt: "2026-02-27T00:00:03.000Z",
+      },
+    ]);
     expect(effects.needsProviderInvalidation).toBe(true);
   });
 
@@ -131,5 +138,29 @@ describe("deriveOrchestrationBatchEffects", () => {
     expect(effects.promoteDraftThreadIds).toEqual([]);
     expect(effects.clearDeletedThreadIds).toEqual([]);
     expect(effects.removeTerminalStateThreadIds).toEqual([]);
+    expect(effects.markUnreadTurnCompletions).toEqual([]);
+  });
+
+  it("does not mark a thread unread after it is deleted in the same batch", () => {
+    const threadId = ThreadId.make("thread-1");
+
+    const effects = deriveOrchestrationBatchEffects([
+      makeEvent("thread.turn-diff-completed", {
+        threadId,
+        turnId: TurnId.make("turn-1"),
+        checkpointTurnCount: 1,
+        checkpointRef: CheckpointRef.make("checkpoint-1"),
+        status: "ready",
+        files: [],
+        assistantMessageId: MessageId.make("assistant-1"),
+        completedAt: "2026-02-27T00:00:03.000Z",
+      }),
+      makeEvent("thread.deleted", {
+        threadId,
+        deletedAt: "2026-02-27T00:00:04.000Z",
+      }),
+    ]);
+
+    expect(effects.markUnreadTurnCompletions).toEqual([]);
   });
 });

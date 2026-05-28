@@ -20,6 +20,8 @@ export interface PersistedUiState {
   expandedProjectCwds?: string[];
   projectOrderCwds?: string[];
   defaultAdvertisedEndpointKey?: string | null;
+  kanbanTodoColumnVisible?: boolean;
+  threadLastVisitedAtById?: Record<string, string>;
   threadChangedFilesExpandedById?: Record<string, Record<string, boolean>>;
 }
 
@@ -37,7 +39,11 @@ export interface UiEndpointState {
   defaultAdvertisedEndpointKey: string | null;
 }
 
-export interface UiState extends UiProjectState, UiThreadState, UiEndpointState {}
+export interface UiKanbanState {
+  kanbanTodoColumnVisible: boolean;
+}
+
+export interface UiState extends UiProjectState, UiThreadState, UiEndpointState, UiKanbanState {}
 
 export interface SyncProjectInput {
   /** Physical project key (env + cwd). Used for manual sort order. */
@@ -58,6 +64,7 @@ const initialState: UiState = {
   threadLastVisitedAtById: {},
   threadChangedFilesExpandedById: {},
   defaultAdvertisedEndpointKey: null,
+  kanbanTodoColumnVisible: true,
 };
 
 const persistedCollapsedProjectCwds = new Set<string>();
@@ -99,13 +106,36 @@ function readPersistedState(): UiState {
         parsed.defaultAdvertisedEndpointKey.length > 0
           ? parsed.defaultAdvertisedEndpointKey
           : null,
+      threadLastVisitedAtById: sanitizePersistedThreadLastVisited(parsed.threadLastVisitedAtById),
       threadChangedFilesExpandedById: sanitizePersistedThreadChangedFilesExpanded(
         parsed.threadChangedFilesExpandedById,
       ),
+      kanbanTodoColumnVisible:
+        typeof parsed.kanbanTodoColumnVisible === "boolean"
+          ? parsed.kanbanTodoColumnVisible
+          : initialState.kanbanTodoColumnVisible,
     };
   } catch {
     return initialState;
   }
+}
+
+function sanitizePersistedThreadLastVisited(
+  value: PersistedUiState["threadLastVisitedAtById"],
+): Record<string, string> {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+
+  const nextState: Record<string, string> = {};
+  for (const [threadId, visitedAt] of Object.entries(value)) {
+    if (!threadId || typeof visitedAt !== "string" || Number.isNaN(Date.parse(visitedAt))) {
+      continue;
+    }
+    nextState[threadId] = visitedAt;
+  }
+
+  return nextState;
 }
 
 function sanitizePersistedThreadChangedFilesExpanded(
@@ -191,6 +221,8 @@ export function persistState(state: UiState): void {
         expandedProjectCwds,
         projectOrderCwds,
         defaultAdvertisedEndpointKey: state.defaultAdvertisedEndpointKey,
+        kanbanTodoColumnVisible: state.kanbanTodoColumnVisible,
+        threadLastVisitedAtById: state.threadLastVisitedAtById,
         threadChangedFilesExpandedById,
       } satisfies PersistedUiState),
     );
@@ -478,6 +510,26 @@ export function markThreadUnread(
   };
 }
 
+export function markThreadCompletionUnread(
+  state: UiState,
+  threadId: string,
+  latestTurnCompletedAt: string | null | undefined,
+): UiState {
+  if (!latestTurnCompletedAt) {
+    return state;
+  }
+  const latestTurnCompletedAtMs = Date.parse(latestTurnCompletedAt);
+  if (Number.isNaN(latestTurnCompletedAtMs)) {
+    return state;
+  }
+  const previousVisitedAt = state.threadLastVisitedAtById[threadId];
+  const previousVisitedAtMs = previousVisitedAt ? Date.parse(previousVisitedAt) : NaN;
+  if (Number.isFinite(previousVisitedAtMs) && previousVisitedAtMs >= latestTurnCompletedAtMs) {
+    return state;
+  }
+  return markThreadUnread(state, threadId, latestTurnCompletedAt);
+}
+
 export function clearThreadUi(state: UiState, threadId: string): UiState {
   const hasVisitedState = threadId in state.threadLastVisitedAtById;
   const hasChangedFilesState = threadId in state.threadChangedFilesExpandedById;
@@ -555,6 +607,16 @@ export function setDefaultAdvertisedEndpointKey(state: UiState, key: string | nu
   };
 }
 
+export function setKanbanTodoColumnVisible(state: UiState, visible: boolean): UiState {
+  if (state.kanbanTodoColumnVisible === visible) {
+    return state;
+  }
+  return {
+    ...state,
+    kanbanTodoColumnVisible: visible,
+  };
+}
+
 export function toggleProject(state: UiState, projectId: string): UiState {
   const expanded = state.projectExpandedById[projectId] ?? true;
   return {
@@ -627,9 +689,14 @@ interface UiStateStore extends UiState {
   syncThreads: (threads: readonly SyncThreadInput[]) => void;
   markThreadVisited: (threadId: string, visitedAt?: string) => void;
   markThreadUnread: (threadId: string, latestTurnCompletedAt: string | null | undefined) => void;
+  markThreadCompletionUnread: (
+    threadId: string,
+    latestTurnCompletedAt: string | null | undefined,
+  ) => void;
   clearThreadUi: (threadId: string) => void;
   setThreadChangedFilesExpanded: (threadId: string, turnId: string, expanded: boolean) => void;
   setDefaultAdvertisedEndpointKey: (key: string | null) => void;
+  setKanbanTodoColumnVisible: (visible: boolean) => void;
   toggleProject: (projectId: string) => void;
   setProjectExpanded: (projectId: string, expanded: boolean) => void;
   reorderProjects: (
@@ -646,11 +713,15 @@ export const useUiStateStore = create<UiStateStore>((set) => ({
     set((state) => markThreadVisited(state, threadId, visitedAt)),
   markThreadUnread: (threadId, latestTurnCompletedAt) =>
     set((state) => markThreadUnread(state, threadId, latestTurnCompletedAt)),
+  markThreadCompletionUnread: (threadId, latestTurnCompletedAt) =>
+    set((state) => markThreadCompletionUnread(state, threadId, latestTurnCompletedAt)),
   clearThreadUi: (threadId) => set((state) => clearThreadUi(state, threadId)),
   setThreadChangedFilesExpanded: (threadId, turnId, expanded) =>
     set((state) => setThreadChangedFilesExpanded(state, threadId, turnId, expanded)),
   setDefaultAdvertisedEndpointKey: (key) =>
     set((state) => setDefaultAdvertisedEndpointKey(state, key)),
+  setKanbanTodoColumnVisible: (visible) =>
+    set((state) => setKanbanTodoColumnVisible(state, visible)),
   toggleProject: (projectId) => set((state) => toggleProject(state, projectId)),
   setProjectExpanded: (projectId, expanded) =>
     set((state) => setProjectExpanded(state, projectId, expanded)),
