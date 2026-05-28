@@ -1,0 +1,273 @@
+{
+  "generatedAt": "2026-05-26T22:32:04.221Z",
+  "summary": {
+    "status": "stopped",
+    "startedAt": "2026-05-26T22:23:22.446Z",
+    "stoppedAt": "2026-05-26T22:31:52.738Z",
+    "elapsedMs": 510292,
+    "elapsedLabel": "8 min 30 s",
+    "targetUrl": "http://127.0.0.1:5173/style-audit.html",
+    "network": "host",
+    "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+    "project": "/home/ubuntu/github/t3code",
+    "browserFullscreen": true,
+    "counts": {
+      "screenshots": 15,
+      "recordings": 0,
+      "logs": 0,
+      "events": 9,
+      "failures": 0
+    },
+    "latest": {
+      "screenshot": {
+        "file": "after-full-final.png",
+        "relativePath": "screenshots/after-full-final.png",
+        "size": 90833,
+        "sizeLabel": "88.7 KB",
+        "mtimeMs": 1779834493812.7969,
+        "modifiedAt": "2026-05-26T22:28:13.813Z"
+      },
+      "recording": null
+    },
+    "activeRecording": null,
+    "lastEvent": {
+      "type": "stop",
+      "at": "2026-05-26T22:31:52.738Z",
+      "container": "proof-artifacts-t3code-style-audit"
+    },
+    "failures": [],
+    "eventCounts": {
+      "start": 1,
+      "novnc-ready": 1,
+      "open": 3,
+      "screenshot": 3,
+      "stop": 1
+    },
+    "endedAt": "2026-05-26T22:31:52.738Z"
+  },
+  "session": {
+    "schemaVersion": 1,
+    "events": [
+      {
+        "type": "start",
+        "at": "2026-05-26T22:23:22.450Z",
+        "container": "proof-artifacts-t3code-style-audit",
+        "image": "proof-artifacts/desktop:0.1.0",
+        "imageSource": "local",
+        "noVncPort": 6081
+      },
+      {
+        "type": "novnc-ready",
+        "at": "2026-05-26T22:23:22.775Z",
+        "url": "http://127.0.0.1:6081/vnc.html"
+      },
+      {
+        "type": "open",
+        "at": "2026-05-26T22:23:41.307Z",
+        "url": "http://127.0.0.1:5174/style-audit.html",
+        "fullscreen": true
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T22:23:42.642Z",
+        "label": "before-full",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit/screenshots/before-full.png"
+      },
+      {
+        "type": "open",
+        "at": "2026-05-26T22:24:39.756Z",
+        "url": "http://127.0.0.1:5173/style-audit.html",
+        "fullscreen": true
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T22:24:40.477Z",
+        "label": "after-full",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit/screenshots/after-full.png"
+      },
+      {
+        "type": "open",
+        "at": "2026-05-26T22:28:13.156Z",
+        "url": "http://127.0.0.1:5173/style-audit.html",
+        "fullscreen": true
+      },
+      {
+        "type": "screenshot",
+        "at": "2026-05-26T22:28:13.834Z",
+        "label": "after-full-final",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit/screenshots/after-full-final.png"
+      },
+      {
+        "type": "stop",
+        "at": "2026-05-26T22:31:52.738Z",
+        "container": "proof-artifacts-t3code-style-audit"
+      }
+    ],
+    "screenshots": [
+      {
+        "label": "before-full",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit/screenshots/before-full.png",
+        "capturedAt": "2026-05-26T22:23:42.642Z"
+      },
+      {
+        "label": "after-full",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit/screenshots/after-full.png",
+        "capturedAt": "2026-05-26T22:24:40.475Z"
+      },
+      {
+        "label": "after-full-final",
+        "file": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit/screenshots/after-full-final.png",
+        "capturedAt": "2026-05-26T22:28:13.834Z"
+      }
+    ],
+    "recordings": [],
+    "name": "t3code-style-audit",
+    "width": "1280",
+    "height": "800",
+    "project": "/home/ubuntu/github/t3code",
+    "artifacts": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit",
+    "noVncUrl": "http://127.0.0.1:6081/vnc.html",
+    "noVncPort": 6081,
+    "noVncListen": "127.0.0.1",
+    "network": "host",
+    "targetUrl": "http://127.0.0.1:5173/style-audit.html",
+    "networkInferredFromUrl": true,
+    "browserFullscreen": true,
+    "vncPort": 5901,
+    "container": "proof-artifacts-t3code-style-audit",
+    "containerUser": "1001:1001",
+    "image": "proof-artifacts/desktop:0.1.0",
+    "imageId": "sha256:6785bf31c1950a4f9839eec9f077eb8de1422e17dfb9cfd723de7a1f567fbad5",
+    "requestedImage": "proof-artifacts/desktop:0.1.0",
+    "imageSource": "local",
+    "startedAt": "2026-05-26T22:23:22.446Z",
+    "stoppedAt": "2026-05-26T22:31:52.738Z"
+  },
+  "artifacts": {
+    "root": "/home/ubuntu/github/t3code/.proof-artifacts/sessions/t3code-style-audit",
+    "screenshots": [
+      {
+        "file": "after-alert-dialog.png",
+        "relativePath": "screenshots/after-alert-dialog.png",
+        "size": 7625,
+        "sizeLabel": "7.4 KB",
+        "mtimeMs": 1779834479865.394,
+        "modifiedAt": "2026-05-26T22:27:59.865Z"
+      },
+      {
+        "file": "after-command-palette.png",
+        "relativePath": "screenshots/after-command-palette.png",
+        "size": 8618,
+        "sizeLabel": "8.4 KB",
+        "mtimeMs": 1779834481351.3958,
+        "modifiedAt": "2026-05-26T22:28:01.351Z"
+      },
+      {
+        "file": "after-compact-menu.png",
+        "relativePath": "screenshots/after-compact-menu.png",
+        "size": 9401,
+        "sizeLabel": "9.2 KB",
+        "mtimeMs": 1779834477112.3906,
+        "modifiedAt": "2026-05-26T22:27:57.112Z"
+      },
+      {
+        "file": "after-dialog.png",
+        "relativePath": "screenshots/after-dialog.png",
+        "size": 14465,
+        "sizeLabel": "14.1 KB",
+        "mtimeMs": 1779834478492.3923,
+        "modifiedAt": "2026-05-26T22:27:58.492Z"
+      },
+      {
+        "file": "after-full-final.png",
+        "relativePath": "screenshots/after-full-final.png",
+        "size": 90833,
+        "sizeLabel": "88.7 KB",
+        "mtimeMs": 1779834493812.7969,
+        "modifiedAt": "2026-05-26T22:28:13.813Z"
+      },
+      {
+        "file": "after-full.png",
+        "relativePath": "screenshots/after-full.png",
+        "size": 90833,
+        "sizeLabel": "88.7 KB",
+        "mtimeMs": 1779834280454.5366,
+        "modifiedAt": "2026-05-26T22:24:40.455Z"
+      },
+      {
+        "file": "after-model-picker.png",
+        "relativePath": "screenshots/after-model-picker.png",
+        "size": 15167,
+        "sizeLabel": "14.8 KB",
+        "mtimeMs": 1779834475440.3884,
+        "modifiedAt": "2026-05-26T22:27:55.440Z"
+      },
+      {
+        "file": "after-thread-actions.png",
+        "relativePath": "screenshots/after-thread-actions.png",
+        "size": 7219,
+        "sizeLabel": "7.0 KB",
+        "mtimeMs": 1779834473865.3865,
+        "modifiedAt": "2026-05-26T22:27:53.865Z"
+      },
+      {
+        "file": "before-alert-dialog.png",
+        "relativePath": "screenshots/before-alert-dialog.png",
+        "size": 8598,
+        "sizeLabel": "8.4 KB",
+        "mtimeMs": 1779834346771.2263,
+        "modifiedAt": "2026-05-26T22:25:46.771Z"
+      },
+      {
+        "file": "before-command-palette.png",
+        "relativePath": "screenshots/before-command-palette.png",
+        "size": 9218,
+        "sizeLabel": "9.0 KB",
+        "mtimeMs": 1779834348233.2283,
+        "modifiedAt": "2026-05-26T22:25:48.233Z"
+      },
+      {
+        "file": "before-compact-menu.png",
+        "relativePath": "screenshots/before-compact-menu.png",
+        "size": 10291,
+        "sizeLabel": "10.0 KB",
+        "mtimeMs": 1779834343898.2227,
+        "modifiedAt": "2026-05-26T22:25:43.898Z"
+      },
+      {
+        "file": "before-dialog.png",
+        "relativePath": "screenshots/before-dialog.png",
+        "size": 16980,
+        "sizeLabel": "16.6 KB",
+        "mtimeMs": 1779834345347.2246,
+        "modifiedAt": "2026-05-26T22:25:45.347Z"
+      },
+      {
+        "file": "before-full.png",
+        "relativePath": "screenshots/before-full.png",
+        "size": 90833,
+        "sizeLabel": "88.7 KB",
+        "mtimeMs": 1779834222630.5679,
+        "modifiedAt": "2026-05-26T22:23:42.631Z"
+      },
+      {
+        "file": "before-model-picker.png",
+        "relativePath": "screenshots/before-model-picker.png",
+        "size": 14840,
+        "sizeLabel": "14.5 KB",
+        "mtimeMs": 1779834342185.2207,
+        "modifiedAt": "2026-05-26T22:25:42.185Z"
+      },
+      {
+        "file": "before-thread-actions.png",
+        "relativePath": "screenshots/before-thread-actions.png",
+        "size": 7660,
+        "sizeLabel": "7.5 KB",
+        "mtimeMs": 1779834340468.2185,
+        "modifiedAt": "2026-05-26T22:25:40.468Z"
+      }
+    ],
+    "recordings": [],
+    "logs": []
+  }
+}
