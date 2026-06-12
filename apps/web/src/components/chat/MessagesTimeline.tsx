@@ -42,6 +42,7 @@ import { DiffStatLabel, hasNonZeroStat } from "./DiffStatLabel";
 import { MessageCopyButton } from "./MessageCopyButton";
 import {
   computeStableMessagesTimelineRows,
+  getEstimatedRowSize,
   MAX_VISIBLE_WORK_LOG_ENTRIES,
   deriveMessagesTimelineRows,
   normalizeCompactToolLabel,
@@ -271,7 +272,7 @@ export const MessagesTimeline = memo(function MessagesTimeline({
           data={rows}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
-          estimatedItemSize={90}
+          getEstimatedItemSize={getEstimatedRowSize}
           initialScrollAtEnd
           maintainScrollAtEnd
           maintainScrollAtEndThreshold={0.1}

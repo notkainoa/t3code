@@ -42,7 +42,10 @@ export function DiffWorkerPoolProvider({ children }: { children?: ReactNode }) {
       poolOptions={{
         workerFactory: () => new DiffsWorker(),
         poolSize: workerPoolSize,
-        totalASTLRUCacheSize: 240,
+        // At 10,000+ messages a 240-entry AST cache thrashes heavily.
+        // 1,200 covers the hot working set for large threads without
+        // significantly increasing worker memory pressure.
+        totalASTLRUCacheSize: 1_200,
       }}
       highlighterOptions={{
         theme: diffThemeName,

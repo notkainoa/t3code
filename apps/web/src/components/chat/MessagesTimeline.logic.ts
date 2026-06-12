@@ -227,6 +227,38 @@ export function computeStableMessagesTimelineRows(
   return anyChanged ? { byId: next, result } : previous;
 }
 
+// ---------------------------------------------------------------------------
+// Row height estimation — per-kind initial size hints for LegendList.
+//
+// LegendList measures the true height after each item mounts and updates its
+// internal bookkeeping, but accurate initial estimates reduce the number of
+// layout-cascade corrections needed when scrolling through a large thread.
+// Estimates are intentionally conservative (biased high) so that the list
+// allocates enough space rather than triggering upward layout shifts.
+//
+// Chosen values (px) are based on the typical rendered heights observed in
+// the T3 Code UI at default zoom/font size:
+//   working indicator : ~64  px  (single-line spinner + label)
+//   work group        : ~96  px  (collapsed tool-call summary)
+//   user message      : ~112 px  (short bubble with padding)
+//   assistant message : ~300 px  (response with short code block)
+//   proposed-plan     : ~200 px  (plan card)
+// ---------------------------------------------------------------------------
+
+/** Initial height hint (in pixels) for `LegendList.getEstimatedItemSize`. */
+export function getEstimatedRowSize(row: MessagesTimelineRow): number {
+  switch (row.kind) {
+    case "working":
+      return 64;
+    case "work":
+      return 96;
+    case "proposed-plan":
+      return 200;
+    case "message":
+      return row.message.role === "assistant" ? 300 : 112;
+  }
+}
+
 /** Shallow field comparison per row variant — avoids deep equality cost. */
 function isRowUnchanged(a: MessagesTimelineRow, b: MessagesTimelineRow): boolean {
   if (a.kind !== b.kind || a.id !== b.id) return false;
