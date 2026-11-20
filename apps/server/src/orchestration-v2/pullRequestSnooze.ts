@@ -14,7 +14,11 @@ function snapshotMeetsTrigger(
   before: ThreadPullRequestSnapshot | null,
   after: ThreadPullRequestSnapshot,
   watched: boolean,
+  snoozedAtMs: number | null,
 ): boolean {
+  // Hosts move the update time for comments, reviews, and pushes, which no other field shows.
+  const updated =
+    snoozedAtMs !== null && after.updatedAt != null && Date.parse(after.updatedAt) > snoozedAtMs;
   const reviewed =
     (after.reviewDecision === "approved" || after.reviewDecision === "changes-requested") &&
     after.reviewDecision !== before?.reviewDecision;
@@ -31,7 +35,7 @@ function snapshotMeetsTrigger(
       return conflicted;
     case "update":
       // A watching agent answers its own checks; the user hears if it gets stuck.
-      return reviewed || conflicted || (checksFinished && !watched);
+      return updated || reviewed || conflicted || (checksFinished && !watched);
   }
 }
 
@@ -40,7 +44,10 @@ function snapshotMeetsTrigger(
  * thread's pull requests meets its trigger or leaves none open.
  */
 export function wakePullRequestSnooze<
-  Thread extends Pick<OrchestrationV2AppThread, "snoozedUntil" | "snoozeUntilPullRequest">,
+  Thread extends Pick<
+    OrchestrationV2AppThread,
+    "snoozedUntil" | "snoozedAt" | "snoozeUntilPullRequest"
+  >,
 >(
   before: ReadonlyArray<ThreadPullRequestLink>,
   thread: Thread,
@@ -51,6 +58,7 @@ export function wakePullRequestSnooze<
   if (trigger == null || thread.snoozedUntil == null) return thread;
   if (DateTime.toEpochMillis(thread.snoozedUntil) <= DateTime.toEpochMillis(now)) return thread;
   const open = snoozablePullRequests(after);
+  const snoozedAtMs = thread.snoozedAt == null ? null : DateTime.toEpochMillis(thread.snoozedAt);
   const met =
     open.length === 0 ||
     open.some((link) => {
@@ -58,7 +66,13 @@ export function wakePullRequestSnooze<
       return (
         previous !== undefined &&
         link.snapshot !== null &&
-        snapshotMeetsTrigger(trigger, previous.snapshot, link.snapshot, link.watch !== undefined)
+        snapshotMeetsTrigger(
+          trigger,
+          previous.snapshot,
+          link.snapshot,
+          link.watch !== undefined,
+          snoozedAtMs,
+        )
       );
     });
   return met ? { ...thread, snoozedUntil: now, snoozeUntilPullRequest: null } : thread;

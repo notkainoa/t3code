@@ -10,6 +10,7 @@ import * as DateTime from "effect/DateTime";
 import { wakePullRequestSnooze } from "./pullRequestSnooze.ts";
 
 const NOW = DateTime.makeUnsafe("2026-11-13T12:00:00.000Z");
+const SNOOZED_AT = DateTime.makeUnsafe("2026-11-13T09:00:00.000Z");
 const CAP = DateTime.makeUnsafe("2026-12-13T12:00:00.000Z");
 
 const link = (
@@ -59,7 +60,7 @@ const woke = (
   before: ReadonlyArray<ThreadPullRequestLink>,
   after: ReadonlyArray<ThreadPullRequestLink>,
 ) => {
-  const thread = { snoozedUntil: CAP, snoozeUntilPullRequest: trigger };
+  const thread = { snoozedUntil: CAP, snoozedAt: SNOOZED_AT, snoozeUntilPullRequest: trigger };
   const next = wakePullRequestSnooze(before, thread, after, NOW);
   return (
     next !== thread && DateTime.toEpochMillis(next.snoozedUntil!) === DateTime.toEpochMillis(NOW)
@@ -77,6 +78,10 @@ describe("wakePullRequestSnooze", () => {
     ["update", unchanged, conflicting, true],
     ["update", unchanged, checksPassed, true],
     ["update", unchanged, link({ title: "Renamed" }), false],
+    // A comment moves only the update time; one from before the snooze is old news.
+    ["update", unchanged, link({ updatedAt: "2026-11-13T09:30:00Z" }), true],
+    ["update", unchanged, link({ updatedAt: "2026-11-13T08:30:00Z" }), false],
+    ["review", unchanged, link({ updatedAt: "2026-11-13T09:30:00Z" }), false],
     ["review", unchanged, approved, true],
     ["review", unchanged, link({ reviewDecision: "changes-requested" }), true],
     ["review", approved, approved, false],
